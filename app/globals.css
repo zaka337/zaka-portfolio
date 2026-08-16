@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f1ede2;
+  --ink: #0d0d0d;
+  --ink-70: rgba(13, 13, 13, 0.7);
+  --ink-50: rgba(13, 13, 13, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  cursor: none;
+}
+
+canvas {
+  display: block;
+  pointer-events: none;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ─── Layout ───────────────────────────────────────────────────── */
+
+.portfolio-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--paper);
+}
+
+/* Corner anchors */
+.block-tl {
+  position: absolute;
+  top: 5vh;
+  left: 4vw;
+  z-index: 10;
+}
+
+.block-tr {
+  position: absolute;
+  top: 5vh;
+  right: 4vw;
+  text-align: right;
+  z-index: 10;
+}
+
+.block-ml {
+  position: absolute;
+  top: 50%;
+  left: 4vw;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.block-mr {
+  position: absolute;
+  top: 50%;
+  right: 4vw;
+  transform: translateY(-50%);
+  text-align: right;
+  z-index: 10;
+}
+
+.block-bl {
+  position: absolute;
+  bottom: 5vh;
+  left: 4vw;
+  z-index: 10;
+}
+
+.block-br {
+  position: absolute;
+  bottom: 5vh;
+  right: 4vw;
+  text-align: right;
+  z-index: 10;
+}
+
+/* ─── Typography ────────────────────────────────────────────────── */
+
+.label {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(0.5rem, 0.8vw, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--ink-50);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+}
+
+/* Main name — dominant, intentionally huge */
+.title-huge {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.5rem, 9vw, 10rem);
+  letter-spacing: -0.03em;
+  line-height: 0.88;
+  color: var(--ink);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* Subtitle — noticeably smaller than name */
+.title-sub {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.2rem, 4.2vw, 5rem);
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  color: var(--ink);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* Nav items — clearly secondary to the title */
+.nav-item {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.9rem, 2.8vw, 3.5rem);
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  color: var(--ink);
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* ─── Hover group ───────────────────────────────────────────────── */
+
+.nav-text {
+  cursor: none;
+}
+
+.nav-text .nav-item,
+.nav-text .title-huge,
+.nav-text .title-sub {
+  transition: color 0.25s ease;
+}
+
+.nav-text:hover .nav-item,
+.nav-text:hover .title-huge,
+.nav-text:hover .title-sub {
+  color: var(--ink-50);
+}
+
+/* ─── Mobile ────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  html, body {
+    overflow: auto;
+    cursor: auto;
+  }
+
+  .portfolio-root {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6vh 6vw;
+    gap: 6vw;
+  }
+
+  /* Reset all absolute positioning on mobile */
+  .block-tl,
+  .block-tr,
+  .block-ml,
+  .block-mr,
+  .block-bl,
+  .block-br {
+    position: static;
+    transform: none;
+    text-align: left;
+    width: 100%;
+  }
+
+  .block-tr,
+  .block-mr,
+  .block-br {
+    text-align: right;
+  }
+
+  /* Avatar canvas becomes a centered fixed-height block */
+  .avatar-mobile-wrapper {
+    width: 60vw;
+    height: 60vw;
+    max-width: 320px;
+    max-height: 320px;
+    margin: 0 auto;
+  }
+
+  .title-huge {
+    font-size: clamp(2.5rem, 12vw, 5rem);
+  }
+
+  .title-sub {
+    font-size: clamp(1.2rem, 6vw, 2.5rem);
+  }
+
+  .nav-item {
+    font-size: clamp(1.2rem, 5vw, 2rem);
+  }
+
+  .nav-text:hover .nav-item,
+  .nav-text:hover .title-huge,
+  .nav-text:hover .title-sub {
+    color: var(--ink);
+  }
+}
