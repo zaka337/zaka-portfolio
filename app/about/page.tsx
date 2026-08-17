@@ -111,7 +111,7 @@ const FACTS = [
 
 const T: React.CSSProperties = { fontFamily: "'Helvetica Neue', Arial, sans-serif" };
 
-function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+function FadeIn({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const [ref, inView] = useInView();
   return (
     <div
@@ -120,6 +120,7 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
         opacity: inView ? 1 : 0,
         transform: inView ? "translateY(0)" : "translateY(32px)",
         transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
+        ...style,
       }}
     >
       {children}
@@ -343,11 +344,12 @@ export default function About() {
           border: "1px solid rgba(13,13,13,0.12)",
         }}>
           {SKILLS.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.07}>
+            <FadeIn key={i} delay={i * 0.07} style={{ gridColumn: s.wide ? "span 2" : undefined }}>
               <div style={{
                 backgroundColor: "var(--paper)",
                 padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
-                gridColumn: s.wide ? "span 2" : undefined,
+                height: "100%",
+                boxSizing: "border-box",
               }}>
                 <p style={{
                   ...T, fontSize: "clamp(0.45rem, 0.6vw, 0.56rem)", fontWeight: 700,
