@@ -105,6 +105,8 @@ export default function Projects() {
   const CARD_W      = Math.round(Math.max(130, Math.min(BASE_RADIUS * 0.36, 200)));
   const CARD_H      = Math.round(CARD_W * 0.78);
   const PERSPECTIVE = Math.round(BASE_RADIUS * 4.8);
+  // Scale the whole 3D scene on narrow screens so depth is preserved without overflow
+  const carouselScale = isMobile ? Math.min(1, vp.w / 580) : 1;
 
   /* ── GitHub fetch ──────────────────────────────────────────────── */
   useEffect(() => {
@@ -123,9 +125,9 @@ export default function Projects() {
       .catch(() => setLoading(false));
   }, []);
 
-  /* ── 3D animation loop ─────────────────────────────────────────── */
+  /* ── 3D animation loop (all viewports) ────────────────────────── */
   useEffect(() => {
-    if (isMobile || !repos.length || !ringRef.current) return;
+    if (!repos.length || !ringRef.current) return;
     const ring = ringRef.current;
     const n    = repos.length;
     const ctrl = ctrlRef.current;
@@ -204,7 +206,7 @@ export default function Projects() {
       window.removeEventListener("touchmove",  onTouchMove);
       window.removeEventListener("touchend",   onTouchEnd);
     };
-  }, [repos, isMobile]);
+  }, [repos]);
 
   const stepCarousel = (dir: number) => {
     if (!repos.length) return;
@@ -231,85 +233,11 @@ export default function Projects() {
     touchAction: "manipulation",
   };
 
-  /* ── Shared card renderer ─────────────────────────────────────── */
-  const renderCardContent = (repo: Repo, i: number, live: string | null, cardW: number) => {
-    const meta  = META[repo.name];
-    const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
-    const desc  = meta?.desc  ?? repo.description ?? "Project";
-    const col   = COLORS[i % COLORS.length];
-    const ink   = live ? "#0d0d0d" : col.ink;
-
-    return (
-      <>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          {repo.language && (
-            <span style={{
-              fontSize: Math.max(7, cardW * 0.047), fontWeight: 700, letterSpacing: "0.12em",
-              color: ink, opacity: 0.55, textTransform: "uppercase",
-              background: "rgba(0,0,0,0.08)", padding: "2px 6px", borderRadius: 2,
-            }}>
-              {repo.language}
-            </span>
-          )}
-          {live ? (
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 3,
-              fontSize: Math.max(7, cardW * 0.05), fontWeight: 800, letterSpacing: "0.12em",
-              color: "#fff", background: "#1a8c3c",
-              padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
-            }}>
-              <span style={{
-                width: 5, height: 5, borderRadius: "50%",
-                background: "#7eff9e", flexShrink: 0,
-                animation: "livePulse 1.4s ease-in-out infinite",
-              }} />
-              LIVE
-            </span>
-          ) : (
-            <span style={{
-              fontSize: Math.max(6, cardW * 0.043), fontWeight: 600, letterSpacing: "0.1em",
-              color: ink, background: "rgba(0,0,0,0.08)",
-              padding: "2px 6px", borderRadius: 2, textTransform: "uppercase",
-              opacity: 0.45,
-            }}>
-              {'GITHUB ↗'}
-            </span>
-          )}
-        </div>
-
-        <span style={{
-          position: "absolute", bottom: -6, right: 8,
-          fontSize: Math.round(cardW * 0.3), fontWeight: 900, color: ink,
-          opacity: 0.06, userSelect: "none", lineHeight: 1,
-        }}>
-          {String(i + 1).padStart(2, "0")}
-        </span>
-
-        <div>
-          <p style={{
-            fontSize: Math.max(9, cardW * 0.068), fontWeight: 800, color: ink,
-            textTransform: "uppercase", letterSpacing: "-0.01em",
-            lineHeight: 1.1, margin: "0 0 4px",
-          }}>
-            {title}
-          </p>
-          <p style={{
-            fontSize: Math.max(8, cardW * 0.054), fontWeight: 400, color: ink,
-            opacity: 0.65, lineHeight: 1.4, margin: 0,
-          }}>
-            {desc}
-          </p>
-        </div>
-      </>
-    );
-  };
-
   return (
     <main style={{
       width: "100vw",
-      height: isMobile ? "auto" : "100vh",
-      minHeight: isMobile ? "100dvh" : undefined,
-      overflow: isMobile ? "auto" : "hidden",
+      height: "100dvh",
+      overflow: "hidden",
       backgroundColor: "var(--paper)", position: "relative",
       userSelect: "none",
     }}>
@@ -376,71 +304,23 @@ export default function Projects() {
         </p>
       )}
 
-      {/* ════════════════════════════════════════════════════════
-          MOBILE VIEW — flat 2-column card grid
-         ════════════════════════════════════════════════════════ */}
-      {isMobile && !loading && (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 10,
-          padding: "clamp(52px, 10vh, 72px) 12px clamp(32px, 6vh, 48px)",
+      {/* ── Hint (swipe on mobile, drag on desktop) ───────────── */}
+      {!loading && n > 0 && (
+        <span style={{
+          position: "absolute", bottom: "4vh", left: "50%",
+          transform: "translateX(-50%)", zIndex: 200,
+          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+          fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 400,
+          letterSpacing: "0.26em", color: "var(--ink-50)",
+          textTransform: "uppercase", whiteSpace: "nowrap",
         }}>
-          {repos.map((repo, i) => {
-            const live = getLiveUrl(repo);
-            const col  = COLORS[i % COLORS.length];
-            const MCARD_W = Math.floor((vp.w - 34) / 2);
-            const MCARD_H = Math.round(MCARD_W * 0.82);
-            return (
-              <a
-                key={repo.id}
-                href={live ?? repo.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex", flexDirection: "column",
-                  justifyContent: "space-between",
-                  position: "relative", overflow: "hidden",
-                  height: MCARD_H,
-                  backgroundColor: live ? "#fff" : col.bg,
-                  border: live
-                    ? "1px solid rgba(26,140,60,0.22)"
-                    : "1px solid rgba(0,0,0,0.1)",
-                  ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
-                  borderRadius: 8,
-                  padding: live ? "10px 10px 10px 8px" : "10px",
-                  textDecoration: "none",
-                  fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                  boxSizing: "border-box",
-                  touchAction: "manipulation",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                {renderCardContent(repo, i, live, MCARD_W)}
-              </a>
-            );
-          })}
-        </div>
+          {isMobile ? "SWIPE TO EXPLORE" : "DRAG TO EXPLORE"}
+        </span>
       )}
 
-      {/* ════════════════════════════════════════════════════════
-          DESKTOP / TABLET — 3D carousel
-         ════════════════════════════════════════════════════════ */}
-      {!isMobile && (
+      {/* ── Arrows (desktop only) ─────────────────────────────── */}
+      {!isMobile && !loading && (
         <>
-          {/* Hint */}
-          <span style={{
-            position: "absolute", bottom: "4vh", left: "50%",
-            transform: "translateX(-50%)", zIndex: 200,
-            fontFamily: "'Helvetica Neue', Arial, sans-serif",
-            fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 400,
-            letterSpacing: "0.26em", color: "var(--ink-50)",
-            textTransform: "uppercase", whiteSpace: "nowrap",
-          }}>
-            DRAG TO EXPLORE
-          </span>
-
-          {/* Arrows */}
           <button
             onClick={() => stepCarousel(-1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
@@ -455,144 +335,157 @@ export default function Projects() {
             style={{ ...arrowBase, right: "clamp(8px, 3vw, 40px)" }}>
             &#8250;
           </button>
+        </>
+      )}
 
-          {/* 3D Scene */}
+      {/* ── 3D Scene (mobile gets CSS scale to preserve depth) ── */}
+      {!loading && n > 0 && (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+          {/* Scale wrapper — shrinks scene on narrow viewports without losing 3D depth */}
           <div style={{
             position: "absolute", inset: 0,
-            perspective: `${PERSPECTIVE}px`,
-            perspectiveOrigin: "50% 38%",
-            cursor: "grab",
+            ...(isMobile ? {
+              transform: `scale(${carouselScale})`,
+              transformOrigin: "50% 42%",
+            } : {}),
           }}>
             <div style={{
-              position: "absolute",
-              left: "50%", top: "50%",
-              width: 0, height: 0,
-              transform: "translate3d(0, 0, -240px)",
-              transformStyle: "preserve-3d",
+              position: "absolute", inset: 0,
+              perspective: `${PERSPECTIVE}px`,
+              perspectiveOrigin: "50% 38%",
+              cursor: isMobile ? "default" : "grab",
             }}>
-              <div ref={ringRef} style={{
+              <div style={{
+                position: "absolute",
+                left: "50%", top: "50%",
                 width: 0, height: 0,
+                transform: "translate3d(0, 0, -240px)",
                 transformStyle: "preserve-3d",
-                transform: "rotateX(-10deg) rotateY(0deg)",
               }}>
-                {repos.map((repo, i) => {
-                  const angleDeg = (i / n) * 360;
-                  const sp   = cardSpatial(i);
-                  const live = getLiveUrl(repo);
-                  const col  = COLORS[i % COLORS.length];
-                  const ink  = live ? "#0d0d0d" : col.ink;
-                  const meta  = META[repo.name];
-                  const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
-                  const desc  = meta?.desc  ?? repo.description ?? "Project";
+                <div ref={ringRef} style={{
+                  width: 0, height: 0,
+                  transformStyle: "preserve-3d",
+                  transform: "rotateX(-10deg) rotateY(0deg)",
+                }}>
+                  {repos.map((repo, i) => {
+                    const angleDeg = (i / n) * 360;
+                    const sp   = cardSpatial(i);
+                    const live = getLiveUrl(repo);
+                    const col  = COLORS[i % COLORS.length];
+                    const ink  = live ? "#0d0d0d" : col.ink;
+                    const meta  = META[repo.name];
+                    const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
+                    const desc  = meta?.desc  ?? repo.description ?? "Project";
 
-                  const cardTransform = [
-                    `rotateY(${angleDeg}deg)`,
-                    `translateZ(${BASE_RADIUS + sp.zAdd}px)`,
-                    `translateY(${sp.yOff}px)`,
-                    `rotateX(${sp.tiltX}deg)`,
-                    `rotateZ(${sp.tiltZ}deg)`,
-                  ].join(" ");
+                    const cardTransform = [
+                      `rotateY(${angleDeg}deg)`,
+                      `translateZ(${BASE_RADIUS + sp.zAdd}px)`,
+                      `translateY(${sp.yOff}px)`,
+                      `rotateX(${sp.tiltX}deg)`,
+                      `rotateZ(${sp.tiltZ}deg)`,
+                    ].join(" ");
 
-                  return (
-                    <a
-                      key={repo.id}
-                      data-ci={String(i)}
-                      href={live ?? repo.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        position: "absolute",
-                        width: CARD_W, height: CARD_H,
-                        left: -CARD_W / 2, top: -CARD_H / 2,
-                        transform: cardTransform,
-                        backgroundColor: live ? "#fff" : col.bg,
-                        border: live
-                          ? "1px solid rgba(26,140,60,0.22)"
-                          : "1px solid rgba(0,0,0,0.1)",
-                        ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
-                        borderRadius: 6,
-                        padding: live
-                          ? `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px ${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.07)}px`
-                          : `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px`,
-                        textDecoration: "none",
-                        backfaceVisibility: "hidden",
-                        display: "flex", flexDirection: "column",
-                        justifyContent: "space-between",
-                        overflow: "hidden",
-                        fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                        boxSizing: "border-box",
-                        willChange: "filter, opacity",
-                      }}
-                    >
-                      {/* Language + badge row */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        {repo.language && (
-                          <span style={{
-                            fontSize: Math.max(7, CARD_W * 0.047), fontWeight: 700, letterSpacing: "0.12em",
-                            color: ink, opacity: 0.55, textTransform: "uppercase",
-                            background: "rgba(0,0,0,0.08)", padding: "2px 6px", borderRadius: 2,
-                          }}>
-                            {repo.language}
-                          </span>
-                        )}
-                        {live ? (
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", gap: 3,
-                            fontSize: Math.max(7, CARD_W * 0.05), fontWeight: 800, letterSpacing: "0.12em",
-                            color: "#fff", background: "#1a8c3c",
-                            padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
-                          }}>
+                    return (
+                      <a
+                        key={repo.id}
+                        data-ci={String(i)}
+                        href={live ?? repo.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          position: "absolute",
+                          width: CARD_W, height: CARD_H,
+                          left: -CARD_W / 2, top: -CARD_H / 2,
+                          transform: cardTransform,
+                          backgroundColor: live ? "#fff" : col.bg,
+                          border: live
+                            ? "1px solid rgba(26,140,60,0.22)"
+                            : "1px solid rgba(0,0,0,0.1)",
+                          ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
+                          borderRadius: 6,
+                          padding: live
+                            ? `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px ${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.07)}px`
+                            : `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px`,
+                          textDecoration: "none",
+                          backfaceVisibility: "hidden",
+                          display: "flex", flexDirection: "column",
+                          justifyContent: "space-between",
+                          overflow: "hidden",
+                          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                          boxSizing: "border-box",
+                          willChange: "filter, opacity",
+                        }}
+                      >
+                        {/* Language + badge row */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          {repo.language && (
                             <span style={{
-                              width: 5, height: 5, borderRadius: "50%",
-                              background: "#7eff9e", flexShrink: 0,
-                              animation: "livePulse 1.4s ease-in-out infinite",
-                            }} />
-                            LIVE
-                          </span>
-                        ) : (
-                          <span style={{
-                            fontSize: Math.max(6, CARD_W * 0.043), fontWeight: 600, letterSpacing: "0.1em",
-                            color: ink, background: "rgba(0,0,0,0.08)",
-                            padding: "2px 6px", borderRadius: 2, textTransform: "uppercase",
-                            opacity: 0.45,
+                              fontSize: Math.max(7, CARD_W * 0.047), fontWeight: 700, letterSpacing: "0.12em",
+                              color: ink, opacity: 0.55, textTransform: "uppercase",
+                              background: "rgba(0,0,0,0.08)", padding: "2px 6px", borderRadius: 2,
+                            }}>
+                              {repo.language}
+                            </span>
+                          )}
+                          {live ? (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 3,
+                              fontSize: Math.max(7, CARD_W * 0.05), fontWeight: 800, letterSpacing: "0.12em",
+                              color: "#fff", background: "#1a8c3c",
+                              padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
+                            }}>
+                              <span style={{
+                                width: 5, height: 5, borderRadius: "50%",
+                                background: "#7eff9e", flexShrink: 0,
+                                animation: "livePulse 1.4s ease-in-out infinite",
+                              }} />
+                              LIVE
+                            </span>
+                          ) : (
+                            <span style={{
+                              fontSize: Math.max(6, CARD_W * 0.043), fontWeight: 600, letterSpacing: "0.1em",
+                              color: ink, background: "rgba(0,0,0,0.08)",
+                              padding: "2px 6px", borderRadius: 2, textTransform: "uppercase",
+                              opacity: 0.45,
+                            }}>
+                              {'GITHUB ↗'}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Watermark */}
+                        <span style={{
+                          position: "absolute", bottom: -6, right: 8,
+                          fontSize: Math.round(CARD_W * 0.3), fontWeight: 900, color: ink,
+                          opacity: 0.06, userSelect: "none", lineHeight: 1,
+                        }}>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+
+                        {/* Title + desc */}
+                        <div>
+                          <p style={{
+                            fontSize: Math.max(9, CARD_W * 0.068), fontWeight: 800, color: ink,
+                            textTransform: "uppercase", letterSpacing: "-0.01em",
+                            lineHeight: 1.1, margin: "0 0 4px",
                           }}>
-                            {'GITHUB ↗'}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Watermark */}
-                      <span style={{
-                        position: "absolute", bottom: -6, right: 8,
-                        fontSize: Math.round(CARD_W * 0.3), fontWeight: 900, color: ink,
-                        opacity: 0.06, userSelect: "none", lineHeight: 1,
-                      }}>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-
-                      {/* Title + desc */}
-                      <div>
-                        <p style={{
-                          fontSize: Math.max(9, CARD_W * 0.068), fontWeight: 800, color: ink,
-                          textTransform: "uppercase", letterSpacing: "-0.01em",
-                          lineHeight: 1.1, margin: "0 0 4px",
-                        }}>
-                          {title}
-                        </p>
-                        <p style={{
-                          fontSize: Math.max(8, CARD_W * 0.054), fontWeight: 400, color: ink,
-                          opacity: 0.65, lineHeight: 1.4, margin: 0,
-                        }}>
-                          {desc}
-                        </p>
-                      </div>
-                    </a>
-                  );
-                })}
+                            {title}
+                          </p>
+                          <p style={{
+                            fontSize: Math.max(8, CARD_W * 0.054), fontWeight: 400, color: ink,
+                            opacity: 0.65, lineHeight: 1.4, margin: 0,
+                          }}>
+                            {desc}
+                          </p>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </main>
   );

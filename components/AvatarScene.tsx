@@ -108,7 +108,7 @@ export default function AvatarScene() {
       style={{
         position: "fixed",
         top: 0, left: 0,
-        width: "100vw", height: "100vh",
+        width: "100vw", height: "100dvh",
         overflow: "hidden",
         pointerEvents: "none",
         zIndex: 20,

@@ -219,13 +219,19 @@ export default function Contact() {
           .contact-nokia {
             flex: none !important;
             width: 100% !important;
-            max-height: 200px !important;
+            max-height: none !important;
             border-right: none !important;
             border-bottom: 1px solid var(--ink) !important;
-            padding: 1rem !important;
+            padding: 1.2rem !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
           }
           .contact-nokia img {
-            max-height: 160px !important;
+            width: clamp(120px, 32vw, 200px) !important;
+            height: auto !important;
+            max-height: none !important;
+            max-width: none !important;
           }
           .contact-details {
             padding: 1.2rem 1.4rem !important;

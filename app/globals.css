@@ -206,11 +206,6 @@ canvas {
     min-height: 100dvh;
   }
 
-  /* Hide 3D avatar on mobile — saves battery, prevents z-index overlay */
-  .avatar-scene {
-    display: none !important;
-  }
-
   .portfolio-root {
     height: auto;
     min-height: 100dvh;
