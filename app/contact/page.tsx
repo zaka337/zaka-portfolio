@@ -222,16 +222,17 @@ export default function Contact() {
             max-height: none !important;
             border-right: none !important;
             border-bottom: 1px solid var(--ink) !important;
-            padding: 1.2rem !important;
+            padding: 1.5rem !important;
             display: flex !important;
             justify-content: center !important;
             align-items: center !important;
           }
           .contact-nokia img {
-            width: clamp(120px, 32vw, 200px) !important;
+            width: clamp(200px, 56vw, 300px) !important;
             height: auto !important;
             max-height: none !important;
             max-width: none !important;
+            aspect-ratio: auto !important;
           }
           .contact-details {
             padding: 1.2rem 1.4rem !important;
