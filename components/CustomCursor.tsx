@@ -10,6 +10,9 @@ export default function CustomCursor() {
   const raf  = useRef<number>(0);
 
   useEffect(() => {
+    // Don't animate on touch-primary devices
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+
     const onMove = (e: MouseEvent) => {
       pos.current.x = e.clientX;
       pos.current.y = e.clientY;
@@ -17,12 +20,10 @@ export default function CustomCursor() {
     window.addEventListener("mousemove", onMove);
 
     const tick = () => {
-      // Dot follows instantly
       if (dotRef.current) {
         dotRef.current.style.transform =
           `translate(${pos.current.x}px, ${pos.current.y}px)`;
       }
-      // Ring lerps behind
       ring.current.x += (pos.current.x - ring.current.x) * 0.1;
       ring.current.y += (pos.current.y - ring.current.y) * 0.1;
       if (ringRef.current) {
@@ -41,9 +42,9 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Outer ring — soft lag */}
       <div
         ref={ringRef}
+        className="custom-cursor-ring"
         style={{
           position: "fixed",
           top: 0, left: 0,
@@ -57,9 +58,9 @@ export default function CustomCursor() {
           mixBlendMode: "multiply",
         }}
       />
-      {/* Inner dot — instant */}
       <div
         ref={dotRef}
+        className="custom-cursor-dot"
         style={{
           position: "fixed",
           top: 0, left: 0,

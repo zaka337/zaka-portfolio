@@ -71,8 +71,17 @@ function AvatarModel() {
       mouse.current.x = (e.clientX / window.innerWidth  - 0.5) * 2;
       mouse.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
     };
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      mouse.current.x = (t.clientX / window.innerWidth  - 0.5) * 2;
+      mouse.current.y = (t.clientY / window.innerHeight - 0.5) * 2;
+    };
     window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onTouch);
+    };
   }, []);
 
   useFrame(() => {
@@ -95,6 +104,7 @@ function AvatarModel() {
 export default function AvatarScene() {
   return (
     <div
+      className="avatar-scene"
       style={{
         position: "fixed",
         top: 0, left: 0,

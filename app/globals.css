@@ -21,7 +21,17 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  cursor: none;
+}
+
+/* Custom cursor — only on real pointer devices, never on touch */
+@media (hover: hover) and (pointer: fine) {
+  html, body { cursor: none; }
+  .nav-text  { cursor: none; }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .custom-cursor-ring,
+  .custom-cursor-dot { display: none !important; }
 }
 
 canvas {
@@ -105,7 +115,6 @@ canvas {
   white-space: nowrap;
 }
 
-/* Main name — dominant, intentionally huge */
 .title-huge {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 900;
@@ -117,7 +126,6 @@ canvas {
   user-select: none;
 }
 
-/* Subtitle — noticeably smaller than name */
 .title-sub {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 900;
@@ -129,7 +137,6 @@ canvas {
   user-select: none;
 }
 
-/* Nav items — clearly secondary to the title */
 .nav-item {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 700;
@@ -142,86 +149,139 @@ canvas {
   white-space: nowrap;
 }
 
-/* ─── Hover group ───────────────────────────────────────────────── */
+/* ─── Hover group (pointer devices only) ────────────────────────── */
 
-.nav-text {
-  cursor: none;
-}
-
-.nav-text .nav-item,
-.nav-text .title-huge,
-.nav-text .title-sub {
-  transition: color 0.25s ease;
-}
-
-.nav-text:hover .nav-item,
-.nav-text:hover .title-huge,
-.nav-text:hover .title-sub {
-  color: var(--ink-50);
-}
-
-/* ─── Mobile ────────────────────────────────────────────────────── */
-
-@media (max-width: 768px) {
-  html, body {
-    overflow: auto;
-    cursor: auto;
-  }
-
-  .portfolio-root {
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 6vh 6vw;
-    gap: 6vw;
-  }
-
-  /* Reset all absolute positioning on mobile */
-  .block-tl,
-  .block-tr,
-  .block-ml,
-  .block-mr,
-  .block-bl,
-  .block-br {
-    position: static;
-    transform: none;
-    text-align: left;
-    width: 100%;
-  }
-
-  .block-tr,
-  .block-mr,
-  .block-br {
-    text-align: right;
-  }
-
-  /* Avatar canvas becomes a centered fixed-height block */
-  .avatar-mobile-wrapper {
-    width: 60vw;
-    height: 60vw;
-    max-width: 320px;
-    max-height: 320px;
-    margin: 0 auto;
-  }
-
-  .title-huge {
-    font-size: clamp(2.5rem, 12vw, 5rem);
-  }
-
-  .title-sub {
-    font-size: clamp(1.2rem, 6vw, 2.5rem);
-  }
-
-  .nav-item {
-    font-size: clamp(1.2rem, 5vw, 2rem);
+@media (hover: hover) and (pointer: fine) {
+  .nav-text .nav-item,
+  .nav-text .title-huge,
+  .nav-text .title-sub {
+    transition: color 0.25s ease;
   }
 
   .nav-text:hover .nav-item,
   .nav-text:hover .title-huge,
   .nav-text:hover .title-sub {
-    color: var(--ink);
+    color: var(--ink-50);
   }
+}
+
+/* ─── About page grid collapses ─────────────────────────────────── */
+
+/* Tablet: skills go 2-column */
+@media (max-width: 1024px) {
+  .about-skills-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Mobile: everything single-column */
+@media (max-width: 768px) {
+  .about-bio-grid {
+    grid-template-columns: 1fr !important;
+    gap: 3vw !important;
+    padding: 8vh 6vw !important;
+  }
+
+  .about-skills-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .about-timeline {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Hide the big watermark year column on mobile — avoids wasted space */
+  .about-timeline > :first-child {
+    display: none;
+  }
+}
+
+/* ─── Mobile (≤768px) ───────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  html, body {
+    overflow: auto;
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  /* Hide 3D avatar on mobile — saves battery, prevents z-index overlay */
+  .avatar-scene {
+    display: none !important;
+  }
+
+  .portfolio-root {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    align-items: start;
+    padding: 6vh 6vw;
+    gap: 4vw 6vw;
+    row-gap: 6vh;
+  }
+
+  /* Name block — full width across both columns */
+  .block-tl {
+    position: static;
+    transform: none;
+    grid-column: 1 / -1;
+  }
+
+  /* Contact (top-right) */
+  .block-tr {
+    position: static;
+    transform: none;
+    text-align: right;
+    align-self: end;
+  }
+
+  /* About (mid-left) */
+  .block-ml {
+    position: static;
+    transform: none;
+    text-align: left;
+  }
+
+  /* Role (mid-right) */
+  .block-mr {
+    position: static;
+    transform: none;
+    text-align: right;
+  }
+
+  /* Projects (bottom-left) */
+  .block-bl {
+    position: static;
+    transform: none;
+    text-align: left;
+  }
+
+  /* Bottom contact — hidden on mobile (duplicate of top-right) */
+  .block-br {
+    display: none;
+  }
+
+  .title-huge {
+    font-size: clamp(3rem, 14vw, 6rem);
+  }
+
+  .title-sub {
+    font-size: clamp(1.4rem, 7vw, 3rem);
+  }
+
+  .nav-item {
+    font-size: clamp(1.3rem, 6vw, 2.5rem);
+  }
+}
+
+/* ─── Ultrawide (≥1600px) ───────────────────────────────────────── */
+
+@media (min-width: 1600px) {
+  .title-huge  { font-size: clamp(8rem, 9vw, 14rem); }
+  .title-sub   { font-size: clamp(4rem, 4.2vw, 7rem); }
+  .nav-item    { font-size: clamp(3rem, 2.8vw, 5rem); }
 }

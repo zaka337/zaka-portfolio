@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -66,8 +66,8 @@ const ROLES = [
 
 const SKILLS: { cat: string; items: string[]; wide?: boolean }[] = [
   { cat: "FRONTEND",          items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "JavaScript"], wide: true },
-  { cat: "FULL-STACK & APIs", items: ["REST APIs", "Firebase", "MongoDB", "SQL"], wide: true },
   { cat: "MOBILE",            items: ["Flutter", "Dart"] },
+  { cat: "FULL-STACK & APIs", items: ["REST APIs", "Firebase", "MongoDB", "SQL"], wide: true },
   { cat: "AUTOMATION & AI",   items: ["n8n Workflows", "AI-Assisted Dev"] },
   { cat: "DEPLOYMENT",        items: ["Vercel", "Netlify", "Git / GitHub", "Docker"] },
   { cat: "QA & TESTING",      items: ["Postman / Newman", "Selenium WebDriver", "Apache JMeter"], wide: true },
@@ -111,11 +111,12 @@ const FACTS = [
 
 const T: React.CSSProperties = { fontFamily: "'Helvetica Neue', Arial, sans-serif" };
 
-function FadeIn({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+function FadeIn({ children, delay = 0, style, className }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
   const [ref, inView] = useInView();
   return (
     <div
       ref={ref}
+      className={className}
       style={{
         opacity: inView ? 1 : 0,
         transform: inView ? "translateY(0)" : "translateY(32px)",
@@ -269,7 +270,7 @@ export default function About() {
       </section>
 
       {/* BIO */}
-      <section style={{
+      <section className="about-bio-grid" style={{
         padding: "12vh 8vw",
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -336,7 +337,7 @@ export default function About() {
           </h2>
         </FadeIn>
 
-        <div style={{
+        <div className="about-skills-grid" style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
           gap: "1px",
@@ -344,7 +345,7 @@ export default function About() {
           border: "1px solid rgba(13,13,13,0.12)",
         }}>
           {SKILLS.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.07} style={{ gridColumn: s.wide ? "span 2" : undefined }}>
+            <FadeIn key={i} delay={i * 0.07} className={s.wide ? "skill-wide" : undefined}>
               <div style={{
                 backgroundColor: "var(--paper)",
                 padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
@@ -401,7 +402,7 @@ export default function About() {
         <div>
           {TIMELINE.map((item, i) => (
             <FadeIn key={i} delay={i * 0.1}>
-              <div style={{
+              <div className="about-timeline" style={{
                 display: "grid",
                 gridTemplateColumns: "120px 1fr",
                 gap: "3vw",
@@ -580,6 +581,7 @@ export default function About() {
       </section>
 
       <style>{`
+        .skill-wide { grid-column: span 2; }
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50%       { opacity: 0; }
@@ -592,6 +594,7 @@ export default function About() {
         @media (max-width: 768px) {
           .about-bio-grid    { grid-template-columns: 1fr !important; }
           .about-skills-grid { grid-template-columns: 1fr !important; }
+          .skill-wide        { grid-column: span 1 !important; }
           .about-timeline    { display: block !important; }
         }
       `}</style>
