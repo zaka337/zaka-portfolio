@@ -111,7 +111,7 @@ export default function AvatarScene() {
         width: "100vw", height: "100dvh",
         overflow: "hidden",
         pointerEvents: "none",
-        zIndex: 20,
+        zIndex: 1,
         backgroundColor: "transparent",
       }}
     >

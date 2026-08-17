@@ -106,7 +106,7 @@ export default function Projects() {
   const CARD_H      = Math.round(CARD_W * 0.78);
   const PERSPECTIVE = Math.round(BASE_RADIUS * 4.8);
   // Scale the whole 3D scene on narrow screens so depth is preserved without overflow
-  const carouselScale = isMobile ? Math.min(1, vp.w / 580) : 1;
+  const carouselScale = isMobile ? Math.min(1, vp.w / 440) : 1;
 
   /* ── GitHub fetch ──────────────────────────────────────────────── */
   useEffect(() => {
