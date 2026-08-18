@@ -109,6 +109,38 @@ const FACTS = [
   { n: "05", text: "1px off? Can't unsee it. Won't ignore it.", tag: "TRUTH"      },
 ];
 
+const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+function scrambleChar(c: string): string {
+  if (" .'/@&-.".includes(c)) return c;
+  return ALPHA[Math.floor(Math.random() * ALPHA.length)];
+}
+
+function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
+  const [out, setOut] = useState(() => text.split("").map(scrambleChar).join(""));
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const start = performance.now();
+      const DURATION = 700;
+      const tick = (now: number) => {
+        const progress = Math.min((now - start) / DURATION, 1);
+        const resolved = Math.floor(progress * text.length);
+        setOut(
+          text.slice(0, resolved) +
+          text.slice(resolved).split("").map(scrambleChar).join("")
+        );
+        if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    }, delay);
+    return () => { clearTimeout(timer); cancelAnimationFrame(rafRef.current); };
+  }, [text, delay]);
+
+  return <>{out}</>;
+}
+
 const T: React.CSSProperties = { fontFamily: "'Helvetica Neue', Arial, sans-serif" };
 
 function FadeIn({ children, delay = 0, style, className }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
@@ -212,7 +244,9 @@ export default function About() {
             textTransform: "uppercase",
             marginBottom: "2rem",
           }}>
-            ZAKA<br />ULLAH<br />WAHEED.
+            <ScrambleText text="ZAKA" delay={80} /><br />
+            <ScrambleText text="ULLAH" delay={260} /><br />
+            <ScrambleText text="WAHEED." delay={440} />
           </h1>
 
           <div style={{
