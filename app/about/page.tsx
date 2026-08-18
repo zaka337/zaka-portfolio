@@ -76,13 +76,13 @@ const SKILLS: { cat: string; items: string[]; wide?: boolean }[] = [
 const TIMELINE = [
   {
     year: "2026",
-    title: "3D Portfolio & Spatial UI",
-    desc: "Built this immersive 3D portfolio: cursor-tracking avatar, floating carousel, scroll-animated about page. Pushing what browsers can actually do.",
+    title: "Zong 5G, QA with Zaka & 3D Portfolio",
+    desc: "QA Automation Intern at Zong 5G. Shipped QA with Zaka — a full-stack educational platform built end-to-end. Then built this immersive 3D portfolio: cursor-tracking avatar, floating carousel, scroll-animated pages. Pushing what browsers can actually do.",
   },
   {
     year: "2025",
-    title: "Internships & Production Launches",
-    desc: "Frontend Dev Intern at Apexify Technologies. QA Automation Intern at Zong 4G/5G. Independently shipped QA with Zaka (full-stack educational platform) and an n8n-powered website health scanner.",
+    title: "Apexify Internship & Workflow Automation",
+    desc: "Frontend Dev Intern at Apexify Technologies — built production-ready React interfaces. Independently shipped an n8n-powered website health scanner and deepened Next.js for production-scale work.",
   },
   {
     year: "2024",
