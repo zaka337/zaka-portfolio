@@ -77,12 +77,12 @@ const TIMELINE = [
   {
     year: "2026",
     title: "Zong 5G, QA with Zaka & 3D Portfolio",
-    desc: "QA Automation Intern at Zong 5G. Shipped QA with Zaka — a full-stack educational platform built end-to-end. Then built this immersive 3D portfolio: cursor-tracking avatar, floating carousel, scroll-animated pages. Pushing what browsers can actually do.",
+    desc: "QA Automation Intern at Zong 5G. Shipped QA with Zaka — a full-stack educational platform built end-to-end. Built an n8n-powered website health scanner. Then built this immersive 3D portfolio: cursor-tracking avatar, floating carousel, scroll-animated pages.",
   },
   {
     year: "2025",
-    title: "Apexify Internship & Workflow Automation",
-    desc: "Frontend Dev Intern at Apexify Technologies — built production-ready React interfaces. Independently shipped an n8n-powered website health scanner and deepened Next.js for production-scale work.",
+    title: "Apexify Internship & Production Work",
+    desc: "Frontend Dev Intern at Apexify Technologies — built production-ready React interfaces. Deepened Next.js for production-scale work and sharpened full-stack integration skills.",
   },
   {
     year: "2024",
