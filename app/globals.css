@@ -255,9 +255,12 @@ canvas {
     text-align: left;
   }
 
-  /* Bottom contact — hidden on mobile (duplicate of top-right) */
+  /* Bottom contact — links to /contact-me (different from SAY HI) */
   .block-br {
-    display: none;
+    position: static;
+    transform: none;
+    text-align: right;
+    grid-column: 2;
   }
 
   .title-huge {

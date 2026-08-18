@@ -135,11 +135,11 @@ export default function Home() {
         <p className="nav-item">PROJECTS</p>
       </Link>
 
-      {/* BOTTOM RIGHT — contact */}
-      <div className="block-br nav-text">
+      {/* BOTTOM RIGHT — contact me page */}
+      <Link href="/contact-me" className="block-br nav-text" style={{ textDecoration: "none" }}>
         <p className="nav-item">CONTACT</p>
         <p className="nav-item">ME</p>
-      </div>
+      </Link>
     </main>
   );
 }
