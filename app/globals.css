@@ -271,6 +271,17 @@ canvas {
   .nav-item {
     font-size: clamp(1.3rem, 6vw, 2.5rem);
   }
+
+  /* Paper-toned halo so dark nav text stays legible over the dark avatar cap */
+  .nav-item,
+  .title-huge,
+  .title-sub,
+  .label {
+    text-shadow:
+      0 0 18px var(--paper),
+      0 0 10px var(--paper),
+      0 0 5px  var(--paper);
+  }
 }
 
 /* ─── Ultrawide (≥1600px) ───────────────────────────────────────── */
