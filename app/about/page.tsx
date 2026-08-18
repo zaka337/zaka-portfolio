@@ -273,7 +273,7 @@ export default function About() {
         </div>
 
         {/* SCROLL INDICATOR */}
-        <div style={{
+        <div className="about-scroll-hint" style={{
           position: "absolute",
           bottom: "5vh",
           left: "50%",
@@ -630,6 +630,11 @@ export default function About() {
           .about-skills-grid { grid-template-columns: 1fr !important; }
           .skill-wide        { grid-column: span 1 !important; }
           .about-timeline    { display: block !important; }
+          .about-scroll-hint { display: none !important; }
+        }
+        /* Also hide on very short viewports where it would crowd the name */
+        @media (max-height: 720px) {
+          .about-scroll-hint { display: none !important; }
         }
       `}</style>
     </main>
