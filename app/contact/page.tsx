@@ -298,8 +298,7 @@ export default function Contact() {
             padding: "1.5rem" }}>
             <img src="/mobile.jpg" alt="Nokia 3310"
               style={{ maxHeight: "100%", maxWidth: "100%",
-                objectFit: "contain", display: "block",
-                aspectRatio: "200 / 460" }} />
+                objectFit: "contain", display: "block" }} />
           </div>
 
           {/* Right — contact details */}
