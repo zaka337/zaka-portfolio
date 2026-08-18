@@ -379,7 +379,7 @@ export default function About() {
           border: "1px solid rgba(13,13,13,0.12)",
         }}>
           {SKILLS.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.07} className={s.wide ? "skill-wide" : undefined}>
+            <FadeIn key={i} delay={i * 0.07} className={s.wide ? "skill-wide" : undefined} style={{ backgroundColor: "var(--paper)", overflow: "hidden" }}>
               <div style={{
                 backgroundColor: "var(--paper)",
                 padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
