@@ -76,6 +76,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
+
+  verification: {
+    google: "DKB_MhzU-pvDYGsvo2EjCQA0mimMBQFvWqICbRasY1Q",
+  },
 };
 
 const jsonLd = {
