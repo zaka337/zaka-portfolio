@@ -200,10 +200,10 @@ canvas {
 /* ─── Mobile (≤768px) ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  /* Avatar in centre band; chin (~65dvh) clears the bottom nav row (~72dvh) */
+  /* Avatar taller — cap visible from ~54dvh, chin ~68dvh, clears nav rows */
   .avatar-scene {
-    top: 40dvh !important;
-    height: 40dvh !important;
+    top: 35dvh !important;
+    height: 45dvh !important;
   }
 
   html, body {
@@ -281,10 +281,61 @@ canvas {
     font-size: clamp(1.3rem, 6vw, 2.5rem);
   }
 
-  /* Paper-toned halo so dark nav text stays legible over the dark avatar cap */
+  /* Bordered card on every nav block */
+  .block-tr,
+  .block-ml,
+  .block-mr,
+  .block-bl,
+  .block-br {
+    background: rgba(241, 237, 226, 0.88);
+    border: 1px solid rgba(13, 13, 13, 0.22);
+    border-radius: 6px;
+    padding: 10px 14px 22px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    position: relative;
+    transition: background 0.15s;
+  }
+
+  /* Arrow badge on navigable cards (not role scrambler) */
+  .block-tr::after,
+  .block-ml::after,
+  .block-bl::after,
+  .block-br::after {
+    content: '\2197';
+    position: absolute;
+    bottom: 7px;
+    right: 10px;
+    font-size: 0.62rem;
+    font-weight: 400;
+    color: rgba(13, 13, 13, 0.28);
+    line-height: 1;
+    pointer-events: none;
+    transition: color 0.15s;
+  }
+
+  /* Tap feedback */
+  .block-tr:active,
+  .block-ml:active,
+  .block-bl:active,
+  .block-br:active {
+    background: rgba(13, 13, 13, 0.07);
+  }
+
+  .block-tr:active::after,
+  .block-ml:active::after,
+  .block-bl:active::after,
+  .block-br:active::after {
+    color: rgba(13, 13, 13, 0.6);
+  }
+
+  /* Text shadow is redundant with opaque card background — keep only for block-tl */
   .nav-item,
+  .title-sub {
+    text-shadow: none;
+  }
+
   .title-huge,
-  .title-sub,
   .label {
     text-shadow:
       0 0 18px var(--paper),

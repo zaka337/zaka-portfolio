@@ -17,7 +17,7 @@ export default function CustomCursor() {
       pos.current.x = e.clientX;
       pos.current.y = e.clientY;
     };
-    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousemove", onMove, { passive: true });
 
     const tick = () => {
       if (dotRef.current) {

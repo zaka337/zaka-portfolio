@@ -1,130 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import Link from "next/link";
-
-/* ─── Nokia 3310 SVG ──────────────────────────────────────────── */
-function NokiaSVG() {
-  // Pixel art face on LCD screen
-  // 1=skin(light green), 2=cap(dark), 3=feature(eyes/beard,very dark), 0=bg
-  const pixels = [
-    [0,0,2,2,2,2,2,2,2,0,0],
-    [0,2,2,2,2,2,2,2,2,2,0],
-    [2,2,2,2,2,2,2,2,2,2,2],
-    [2,2,2,2,2,2,2,2,2,2,2],
-    [0,0,1,1,1,1,1,1,1,0,0],
-    [0,0,1,3,1,1,1,3,1,0,0],
-    [0,0,1,1,1,1,1,1,1,0,0],
-    [0,0,1,1,3,1,3,1,1,0,0],
-    [0,0,1,1,1,1,1,1,1,0,0],
-    [0,0,1,3,3,3,3,3,1,0,0],
-    [0,0,1,3,1,1,1,3,1,0,0],
-    [0,0,0,1,1,1,1,1,0,0,0],
-  ];
-
-  const colorMap: Record<number, string> = {
-    1: "#7aaa65",   // skin
-    2: "#1e3018",   // cap
-    3: "#0e1a0c",   // features (eyes, beard)
-  };
-
-  const cellSize = 9;
-  const startX = 50;
-  const startY = 60;
-
-  return (
-    <svg viewBox="0 0 200 460" xmlns="http://www.w3.org/2000/svg"
-      style={{ width: "100%", maxWidth: 240, height: "auto", display: "block" }}>
-
-      {/* Phone body */}
-      <rect x="15" y="8" width="170" height="444" rx="36" ry="36" fill="#1b1f3b" />
-      {/* Inner body highlight */}
-      <rect x="20" y="13" width="160" height="434" rx="32" ry="32" fill="#1e2245" />
-
-      {/* Speaker grille */}
-      {[0,1,2,3,4].map(i => (
-        <rect key={i} x={75 + i*10} y={24} width={5} height={10} rx={2} fill="#111422" />
-      ))}
-
-      {/* Screen bezel */}
-      <rect x="28" y="44" width="144" height="154" rx="10" ry="10" fill="#0d1020" />
-      {/* LCD screen */}
-      <rect x="34" y="50" width="132" height="142" rx="6" ry="6" fill="#4a6e3c" />
-
-      {/* Screen scanlines for retro effect */}
-      {Array.from({ length: 14 }).map((_, i) => (
-        <rect key={i} x="34" y={50 + i * 10} width="132" height="5"
-          fill="rgba(0,0,0,0.04)" />
-      ))}
-
-      {/* "CALL ME" header text */}
-      <rect x="44" y="52" width="112" height="18" fill="#3a5a2e" />
-      <text x="100" y="65" textAnchor="middle"
-        fontFamily="'Courier New', monospace" fontSize="10" fontWeight="bold"
-        fill="#c8e8b0" letterSpacing="3">CALL ME</text>
-
-      {/* Pixel art face */}
-      {pixels.map((row, ri) =>
-        row.map((cell, ci) =>
-          cell !== 0 ? (
-            <rect key={`${ri}-${ci}`}
-              x={startX + ci * cellSize}
-              y={startY + ri * cellSize}
-              width={cellSize - 1}
-              height={cellSize - 1}
-              fill={colorMap[cell]}
-            />
-          ) : null
-        )
-      )}
-
-      {/* NOKIA logo */}
-      <text x="100" y="208" textAnchor="middle"
-        fontFamily="'Helvetica Neue', Arial, sans-serif" fontSize="10"
-        fontWeight="800" fill="#6a7ab0" letterSpacing="5">NOKIA</text>
-
-      {/* Center nav pill */}
-      <rect x="60" y="218" width="80" height="26" rx="13" fill="#151830" />
-      <polygon points="78,231 86,225 86,237" fill="#6a7ab0" />
-      <polygon points="122,231 114,225 114,237" fill="#6a7ab0" />
-      <circle cx="100" cy="231" r="6" fill="#6a7ab0" />
-
-      {/* Call button */}
-      <rect x="28" y="252" width="60" height="28" rx="14" fill="#1a5c2e" />
-      <text x="58" y="271" textAnchor="middle"
-        fontFamily="monospace" fontSize="9" fontWeight="bold" fill="#8de8aa">CALL</text>
-
-      {/* End button */}
-      <rect x="112" y="252" width="60" height="28" rx="14" fill="#5c1a1a" />
-      <text x="142" y="271" textAnchor="middle"
-        fontFamily="monospace" fontSize="9" fontWeight="bold" fill="#e88a8a">END</text>
-
-      {/* Number keys 1-9 */}
-      {["1","2","3","4","5","6","7","8","9"].map((k, i) => {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
-        return (
-          <g key={k}>
-            <circle cx={52 + col * 48} cy={298 + row * 44} r={18} fill="#151830" />
-            <text x={52 + col * 48} y={303 + row * 44} textAnchor="middle"
-              fontFamily="'Helvetica Neue', monospace" fontSize="13" fontWeight="bold"
-              fill="#8890c8" dominantBaseline="middle">{k}</text>
-          </g>
-        );
-      })}
-
-      {/* Bottom row: * 0 # */}
-      {["*","0","#"].map((k, i) => (
-        <g key={k}>
-          <circle cx={52 + i * 48} cy={430} r={18} fill="#151830" />
-          <text x={52 + i * 48} y={435} textAnchor="middle"
-            fontFamily="monospace" fontSize="13" fontWeight="bold"
-            fill="#8890c8" dominantBaseline="middle">{k}</text>
-        </g>
-      ))}
-    </svg>
-  );
-}
+import Image from "next/image";
 
 /* ─── Contact row ─────────────────────────────────────────────── */
 const rowText: React.CSSProperties = {
@@ -168,10 +46,13 @@ function Row({ label, value, href, onClick }: {
 
 function CopyEmailRow() {
   const [copied, setCopied] = React.useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
   const copy = () => {
     navigator.clipboard.writeText("zakas2379@gmail.com");
+    clearTimeout(timerRef.current);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    timerRef.current = setTimeout(() => setCopied(false), 2000);
   };
   return (
     <div style={{ paddingBottom: "0.9rem", marginBottom: "0.9rem",
@@ -296,9 +177,10 @@ export default function Contact() {
           <div className="contact-nokia" style={{ flex: "0 0 46%", borderRight: "1px solid var(--ink)",
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "1.5rem" }}>
-            <img src="/mobile.jpg" alt="Nokia 3310"
+            <Image src="/mobile.jpg" alt="Nokia 3310"
+              width={1024} height={1024} priority
               style={{ maxHeight: "100%", maxWidth: "100%",
-                objectFit: "contain", display: "block" }} />
+                objectFit: "contain", display: "block", width: "auto", height: "auto" }} />
           </div>
 
           {/* Right — contact details */}

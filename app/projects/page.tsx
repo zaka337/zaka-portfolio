@@ -85,6 +85,7 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
   const [vp, setVp]           = useState({ w: 1280, h: 800 });
   const ringRef  = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLElement[]>([]);
   const rotRef   = useRef(0);
   const rafRef   = useRef<number>(0);
   const ctrlRef  = useRef({ auto: true, dragging: false, startX: 0, startRot: 0 });
@@ -133,12 +134,17 @@ export default function Projects() {
     const ctrl = ctrlRef.current;
     let autoTimer: ReturnType<typeof setTimeout>;
 
+    // Cache card elements once — avoids a live DOM query every rAF tick
+    requestAnimationFrame(() => {
+      cardsRef.current = Array.from(ring.querySelectorAll<HTMLElement>("[data-ci]"));
+    });
+
     const tick = () => {
       if (ctrl.auto && !ctrl.dragging) rotRef.current += AUTO_SPEED;
       const deg = (rotRef.current * 180) / Math.PI;
       ring.style.transform = `rotateX(-10deg) rotateY(${deg}deg)`;
 
-      ring.querySelectorAll<HTMLElement>("[data-ci]").forEach(card => {
+      cardsRef.current.forEach(card => {
         const i    = parseInt(card.getAttribute("data-ci")!);
         const eff  = (i / n) * Math.PI * 2 + rotRef.current;
         const cosA = Math.cos(eff);
@@ -190,7 +196,7 @@ export default function Projects() {
     };
 
     window.addEventListener("mousedown",  onDown);
-    window.addEventListener("mousemove",  onMove);
+    window.addEventListener("mousemove",  onMove, { passive: true });
     window.addEventListener("mouseup",    onUp);
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove",  onTouchMove,  { passive: true });

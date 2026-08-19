@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 
 /* ─── Scramble animation ────────────────────────────────────────── */
@@ -69,12 +69,15 @@ const ROWS = [
 export default function ContactMe() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => { clearTimeout(copyTimer.current); }, []);
 
-  const copy = () => {
+  const copy = useCallback(() => {
     navigator.clipboard.writeText("zakas2379@gmail.com");
+    clearTimeout(copyTimer.current);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
-  };
+    copyTimer.current = setTimeout(() => setCopied(false), 2200);
+  }, []);
 
   return (
     <main style={{

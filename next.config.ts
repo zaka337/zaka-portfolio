@@ -1,5 +1,25 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/Avatar.glb",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/:path*\\.(:ext(jpg|jpeg|png|gif|svg|ico|webp|avif))",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
+  },
+};
 
 export default nextConfig;

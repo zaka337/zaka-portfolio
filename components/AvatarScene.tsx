@@ -76,7 +76,7 @@ function AvatarModel() {
       mouse.current.x = (t.clientX / window.innerWidth  - 0.5) * 2;
       mouse.current.y = (t.clientY / window.innerHeight - 0.5) * 2;
     };
-    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("touchmove", onTouch, { passive: true });
     return () => {
       window.removeEventListener("mousemove", onMove);
@@ -100,6 +100,8 @@ function AvatarModel() {
     </group>
   );
 }
+
+useGLTF.preload("/Avatar.glb");
 
 export default function AvatarScene() {
   return (
