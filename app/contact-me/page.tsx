@@ -69,7 +69,7 @@ const ROWS = [
 export default function ContactMe() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const copyTimer = useRef<ReturnType<typeof setTimeout>>();
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => { clearTimeout(copyTimer.current); }, []);
 
   const copy = useCallback(() => {

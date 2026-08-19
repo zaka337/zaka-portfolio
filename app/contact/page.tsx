@@ -46,7 +46,7 @@ function Row({ label, value, href, onClick }: {
 
 function CopyEmailRow() {
   const [copied, setCopied] = React.useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => { clearTimeout(timerRef.current); }, []);
   const copy = () => {
     navigator.clipboard.writeText("zakas2379@gmail.com");
