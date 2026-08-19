@@ -200,10 +200,10 @@ canvas {
 /* ─── Mobile (≤768px) ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  /* Confine avatar to middle band — nav items above 38dvh and below 90dvh stay clear */
+  /* Avatar in centre band; chin (~65dvh) clears the bottom nav row (~72dvh) */
   .avatar-scene {
-    top: 38dvh !important;
-    height: 52dvh !important;
+    top: 40dvh !important;
+    height: 40dvh !important;
   }
 
   html, body {
@@ -232,12 +232,12 @@ canvas {
     grid-column: 1 / -1;
   }
 
-  /* Contact (top-right) */
+  /* Contact (top-right) — start not end, otherwise it drops into the avatar zone */
   .block-tr {
     position: static;
     transform: none;
     text-align: right;
-    align-self: end;
+    align-self: start;
   }
 
   /* About (mid-left) */
