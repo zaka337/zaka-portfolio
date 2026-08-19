@@ -7,23 +7,25 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Zaka Ullah Waheed — Full-Stack Developer",
-    template: "%s | Zaka Ullah Waheed",
+    default: "Zaka Ullah Waheed — Full-Stack Developer Portfolio",
+    template: "%s | Zaka Ullah Waheed Portfolio",
   },
   description:
-    "Full-Stack Developer from Pakistan building production-grade web apps, mobile apps, and QA automation systems with React, Next.js, Flutter, and TypeScript. Open to remote work.",
+    "Zaka Ullah Waheed's developer portfolio — Full-Stack Developer from Pakistan building production-grade web apps, mobile apps, and QA automation with React, Next.js, Flutter, and TypeScript. Open to remote work.",
   keywords: [
+    "Zaka Ullah Waheed",
+    "Zaka portfolio",
+    "Zaka developer portfolio",
     "Full-Stack Developer Pakistan",
-    "React Developer",
+    "React Developer portfolio",
     "Next.js Developer",
     "Flutter Developer",
     "QA Automation Engineer",
     "TypeScript Developer",
     "Firebase Developer",
-    "Zaka Ullah Waheed",
     "hire developer Pakistan",
-    "remote developer",
-    "freelance developer",
+    "remote developer portfolio",
+    "freelance developer Pakistan",
     "n8n workflows",
     "Selenium testing",
   ],
@@ -37,9 +39,9 @@ export const metadata: Metadata = {
     locale: "en_PK",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "Zaka Ullah Waheed — Full-Stack Developer",
+    title: "Zaka Ullah Waheed — Full-Stack Developer Portfolio",
     description:
-      "Full-Stack Developer from Pakistan. React, Next.js, Flutter, QA Automation. Open to remote work.",
+      "Zaka Ullah Waheed's portfolio — Full-Stack Developer from Pakistan. React, Next.js, Flutter, QA Automation. Open to remote work.",
     images: [
       {
         url: "/opengraph-image",
@@ -52,9 +54,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Zaka Ullah Waheed — Full-Stack Developer",
+    title: "Zaka Ullah Waheed — Full-Stack Developer Portfolio",
     description:
-      "Full-Stack Developer from Pakistan. React, Next.js, Flutter, QA Automation. Open to remote work.",
+      "Zaka Ullah Waheed's portfolio — Full-Stack Developer from Pakistan. React, Next.js, Flutter, QA Automation. Open to remote work.",
     images: ["/opengraph-image"],
     creator: "@notxzaka",
   },
@@ -83,9 +85,9 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: SITE_NAME,
+      name: `${SITE_NAME} Portfolio`,
       description:
-        "Portfolio of Zaka Ullah Waheed — Full-Stack Developer from Pakistan",
+        "Zaka Ullah Waheed's developer portfolio — Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation.",
       inLanguage: "en-PK",
     },
     {
