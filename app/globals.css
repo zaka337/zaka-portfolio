@@ -200,10 +200,10 @@ canvas {
 /* ─── Mobile (≤768px) ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  /* Push avatar into lower 65% — top 35% stays clear for nav text */
+  /* Confine avatar to middle band — nav items above 38dvh and below 90dvh stay clear */
   .avatar-scene {
-    top: 35dvh !important;
-    height: 65dvh !important;
+    top: 38dvh !important;
+    height: 52dvh !important;
   }
 
   html, body {

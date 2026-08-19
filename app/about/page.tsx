@@ -379,33 +379,36 @@ export default function About() {
           border: "1px solid rgba(13,13,13,0.12)",
         }}>
           {SKILLS.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.07} className={s.wide ? "skill-wide" : undefined} style={{ backgroundColor: "var(--paper)", overflow: "hidden" }}>
-              <div style={{
-                backgroundColor: "var(--paper)",
-                padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
-                height: "100%",
-                boxSizing: "border-box",
-              }}>
-                <p style={{
-                  ...T, fontSize: "clamp(0.45rem, 0.6vw, 0.56rem)", fontWeight: 700,
-                  letterSpacing: "0.22em", color: "var(--ink-50)",
-                  textTransform: "uppercase", marginBottom: "1rem",
+            <div key={i} className={s.wide ? "skill-wide" : undefined}
+              style={{ overflow: "hidden", backgroundColor: "var(--paper)" }}>
+              <FadeIn delay={i * 0.07} style={{ height: "100%" }}>
+                <div style={{
+                  backgroundColor: "var(--paper)",
+                  padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
+                  height: "100%",
+                  boxSizing: "border-box",
                 }}>
-                  {s.cat}
-                </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                  {s.items.map(item => (
-                    <span key={item} style={{
-                      ...T, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", fontWeight: 700,
-                      color: "var(--ink)", letterSpacing: "-0.01em",
-                    }}>
-                      {item}
-                      <span style={{ color: "var(--ink-50)", marginLeft: 8 }}>{'·'}</span>
-                    </span>
-                  ))}
+                  <p style={{
+                    ...T, fontSize: "clamp(0.45rem, 0.6vw, 0.56rem)", fontWeight: 700,
+                    letterSpacing: "0.22em", color: "var(--ink-50)",
+                    textTransform: "uppercase", marginBottom: "1rem",
+                  }}>
+                    {s.cat}
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    {s.items.map(item => (
+                      <span key={item} style={{
+                        ...T, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", fontWeight: 700,
+                        color: "var(--ink)", letterSpacing: "-0.01em",
+                      }}>
+                        {item}
+                        <span style={{ color: "var(--ink-50)", marginLeft: 8 }}>{'·'}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </FadeIn>
+              </FadeIn>
+            </div>
           ))}
         </div>
       </section>
