@@ -42,37 +42,9 @@ export default function CustomCursor() {
 
   return (
     <>
-      <div
-        ref={ringRef}
-        className="custom-cursor-ring"
-        style={{
-          position: "fixed",
-          top: 0, left: 0,
-          width: 38, height: 38,
-          marginLeft: -19, marginTop: -19,
-          border: "1.5px solid var(--ink)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-          zIndex: 9999,
-          willChange: "transform",
-          mixBlendMode: "multiply",
-        }}
-      />
-      <div
-        ref={dotRef}
-        className="custom-cursor-dot"
-        style={{
-          position: "fixed",
-          top: 0, left: 0,
-          width: 7, height: 7,
-          marginLeft: -3.5, marginTop: -3.5,
-          backgroundColor: "var(--ink)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-          zIndex: 9999,
-          willChange: "transform",
-        }}
-      />
+      {/* Size, border, transition all in globals.css — inline only for position */}
+      <div ref={ringRef} className="custom-cursor-ring" />
+      <div ref={dotRef}  className="custom-cursor-dot"  />
     </>
   );
 }

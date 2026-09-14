@@ -15,49 +15,92 @@ function useScrollUnlock() {
   }, []);
 }
 
-function useTypewriter(phrases: string[], speed = 72, pause = 2200) {
-  const [text, setText] = useState("");
-  const [phraseIdx, setPhraseIdx] = useState(0);
-  const [charIdx, setCharIdx] = useState(0);
-  const [deleting, setDeleting] = useState(false);
+/* ─── Typewriter ────────────────────────────────────────────────── *
+ * Drives text via direct DOM mutation — zero setState calls per tick.
+ * ─────────────────────────────────────────────────────────────────── */
+function Typewriter({ phrases, speed = 72, pause = 2200 }: {
+  phrases: string[];
+  speed?: number;
+  pause?: number;
+}) {
+  const spanRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const current = phrases[phraseIdx];
-    if (!deleting && charIdx === current.length) {
-      const t = setTimeout(() => setDeleting(true), pause);
-      return () => clearTimeout(t);
-    }
-    if (deleting && charIdx === 0) {
-      setDeleting(false);
-      setPhraseIdx(i => (i + 1) % phrases.length);
-      return;
-    }
-    const t = setTimeout(() => {
-      setText(current.slice(0, charIdx + (deleting ? -1 : 1)));
-      setCharIdx(i => i + (deleting ? -1 : 1));
-    }, deleting ? speed * 0.5 : speed);
-    return () => clearTimeout(t);
-  }, [charIdx, deleting, phraseIdx, phrases, speed, pause]);
+    const el = spanRef.current;
+    if (!el) return;
 
-  return text;
+    let phraseIdx = 0;
+    let charIdx   = 0;
+    let deleting  = false;
+    let timerId: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      const current = phrases[phraseIdx];
+
+      if (!deleting && charIdx === current.length) {
+        timerId = setTimeout(() => { deleting = true; tick(); }, pause);
+        return;
+      }
+      if (deleting && charIdx === 0) {
+        deleting  = false;
+        phraseIdx = (phraseIdx + 1) % phrases.length;
+        timerId   = setTimeout(tick, speed);
+        return;
+      }
+
+      charIdx      += deleting ? -1 : 1;
+      el.textContent = phrases[phraseIdx].slice(0, charIdx);
+      timerId = setTimeout(tick, deleting ? speed * 0.5 : speed);
+    };
+
+    timerId = setTimeout(tick, speed);
+    return () => clearTimeout(timerId);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <span ref={spanRef} />;
 }
 
-function useInView(threshold = 0.15) {
+/* ─── Shared IntersectionObserver ────────────────────────────────── *
+ * One IO instance for all Reveal/FadeIn elements on this page
+ * instead of one per component.
+ * ─────────────────────────────────────────────────────────────────── */
+const revealCallbacks = new WeakMap<Element, () => void>();
+let sharedRevealIO: IntersectionObserver | null = null;
+
+function ensureRevealIO(): IntersectionObserver | null {
+  if (typeof IntersectionObserver === "undefined") return null;
+  if (!sharedRevealIO) {
+    sharedRevealIO = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          revealCallbacks.get(entry.target)?.();
+          sharedRevealIO?.unobserve(entry.target);
+          revealCallbacks.delete(entry.target);
+        });
+      },
+      { threshold: 0.15 }
+    );
+  }
+  return sharedRevealIO;
+}
+
+function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
+
   useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setInView(true);
-          obs.disconnect();
-        }
-      },
-      { threshold }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [threshold]);
+    const el = ref.current;
+    const io = ensureRevealIO();
+    if (!el || !io) return;
+    revealCallbacks.set(el, () => setInView(true));
+    io.observe(el);
+    return () => {
+      io.unobserve(el);
+      revealCallbacks.delete(el);
+    };
+  }, []);
+
   return [ref, inView] as const;
 }
 
@@ -122,34 +165,40 @@ function scrambleChar(c: string): string {
 }
 
 function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
-  const [out, setOut] = useState(() => text.split("").map(scrambleChar).join(""));
-  const rafRef = useRef<number>(0);
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const rafRef  = useRef<number>(0);
 
   useEffect(() => {
+    const el = spanRef.current;
+    if (!el) return;
+    el.textContent = text.split("").map(scrambleChar).join("");
+
     const timer = setTimeout(() => {
-      const start = performance.now();
+      const start    = performance.now();
       const DURATION = 700;
       const tick = (now: number) => {
         const progress = Math.min((now - start) / DURATION, 1);
         const resolved = Math.floor(progress * text.length);
-        setOut(
-          text.slice(0, resolved) +
-          text.slice(resolved).split("").map(scrambleChar).join("")
-        );
+        el.textContent = text.slice(0, resolved) + text.slice(resolved).split("").map(scrambleChar).join("");
         if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+        else el.textContent = text;
       };
       rafRef.current = requestAnimationFrame(tick);
     }, delay);
-    return () => { clearTimeout(timer); cancelAnimationFrame(rafRef.current); };
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(rafRef.current);
+      el.textContent = text; // reset so Strict Mode remount finds real text
+    };
   }, [text, delay]);
 
-  return <>{out}</>;
+  return <span ref={spanRef} suppressHydrationWarning>{text}</span>;
 }
 
 const T: React.CSSProperties = { fontFamily: "'Helvetica Neue', Arial, sans-serif" };
 
 function FadeIn({ children, delay = 0, style, className }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
-  const [ref, inView] = useInView();
+  const [ref, inView] = useReveal();
   return (
     <div
       ref={ref}
@@ -168,7 +217,6 @@ function FadeIn({ children, delay = 0, style, className }: { children: React.Rea
 
 export default function About() {
   useScrollUnlock();
-  const role = useTypewriter(ROLES);
 
   return (
     <main style={{ backgroundColor: "var(--paper)", minHeight: "100vh", overflowX: "hidden" }}>
@@ -265,7 +313,7 @@ export default function About() {
             alignItems: "center",
             gap: "0.5rem",
           }}>
-            {role}
+            <Typewriter phrases={ROLES} />
             <span style={{
               display: "inline-block",
               width: 3,

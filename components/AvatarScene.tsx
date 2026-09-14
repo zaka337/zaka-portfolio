@@ -11,8 +11,9 @@ function AvatarModel() {
   const headBone    = useRef<THREE.Object3D | null>(null);
   const headRestRot = useRef({ x: 0, y: 0 });
   const { camera, gl } = useThree();
-  const mouse  = useRef({ x: 0, y: 0 });
-  const target = useRef({ x: 0, y: 0 });
+  const mouse   = useRef({ x: 0, y: 0 });
+  const target  = useRef({ x: 0, y: 0 });
+  const paused  = useRef(false);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -76,15 +77,19 @@ function AvatarModel() {
       mouse.current.x = (t.clientX / window.innerWidth  - 0.5) * 2;
       mouse.current.y = (t.clientY / window.innerHeight - 0.5) * 2;
     };
+    const onVisibility = () => { paused.current = document.hidden; };
     window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("touchmove", onTouch, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("touchmove", onTouch);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
   useFrame(() => {
+    if (paused.current) return;
     target.current.x += (mouse.current.x - target.current.x) * 0.05;
     target.current.y += (mouse.current.y - target.current.y) * 0.05;
 

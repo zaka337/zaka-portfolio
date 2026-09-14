@@ -12,30 +12,35 @@ function scrambleChar(c: string): string {
 }
 
 function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
-  const [out, setOut] = useState(() => text.split("").map(scrambleChar).join(""));
-  const rafRef = useRef(0);
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const rafRef  = useRef<number>(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const start = performance.now();
-      const DURATION = 680;
+    const el = spanRef.current;
+    if (!el) return;
+    el.textContent = text.split("").map(scrambleChar).join("");
 
+    const timer = setTimeout(() => {
+      const start    = performance.now();
+      const DURATION = 680;
       const tick = (now: number) => {
         const progress = Math.min((now - start) / DURATION, 1);
         const resolved = Math.floor(progress * text.length);
-        setOut(
-          text.slice(0, resolved) +
-          text.slice(resolved).split("").map(scrambleChar).join("")
-        );
+        el.textContent = text.slice(0, resolved) + text.slice(resolved).split("").map(scrambleChar).join("");
         if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+        else el.textContent = text;
       };
       rafRef.current = requestAnimationFrame(tick);
     }, delay);
 
-    return () => { clearTimeout(timer); cancelAnimationFrame(rafRef.current); };
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(rafRef.current);
+      el.textContent = text;
+    };
   }, [text, delay]);
 
-  return <>{out}</>;
+  return <span ref={spanRef} suppressHydrationWarning>{text}</span>;
 }
 
 /* ─── Marquee strip ─────────────────────────────────────────────── */

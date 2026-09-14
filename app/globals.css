@@ -1,10 +1,18 @@
-@import "tailwindcss";
-
 :root {
-  --paper: #f1ede2;
-  --ink: #0d0d0d;
-  --ink-70: rgba(13, 13, 13, 0.7);
-  --ink-50: rgba(13, 13, 13, 0.5);
+  /* ── Color ────────────────────────────────────────────────────── */
+  --paper:   #f1ede2;
+  --ink:     #0d0d0d;
+  --ink-70:  rgba(13, 13, 13, 0.7);
+  --ink-50:  rgba(13, 13, 13, 0.5);
+
+  /* ── Motion: durations ────────────────────────────────────────── */
+  --duration-fast:  160ms;   /* hover color flips, micro-interactions */
+  --duration-base:  420ms;   /* panel/card transitions */
+  --duration-slow:  720ms;   /* reveals, entrances */
+
+  /* ── Motion: easing ──────────────────────────────────────────── */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);   /* expo-out — fast start, smooth landing */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* refined symmetric */
 }
 
 * {
@@ -74,7 +82,7 @@ canvas {
   position: absolute;
   top: 50%;
   left: 4vw;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translateX(0);
   z-index: 10;
 }
 
@@ -341,6 +349,117 @@ canvas {
       0 0 18px var(--paper),
       0 0 10px var(--paper),
       0 0 5px  var(--paper);
+  }
+}
+
+/* ─── Home entrance animations ──────────────────────────────────── */
+
+@keyframes homeEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes homeAvatarFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Base class — all enter animations share duration and easing */
+.home-enter {
+  animation: homeEnter 600ms var(--ease-out) both;
+}
+
+/* Stagger delays */
+.home-enter-0 { animation-delay:   0ms; }
+.home-enter-1 { animation-delay:  80ms; }
+.home-enter-2 { animation-delay: 140ms; }
+.home-enter-3 { animation-delay: 180ms; }
+.home-enter-4 { animation-delay: 240ms; }
+.home-enter-5 { animation-delay: 280ms; }
+
+/* Avatar fades in separately (dynamic import resolves at its own time) */
+.avatar-scene {
+  animation: homeAvatarFade 900ms var(--ease-out) 60ms both;
+}
+
+/* ─── Custom cursor styles ───────────────────────────────────────── */
+
+.custom-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  margin-top: -19px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+  /* Smooth ring expansion on interactive hover */
+  transition:
+    width  var(--duration-fast) var(--ease-out),
+    height var(--duration-fast) var(--ease-out),
+    margin-left var(--duration-fast) var(--ease-out),
+    margin-top  var(--duration-fast) var(--ease-out);
+}
+
+.custom-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  margin-top: -3.5px;
+  background-color: var(--ink);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+}
+
+/* Ring expands when the pointer is over any interactive element */
+@media (hover: hover) and (pointer: fine) {
+  html:has(a:hover, button:hover) .custom-cursor-ring {
+    width: 52px;
+    height: 52px;
+    margin-left: -26px;
+    margin-top: -26px;
+  }
+}
+
+/* ─── Home page nav block hover transforms ──────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  .block-tr,
+  .block-ml,
+  .block-bl,
+  .block-br {
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  /* Left-side blocks nudge left */
+  .block-bl:hover { transform: translateX(-3px); }
+
+  /* Right-side blocks nudge right */
+  .block-tr:hover { transform: translateX(3px); }
+  .block-br:hover { transform: translateX(3px); }
+
+  /* Mid-left must preserve its vertical centering transform */
+  .block-ml:hover { transform: translateY(-50%) translateX(-3px); }
+}
+
+/* ─── Reduced motion ────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

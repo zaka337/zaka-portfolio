@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useEffect } from "react";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -34,68 +34,60 @@ function scramble(s: string): string {
 }
 
 function RoleBlock() {
-  const [l1, setL1] = useState("FULL-STACK");
-  const [l2, setL2] = useState("DEVELOPER");
-  const [active, setActive] = useState(false);
-  const timer   = useRef<ReturnType<typeof setInterval> | null>(null);
-  const tick    = useRef(0);
-  const termRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const l1Ref  = useRef<HTMLParagraphElement>(null);
+  const l2Ref  = useRef<HTMLParagraphElement>(null);
+  const timer  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tick   = useRef(0);
+  const termIdx = useRef(0);
 
-  const TICK_MS      = 55;   // ms per char-flip
-  const TICKS_LOCK   = 6;    // scramble ticks before locking in the real term
-  const TICKS_SHOW   = 3;    // ticks to hold the readable term before next scramble
-  const CYCLE        = TICKS_LOCK + TICKS_SHOW;
+  const TICK_MS    = 55;
+  const TICKS_LOCK = 6;
+  const TICKS_SHOW = 3;
+  const CYCLE      = TICKS_LOCK + TICKS_SHOW;
 
   const onEnter = () => {
-    setActive(true);
-    tick.current = 0;
-    termRef.current = 0;
+    if (containerRef.current) containerRef.current.style.fontFamily = "'Courier New', Courier, monospace";
+    tick.current    = 0;
+    termIdx.current = 0;
 
     timer.current = setInterval(() => {
-      const t = tick.current % CYCLE;
-      const term = TERMS[termRef.current % TERMS.length];
+      const t    = tick.current % CYCLE;
+      const term = TERMS[termIdx.current % TERMS.length];
 
       if (t < TICKS_LOCK) {
-        // scramble phase — each char ticks independently
-        setL1(scramble(term.l1));
-        setL2(scramble(term.l2));
+        if (l1Ref.current) l1Ref.current.textContent = scramble(term.l1);
+        if (l2Ref.current) l2Ref.current.textContent = scramble(term.l2);
       } else {
-        // lock phase — show the real word
-        setL1(term.l1);
-        setL2(term.l2);
-        if (t === CYCLE - 1) {
-          termRef.current += 1; // advance to next term
-        }
+        if (l1Ref.current) l1Ref.current.textContent = term.l1;
+        if (l2Ref.current) l2Ref.current.textContent = term.l2;
+        if (t === CYCLE - 1) termIdx.current += 1;
       }
-
       tick.current += 1;
     }, TICK_MS);
   };
 
   const onLeave = () => {
-    setActive(false);
+    if (containerRef.current) containerRef.current.style.fontFamily = "";
     if (timer.current) clearInterval(timer.current);
-    setL1("FULL-STACK");
-    setL2("DEVELOPER");
+    if (l1Ref.current) l1Ref.current.textContent = "FULL-STACK";
+    if (l2Ref.current) l2Ref.current.textContent = "DEVELOPER";
   };
 
   useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
 
   return (
     <div
+      ref={containerRef}
       className="block-mr nav-text"
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      style={{
-        cursor: "default",
-        fontFamily: active
-          ? "'Courier New', Courier, monospace"
-          : undefined,
-        transition: "font-family 0s",
-      }}
+      style={{ cursor: "default" }}
     >
-      <p className="nav-item">{l1}</p>
-      <p className="nav-item">{l2}</p>
+      <div className="home-enter home-enter-1">
+        <p ref={l1Ref} className="nav-item">FULL-STACK</p>
+        <p ref={l2Ref} className="nav-item">DEVELOPER</p>
+      </div>
     </div>
   );
 }
@@ -107,23 +99,29 @@ export default function Home() {
 
       {/* TOP LEFT — name */}
       <div className="block-tl">
-        <p className="label">YOU CAN CALL ME</p>
-        <div className="nav-text">
-          <h1 className="title-huge">ZAKA.</h1>
-          <p className="title-sub">OR WHATEVER.</p>
+        <div className="home-enter home-enter-0">
+          <p className="label">YOU CAN CALL ME</p>
+          <div className="nav-text">
+            <h1 className="title-huge">ZAKA.</h1>
+            <p className="title-sub">OR WHATEVER.</p>
+          </div>
         </div>
       </div>
 
       {/* TOP RIGHT — contact */}
       <Link href="/contact" className="block-tr nav-text" style={{ textDecoration: "none" }}>
-        <p className="nav-item">SAY</p>
-        <p className="nav-item">HI</p>
+        <div className="home-enter home-enter-2">
+          <p className="nav-item">SAY</p>
+          <p className="nav-item">HI</p>
+        </div>
       </Link>
 
       {/* MID LEFT — about */}
       <Link href="/about" className="block-ml nav-text" style={{ textDecoration: "none" }}>
-        <p className="nav-item">MORE</p>
-        <p className="nav-item">ABOUT ME</p>
+        <div className="home-enter home-enter-3">
+          <p className="nav-item">MORE</p>
+          <p className="nav-item">ABOUT ME</p>
+        </div>
       </Link>
 
       {/* MID RIGHT — role scrambler */}
@@ -131,14 +129,18 @@ export default function Home() {
 
       {/* BOTTOM LEFT — projects */}
       <Link href="/projects" className="block-bl nav-text" style={{ textDecoration: "none" }}>
-        <p className="nav-item">MY</p>
-        <p className="nav-item">PROJECTS</p>
+        <div className="home-enter home-enter-4">
+          <p className="nav-item">MY</p>
+          <p className="nav-item">PROJECTS</p>
+        </div>
       </Link>
 
       {/* BOTTOM RIGHT — contact me page */}
       <Link href="/contact-me" className="block-br nav-text" style={{ textDecoration: "none" }}>
-        <p className="nav-item">CONTACT</p>
-        <p className="nav-item">ME</p>
+        <div className="home-enter home-enter-5">
+          <p className="nav-item">CONTACT</p>
+          <p className="nav-item">ME</p>
+        </div>
       </Link>
     </main>
   );

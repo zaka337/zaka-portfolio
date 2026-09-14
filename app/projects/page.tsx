@@ -419,7 +419,6 @@ export default function Projects() {
                           overflow: "hidden",
                           fontFamily: "'Helvetica Neue', Arial, sans-serif",
                           boxSizing: "border-box",
-                          willChange: "filter, opacity",
                         }}
                       >
                         {/* Language + badge row */}
