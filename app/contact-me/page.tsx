@@ -72,6 +72,18 @@ const ROWS = [
 
 /* ─── Page ──────────────────────────────────────────────────────── */
 export default function ContactMe() {
+  // globals.css sets html/body overflow:hidden for the home 3D scene;
+  // unlock it so this scrollable page works correctly.
+  useEffect(() => {
+    const prev = document.documentElement.style.overflowY;
+    document.documentElement.style.overflowY = "auto";
+    document.body.style.overflowY = "auto";
+    return () => {
+      document.documentElement.style.overflowY = prev;
+      document.body.style.overflowY = prev;
+    };
+  }, []);
+
   const [hovered, setHovered] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
