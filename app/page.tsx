@@ -142,6 +142,11 @@ export default function Home() {
           <p className="nav-item">ME</p>
         </div>
       </Link>
+
+      {/* Visually hidden — crawlable description for search engines */}
+      <p style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+        {'Zaka Ullah Waheed is a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. This is a 3D interactive portfolio featuring a real-time WebGL avatar built with Three.js. Open to remote work and freelance projects.'}
+      </p>
     </main>
   );
 }

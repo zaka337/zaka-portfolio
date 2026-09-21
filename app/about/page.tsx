@@ -287,7 +287,7 @@ export default function About() {
             HEY, I&apos;M
           </p>
 
-          <h1 style={{
+          <h1 aria-label="ZAKA ULLAH WAHEED" style={{
             ...T,
             fontSize: "clamp(4rem, 13vw, 13rem)",
             fontWeight: 900,
