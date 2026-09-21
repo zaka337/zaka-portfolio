@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import Reveal from "@/components/Reveal";
 
 function useScrollUnlock() {
   useEffect(() => {
@@ -60,49 +61,6 @@ function Typewriter({ phrases, speed = 72, pause = 2200 }: {
   return <span ref={spanRef} />;
 }
 
-/* ─── Shared IntersectionObserver ────────────────────────────────── *
- * One IO instance for all Reveal/FadeIn elements on this page
- * instead of one per component.
- * ─────────────────────────────────────────────────────────────────── */
-const revealCallbacks = new WeakMap<Element, () => void>();
-let sharedRevealIO: IntersectionObserver | null = null;
-
-function ensureRevealIO(): IntersectionObserver | null {
-  if (typeof IntersectionObserver === "undefined") return null;
-  if (!sharedRevealIO) {
-    sharedRevealIO = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          revealCallbacks.get(entry.target)?.();
-          sharedRevealIO?.unobserve(entry.target);
-          revealCallbacks.delete(entry.target);
-        });
-      },
-      { threshold: 0.15 }
-    );
-  }
-  return sharedRevealIO;
-}
-
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    const io = ensureRevealIO();
-    if (!el || !io) return;
-    revealCallbacks.set(el, () => setInView(true));
-    io.observe(el);
-    return () => {
-      io.unobserve(el);
-      revealCallbacks.delete(el);
-    };
-  }, []);
-
-  return [ref, inView] as const;
-}
 
 const ROLES = [
   "Full-Stack Developer.",
@@ -196,24 +154,6 @@ function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
 }
 
 const T: React.CSSProperties = { fontFamily: "'Helvetica Neue', Arial, sans-serif" };
-
-function FadeIn({ children, delay = 0, style, className }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
-  const [ref, inView] = useReveal();
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translateY(0)" : "translateY(32px)",
-        transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 export default function About() {
   useScrollUnlock();
@@ -365,7 +305,7 @@ export default function About() {
         alignItems: "start",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
-        <FadeIn>
+        <Reveal>
           <p style={{
             ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
             letterSpacing: "0.22em", color: "var(--ink-50)",
@@ -380,9 +320,9 @@ export default function About() {
           }}>
             THE<br />STORY.
           </h2>
-        </FadeIn>
+        </Reveal>
 
-        <FadeIn delay={0.15}>
+        <Reveal delay={150}>
           <div style={{ paddingTop: "clamp(0rem, 2vw, 2rem)" }}>
             {[
               "Frontend / Full-Stack Developer based in Islamabad, Pakistan. I design, build, and ship full-stack web platforms end-to-end: React frontends, backend APIs, database integration, and production deployment on Vercel.",
@@ -398,7 +338,7 @@ export default function About() {
               </p>
             ))}
           </div>
-        </FadeIn>
+        </Reveal>
       </section>
 
       {/* SKILLS */}
@@ -406,7 +346,7 @@ export default function About() {
         padding: "12vh 8vw",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
-        <FadeIn>
+        <Reveal>
           <p style={{
             ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
             letterSpacing: "0.22em", color: "var(--ink-50)",
@@ -422,7 +362,7 @@ export default function About() {
           }}>
             WHAT I BUILD WITH.
           </h2>
-        </FadeIn>
+        </Reveal>
 
         <div className="about-skills-grid" style={{
           display: "grid",
@@ -434,7 +374,7 @@ export default function About() {
           {SKILLS.map((s, i) => (
             <div key={i} className={s.wide ? "skill-wide" : undefined}
               style={{ overflow: "hidden", backgroundColor: "var(--paper)" }}>
-              <FadeIn delay={i * 0.07} style={{ height: "100%" }}>
+              <Reveal delay={i * 70} style={{ height: "100%" }}>
                 <div style={{
                   backgroundColor: "var(--paper)",
                   padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
@@ -460,7 +400,7 @@ export default function About() {
                     ))}
                   </div>
                 </div>
-              </FadeIn>
+              </Reveal>
             </div>
           ))}
         </div>
@@ -471,7 +411,7 @@ export default function About() {
         padding: "12vh 8vw",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
-        <FadeIn>
+        <Reveal>
           <p style={{
             ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
             letterSpacing: "0.22em", color: "var(--ink-50)",
@@ -487,11 +427,11 @@ export default function About() {
           }}>
             HOW I GOT HERE.
           </h2>
-        </FadeIn>
+        </Reveal>
 
         <div>
           {TIMELINE.map((item, i) => (
-            <FadeIn key={i} delay={i * 0.1}>
+            <Reveal key={i} delay={i * 100}>
               <div className="about-timeline" style={{
                 display: "grid",
                 gridTemplateColumns: "120px 1fr",
@@ -531,7 +471,7 @@ export default function About() {
                   </p>
                 </div>
               </div>
-            </FadeIn>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -541,7 +481,7 @@ export default function About() {
         padding: "12vh 8vw",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
-        <FadeIn>
+        <Reveal>
           <p style={{
             ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
             letterSpacing: "0.22em", color: "var(--ink-50)",
@@ -557,11 +497,11 @@ export default function About() {
           }}>
             REAL TALK.
           </h2>
-        </FadeIn>
+        </Reveal>
 
         <div style={{ borderTop: "1px solid rgba(13,13,13,0.14)" }}>
           {FACTS.map((f, i) => (
-            <FadeIn key={i} delay={i * 0.06}>
+            <Reveal key={i} delay={i * 60}>
               <div
                 style={{
                   display: "flex",
@@ -599,7 +539,7 @@ export default function About() {
                   {f.tag}
                 </span>
               </div>
-            </FadeIn>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -613,7 +553,7 @@ export default function About() {
         textAlign: "center",
         gap: "2rem",
       }}>
-        <FadeIn>
+        <Reveal>
           <p style={{
             ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
             letterSpacing: "0.22em", color: "var(--ink-50)",
@@ -667,7 +607,7 @@ export default function About() {
               SEE WORK
             </Link>
           </div>
-        </FadeIn>
+        </Reveal>
       </section>
 
       <style>{`
