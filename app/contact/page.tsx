@@ -185,6 +185,7 @@ export default function Contact() {
             padding: "1.5rem" }}>
             <Image src="/mobile.jpg" alt="Nokia 3310"
               width={1024} height={1024} priority
+              sizes="(max-width: 640px) 80vw, (max-width: 1080px) 42vw, 460px"
               style={{ maxHeight: "100%", maxWidth: "100%",
                 objectFit: "contain", display: "block", width: "auto", height: "auto" }} />
           </div>

@@ -170,6 +170,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Preload the 3D avatar so the browser fetches it immediately on HTML parse,
             before JS hydrates — cuts perceived load time significantly */}
         <link rel="preload" href="/Avatar.glb" as="fetch" crossOrigin="anonymous" />
+        {/* Warm up DNS + TLS for the GitHub API used on the Projects page */}
+        <link rel="preconnect" href="https://api.github.com" />
         <meta name="google-site-verification" content="DKB_MhzU-pvDYGsvo2EjCQA0mimMBQFvWqICbRasY1Q" />
         <script
           type="application/ld+json"
