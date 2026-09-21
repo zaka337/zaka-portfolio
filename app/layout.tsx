@@ -7,15 +7,24 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Zaka Ullah Waheed — Full-Stack Developer Portfolio",
+    default: "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio",
     template: "%s | Zaka Ullah Waheed Portfolio",
   },
   description:
-    "Zaka Ullah Waheed's developer portfolio — Full-Stack Developer from Pakistan building production-grade web apps, mobile apps, and QA automation with React, Next.js, Flutter, and TypeScript. Open to remote work.",
+    "Zaka Ullah Waheed's 3D interactive developer portfolio — Full-Stack Developer from Pakistan featuring a live WebGL avatar built with Three.js. Building production-grade web apps, mobile apps, and QA automation with React, Next.js, Flutter, and TypeScript. Open to remote work.",
   keywords: [
     "Zaka Ullah Waheed",
     "Zaka portfolio",
     "Zaka developer portfolio",
+    "3D portfolio",
+    "3D interactive portfolio",
+    "3D developer portfolio",
+    "WebGL portfolio",
+    "Three.js portfolio",
+    "interactive portfolio",
+    "interactive developer portfolio",
+    "3D portfolio website",
+    "creative developer portfolio",
     "Full-Stack Developer Pakistan",
     "React Developer portfolio",
     "Next.js Developer",
@@ -39,9 +48,9 @@ export const metadata: Metadata = {
     locale: "en_PK",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "Zaka Ullah Waheed — Full-Stack Developer Portfolio",
+    title: "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio",
     description:
-      "Zaka Ullah Waheed's portfolio — Full-Stack Developer from Pakistan. React, Next.js, Flutter, QA Automation. Open to remote work.",
+      "Zaka Ullah Waheed's 3D interactive portfolio — Full-Stack Developer from Pakistan. Live WebGL avatar, Three.js, React, Next.js, Flutter, QA Automation. Open to remote work.",
     images: [
       {
         url: "/opengraph-image",
@@ -54,9 +63,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Zaka Ullah Waheed — Full-Stack Developer Portfolio",
+    title: "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio",
     description:
-      "Zaka Ullah Waheed's portfolio — Full-Stack Developer from Pakistan. React, Next.js, Flutter, QA Automation. Open to remote work.",
+      "Zaka Ullah Waheed's 3D interactive portfolio — Full-Stack Developer from Pakistan. Live WebGL avatar, React, Next.js, Flutter, QA Automation. Open to remote work.",
     images: ["/opengraph-image"],
     creator: "@notxzaka",
   },
@@ -89,10 +98,15 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: `${SITE_NAME} Portfolio`,
+      name: `${SITE_NAME} — 3D Interactive Portfolio`,
       description:
-        "Zaka Ullah Waheed's developer portfolio — Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation.",
+        "Zaka Ullah Waheed's 3D interactive developer portfolio — Full-Stack Developer from Pakistan featuring a live WebGL avatar built with Three.js. Specialising in React, Next.js, Flutter, and QA Automation.",
       inLanguage: "en-PK",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/projects` },
+        "query-input": "required name=search_term_string",
+      },
     },
     {
       "@type": "Person",
@@ -108,7 +122,7 @@ const jsonLd = {
       sameAs: [SOCIAL.github, SOCIAL.linkedin, SOCIAL.instagram],
       jobTitle: "Full-Stack Developer",
       description:
-        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work.",
+        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work. Creator of a 3D interactive developer portfolio featuring a live WebGL avatar.",
       email: SOCIAL.email,
       address: {
         "@type": "PostalAddress",
@@ -123,6 +137,8 @@ const jsonLd = {
         "QA Automation",
         "Selenium",
         "n8n",
+        "Three.js",
+        "WebGL",
         "REST APIs",
         "Tailwind CSS",
       ],
@@ -131,6 +147,18 @@ const jsonLd = {
         name: "University",
         addressCountry: "PK",
       },
+    },
+    {
+      "@type": "CreativeWork",
+      "@id": `${SITE_URL}/#portfolio`,
+      name: "Zaka Ullah Waheed — 3D Interactive Developer Portfolio",
+      url: SITE_URL,
+      author: { "@id": `${SITE_URL}/#person` },
+      description:
+        "A 3D interactive developer portfolio featuring a real-time WebGL avatar that tracks mouse movement, built with Three.js, React, and Next.js. Showcases full-stack development projects, mobile apps, and QA automation work.",
+      keywords: "3D portfolio, WebGL, Three.js, interactive portfolio, full-stack developer, React, Next.js",
+      inLanguage: "en-PK",
+      about: { "@id": `${SITE_URL}/#person` },
     },
   ],
 };

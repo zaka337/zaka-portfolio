@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "nodejs";
-export const alt = "Zaka Ullah Waheed — Full-Stack Developer";
+export const alt = "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -43,7 +43,7 @@ export default function OGImage() {
               textTransform: "uppercase",
             }}
           >
-            PORTFOLIO · 2025
+            3D INTERACTIVE PORTFOLIO · 2025
           </span>
           <span
             style={{
@@ -97,7 +97,7 @@ export default function OGImage() {
               textTransform: "uppercase",
             }}
           >
-            REACT · NEXT.JS · FLUTTER · QA AUTOMATION · TYPESCRIPT
+            REACT · NEXT.JS · THREE.JS · WEBGL · FLUTTER · QA AUTOMATION
           </span>
           <span
             style={{
