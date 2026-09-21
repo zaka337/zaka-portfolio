@@ -1,6 +1,6 @@
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
-  "https://zaka-portfolio-git-main-zaka-sattis-projects-00aacf21.vercel.app";
+  "https://zaka-portfolio-zaka-sattis-projects-00aacf21.vercel.app";
 
 export const SITE_NAME = "Zaka Ullah Waheed";
 
