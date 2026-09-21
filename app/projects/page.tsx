@@ -256,7 +256,7 @@ export default function Projects() {
       `}</style>
 
       {/* ── Back ──────────────────────────────────────────────── */}
-      <Link href="/" style={{
+      <Link href="/" className="proj-fade proj-fade-0" style={{
         position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "clamp(16px, 4vw, 40px)",
         zIndex: 200,
         fontFamily: "'Helvetica Neue', Arial, sans-serif",
@@ -271,7 +271,7 @@ export default function Projects() {
       </Link>
 
       {/* ── Center label ──────────────────────────────────────── */}
-      <span style={{
+      <span className="proj-fade proj-fade-1" style={{
         position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "50%",
         transform: "translateX(-50%)", zIndex: 200,
         fontFamily: "'Helvetica Neue', Arial, sans-serif",
@@ -284,7 +284,7 @@ export default function Projects() {
 
       {/* ── Repo count ────────────────────────────────────────── */}
       {!loading && n > 0 && (
-        <span style={{
+        <span className="proj-fade proj-fade-2" style={{
           position: "absolute", top: "clamp(16px, 4vh, 40px)", right: "clamp(16px, 4vw, 40px)",
           zIndex: 200,
           fontFamily: "'Helvetica Neue', Arial, sans-serif",
@@ -312,7 +312,7 @@ export default function Projects() {
 
       {/* ── Hint (swipe on mobile, drag on desktop) ───────────── */}
       {!loading && n > 0 && (
-        <span style={{
+        <span className="proj-fade proj-fade-3" style={{
           position: "absolute", bottom: "4vh", left: "50%",
           transform: "translateX(-50%)", zIndex: 200,
           fontFamily: "'Helvetica Neue', Arial, sans-serif",
@@ -328,6 +328,7 @@ export default function Projects() {
       {!isMobile && !loading && (
         <>
           <button
+            className="proj-fade proj-fade-3"
             onClick={() => stepCarousel(-1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.22)"; e.currentTarget.style.color = "rgba(13,13,13,0.28)"; }}
@@ -335,6 +336,7 @@ export default function Projects() {
             &#8249;
           </button>
           <button
+            className="proj-fade proj-fade-3"
             onClick={() => stepCarousel(1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.22)"; e.currentTarget.style.color = "rgba(13,13,13,0.28)"; }}
@@ -346,7 +348,7 @@ export default function Projects() {
 
       {/* ── 3D Scene (mobile gets CSS scale to preserve depth) ── */}
       {!loading && n > 0 && (
-        <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+        <div className="proj-fade proj-fade-4" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
           {/* Scale wrapper — shrinks scene on narrow viewports without losing 3D depth */}
           <div style={{
             position: "absolute", inset: 0,

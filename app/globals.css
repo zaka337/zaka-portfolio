@@ -382,6 +382,20 @@ canvas {
   animation: homeAvatarFade 900ms var(--ease-out) 60ms both;
 }
 
+/* ─── Projects entrance animations ──────────────────────────────── */
+
+@keyframes projFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.proj-fade { animation: projFade 500ms var(--ease-out) both; }
+.proj-fade-0 { animation-delay:   0ms; }
+.proj-fade-1 { animation-delay:  80ms; }
+.proj-fade-2 { animation-delay: 140ms; }
+.proj-fade-3 { animation-delay: 200ms; }
+.proj-fade-4 { animation-delay: 300ms; }
+
 /* ─── Custom cursor styles ───────────────────────────────────────── */
 
 .custom-cursor-ring {
