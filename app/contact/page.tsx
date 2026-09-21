@@ -126,7 +126,7 @@ export default function Contact() {
       `}</style>
 
       {/* Window */}
-      <div className="contact-window" style={{
+      <div className="contact-window contact-enter-window" style={{
         width: "min(92vw, 1080px)", height: "min(86vh, 660px)",
         border: "1px solid var(--ink)", display: "flex",
         flexDirection: "column", backgroundColor: "var(--paper)" }}>
@@ -187,27 +187,36 @@ export default function Contact() {
           <div className="contact-details" style={{ flex: 1, display: "flex", flexDirection: "column",
             justifyContent: "center", padding: "1.5rem 2.5rem", overflow: "hidden" }}>
 
-            <h1 style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif",
+            <h1 className="home-enter" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif",
               fontWeight: 900, fontSize: "clamp(1.8rem, 3.8vw, 3.2rem)",
               letterSpacing: "-0.03em", lineHeight: 0.9,
               color: "var(--ink)", textTransform: "uppercase",
-              marginBottom: "0.5rem" }}>
+              marginBottom: "0.5rem", animationDelay: "100ms" }}>
               CONTACT ME
             </h1>
-            <p style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif",
+            <p className="proj-fade" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif",
               fontSize: "clamp(0.5rem, 0.75vw, 0.68rem)", fontWeight: 500,
               letterSpacing: "0.18em", color: "var(--ink-50)",
-              textTransform: "uppercase", marginBottom: "1.2rem" }}>
+              textTransform: "uppercase", marginBottom: "1.2rem",
+              animationDelay: "160ms" }}>
               LET&apos;S TALK
             </p>
 
-            <CopyEmailRow />
-            <Row label="LINKEDIN"  value="Zaka Ullah Waheed"
-              href="https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" />
-            <Row label="GITHUB"    value="github.com/zaka337"
-              href="https://github.com/zaka337" />
-            <Row label="INSTAGRAM" value="@notxzaka"
-              href="https://www.instagram.com/notxzaka/" />
+            <div style={{ animation: "projFade 500ms var(--ease-out) 220ms both" }}>
+              <CopyEmailRow />
+            </div>
+            <div style={{ animation: "projFade 500ms var(--ease-out) 280ms both" }}>
+              <Row label="LINKEDIN"  value="Zaka Ullah Waheed"
+                href="https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" />
+            </div>
+            <div style={{ animation: "projFade 500ms var(--ease-out) 340ms both" }}>
+              <Row label="GITHUB"    value="github.com/zaka337"
+                href="https://github.com/zaka337" />
+            </div>
+            <div style={{ animation: "projFade 500ms var(--ease-out) 400ms both" }}>
+              <Row label="INSTAGRAM" value="@notxzaka"
+                href="https://www.instagram.com/notxzaka/" />
+            </div>
           </div>
         </div>
       </div>
