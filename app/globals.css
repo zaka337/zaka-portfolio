@@ -21,6 +21,14 @@
   box-sizing: border-box;
 }
 
+/* ─── Focus styles (keyboard navigation) ───────────────────────── */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 html,
 body {
   width: 100%;

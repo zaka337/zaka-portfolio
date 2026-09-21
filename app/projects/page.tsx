@@ -328,6 +328,7 @@ export default function Projects() {
       {!isMobile && !loading && (
         <>
           <button
+            aria-label="Previous project"
             className="proj-fade proj-fade-3"
             onClick={() => stepCarousel(-1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
@@ -336,6 +337,7 @@ export default function Projects() {
             &#8249;
           </button>
           <button
+            aria-label="Next project"
             className="proj-fade proj-fade-3"
             onClick={() => stepCarousel(1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}

@@ -32,11 +32,13 @@ function Row({ label, value, href, onClick }: {
           {value}
         </a>
       ) : onClick ? (
-        <span style={rowText} onClick={onClick}
+        <button onClick={onClick}
           onMouseEnter={e => (e.currentTarget.style.color = "var(--ink-50)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}>
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}
+          style={{ ...rowText, background: "none", border: "none", padding: 0,
+            textAlign: "left", width: "100%", cursor: "pointer" }}>
           {value}
-        </span>
+        </button>
       ) : (
         <p style={{ ...rowText, cursor: "default" }}>{value}</p>
       )}
@@ -63,17 +65,21 @@ function CopyEmailRow() {
         textTransform: "uppercase", marginBottom: "0.25rem" }}>
         EMAIL
       </p>
-      <span style={{ ...rowText, display: "flex", alignItems: "center", gap: "0.8rem" }}
+      <button
+        aria-label={copied ? "Email copied to clipboard" : "Copy email address"}
         onClick={copy}
         onMouseEnter={e => (e.currentTarget.style.color = "var(--ink-50)")}
-        onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}>
+        onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}
+        style={{ ...rowText, display: "flex", alignItems: "center", gap: "0.8rem",
+          background: "none", border: "none", padding: 0, textAlign: "left",
+          width: "100%", cursor: "pointer" }}>
         zakas2379@gmail.com
         <span style={{ fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 500,
           letterSpacing: "0.14em", color: copied ? "#4a7a4a" : "var(--ink-50)",
           textTransform: "uppercase", transition: "color 0.3s" }}>
           {copied ? "COPIED!" : "CLICK TO COPY"}
         </span>
-      </span>
+      </button>
     </div>
   );
 }
@@ -137,7 +143,7 @@ export default function Contact() {
           height: 54, borderBottom: "1px solid var(--ink)", flexShrink: 0 }}>
 
           <div>
-            <Link href="/"
+            <Link href="/" aria-label="Close contact"
               style={{ display: "inline-flex", alignItems: "center",
                 justifyContent: "center", width: 34, height: 34,
                 border: "1.5px solid var(--ink)", borderRadius: "50%",
