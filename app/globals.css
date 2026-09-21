@@ -182,6 +182,13 @@ canvas {
   }
 }
 
+/* Projects: hide center label on narrow screens */
+@media (max-width: 480px) {
+  .projects-center-label {
+    display: none !important;
+  }
+}
+
 /* Mobile: everything single-column */
 @media (max-width: 768px) {
   .about-bio-grid {

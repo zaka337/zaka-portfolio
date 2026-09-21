@@ -271,7 +271,7 @@ export default function Projects() {
       </Link>
 
       {/* ── Center label ──────────────────────────────────────── */}
-      <span className="proj-fade proj-fade-1" style={{
+      <span className="proj-fade proj-fade-1 projects-center-label" style={{
         position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "50%",
         transform: "translateX(-50%)", zIndex: 200,
         fontFamily: "'Helvetica Neue', Arial, sans-serif",
