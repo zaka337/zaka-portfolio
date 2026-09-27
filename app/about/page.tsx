@@ -297,7 +297,7 @@ export default function About() {
       </section>
 
       {/* BIO */}
-      <section className="about-bio-grid" style={{
+      <section className="about-bio-grid about-section" style={{
         padding: "12vh 8vw",
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -342,7 +342,7 @@ export default function About() {
       </section>
 
       {/* SKILLS */}
-      <section style={{
+      <section className="about-section" style={{
         padding: "12vh 8vw",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
@@ -407,7 +407,7 @@ export default function About() {
       </section>
 
       {/* TIMELINE */}
-      <section style={{
+      <section className="about-section" style={{
         padding: "12vh 8vw",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
@@ -477,7 +477,7 @@ export default function About() {
       </section>
 
       {/* FUN FACTS */}
-      <section style={{
+      <section className="about-section" style={{
         padding: "12vh 8vw",
         borderBottom: "1px solid rgba(13,13,13,0.12)",
       }}>
@@ -545,7 +545,7 @@ export default function About() {
       </section>
 
       {/* CTA */}
-      <section style={{
+      <section className="about-section" style={{
         padding: "14vh 8vw",
         display: "flex",
         flexDirection: "column",
@@ -622,11 +622,16 @@ export default function About() {
           100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
         }
         @media (max-width: 768px) {
+          .about-section     { padding: 8vh 6vw !important; }
           .about-bio-grid    { grid-template-columns: 1fr !important; }
           .about-skills-grid { grid-template-columns: 1fr !important; }
           .skill-wide        { grid-column: span 1 !important; }
           .about-timeline    { display: block !important; }
           .about-scroll-hint { display: none !important; }
+        }
+        @media (max-width: 480px) {
+          .about-section     { padding: 6vh 5vw !important; }
+          .about-timeline    { gap: 4vw !important; }
         }
         /* Also hide on very short viewports where it would crowd the name */
         @media (max-height: 720px) {

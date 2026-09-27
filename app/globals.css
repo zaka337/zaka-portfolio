@@ -503,6 +503,35 @@ canvas {
   }
 }
 
+/* ─── Extra Small Mobile (≤480px) ───────────────────────────────── */
+
+@media (max-width: 480px) {
+  .portfolio-root {
+    grid-template-columns: 1fr !important;
+    gap: 3vh !important;
+    padding: 4vh 5vw !important;
+  }
+
+  .block-br {
+    grid-column: 1 / -1 !important;
+  }
+
+  .block-tr, .block-mr, .block-br {
+    text-align: left !important;
+  }
+
+  .block-tr::after,
+  .block-ml::after,
+  .block-bl::after,
+  .block-br::after {
+    display: none !important; /* Hide arrows on extremely small screens */
+  }
+
+  .title-huge {
+    font-size: clamp(2.5rem, 16vw, 4.5rem) !important;
+  }
+}
+
 /* ─── Ultrawide (≥1600px) ───────────────────────────────────────── */
 
 @media (min-width: 1600px) {

@@ -98,7 +98,7 @@ export default function ContactMe() {
 
   return (
     <main style={{
-      width: "100vw",
+      width: "100%",
       minHeight: "100dvh",
       backgroundColor: "var(--paper)",
       color: "var(--ink)",

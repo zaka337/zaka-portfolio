@@ -87,9 +87,9 @@ function CopyEmailRow() {
 /* ─── Page ────────────────────────────────────────────────────── */
 export default function Contact() {
   return (
-    <main style={{ width: "100vw", minHeight: "100dvh", display: "flex",
+    <main style={{ width: "100%", minHeight: "100dvh", display: "flex",
       alignItems: "center", justifyContent: "center",
-      backgroundColor: "var(--paper)", overflow: "auto",
+      backgroundColor: "var(--paper)", overflowX: "hidden", overflowY: "auto",
       padding: "clamp(12px, 3vh, 32px) clamp(12px, 4vw, 32px)" }}>
 
       <style>{`
