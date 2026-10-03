@@ -84,6 +84,7 @@ export default function Projects() {
   const [repos, setRepos]     = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
   const [vp, setVp]           = useState({ w: 1280, h: 800 });
+  const [hovered, setHovered] = useState<{ title: string; desc: string } | null>(null);
   const ringRef  = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLElement[]>([]);
   const rotRef   = useRef(0);
@@ -270,17 +271,37 @@ export default function Projects() {
         {'←'} BACK.
       </Link>
 
-      {/* ── Center label ──────────────────────────────────────── */}
-      <span className="proj-fade proj-fade-1 projects-center-label" style={{
+      {/* ── Center label / hover preview ─────────────────────── */}
+      <div className="proj-fade proj-fade-1 projects-center-label" style={{
         position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "50%",
         transform: "translateX(-50%)", zIndex: 200,
-        fontFamily: "'Helvetica Neue', Arial, sans-serif",
-        fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: 500,
-        letterSpacing: "0.12em", color: "var(--ink-50)",
-        textTransform: "uppercase", whiteSpace: "nowrap",
+        textAlign: "center", pointerEvents: "none",
+        transition: "opacity 0.2s",
       }}>
-        my_projects — github/zaka337
-      </span>
+        <span style={{
+          display: "block",
+          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+          fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: hovered ? 700 : 500,
+          letterSpacing: "0.12em", color: "var(--ink)",
+          textTransform: "uppercase", whiteSpace: "nowrap",
+          opacity: hovered ? 1 : 0.5,
+          transition: "opacity 0.2s, font-weight 0.15s",
+        }}>
+          {hovered ? hovered.title : "my_projects — github/zaka337"}
+        </span>
+        {hovered && (
+          <span style={{
+            display: "block",
+            fontFamily: "'Helvetica Neue', Arial, sans-serif",
+            fontSize: "clamp(0.5rem, 0.65vw, 0.58rem)", fontWeight: 400,
+            letterSpacing: "0.1em", color: "var(--ink-50)",
+            textTransform: "uppercase", whiteSpace: "nowrap",
+            marginTop: 3,
+          }}>
+            {hovered.desc}
+          </span>
+        )}
+      </div>
 
       {/* ── Repo count ────────────────────────────────────────── */}
       {!loading && n > 0 && (
@@ -402,6 +423,8 @@ export default function Projects() {
                         href={live ?? repo.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onMouseEnter={() => setHovered({ title, desc })}
+                        onMouseLeave={() => setHovered(null)}
                         style={{
                           position: "absolute",
                           width: CARD_W, height: CARD_H,
