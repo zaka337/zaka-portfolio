@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ClientProviders from "./ClientProviders";
-import { SITE_URL, SITE_NAME, SOCIAL } from "@/lib/site";
+import { SITE_URL, SITE_NAME, SOCIAL, QA_ZAKA } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -37,6 +37,12 @@ export const metadata: Metadata = {
     "freelance developer Pakistan",
     "n8n workflows",
     "Selenium testing",
+    "QA with Zaka",
+    "QA with Zaka platform",
+    "QA_with_ZAKA",
+    "Zaka QA platform",
+    "AI QA platform Pakistan",
+    "automated testing platform",
   ],
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
@@ -147,6 +153,48 @@ const jsonLd = {
         name: "University",
         addressCountry: "PK",
       },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${SITE_URL}/#qa-with-zaka`,
+      name: QA_ZAKA.name,
+      url: QA_ZAKA.url,
+      description: QA_ZAKA.desc,
+      applicationCategory: "EducationalApplication",
+      operatingSystem: "Web",
+      author: { "@id": `${SITE_URL}/#person` },
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      keywords: "QA with Zaka, AI QA platform, automated testing, full-stack education, Zaka Ullah Waheed",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/#faq`,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is QA with Zaka?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "QA with Zaka is an AI-powered full-stack educational QA platform built and shipped by Zaka Ullah Waheed, a Full-Stack Developer from Pakistan. It features automated testing, real-time Q&A, and production-grade web architecture built with React, Next.js, and Firebase.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Who built QA with Zaka?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "QA with Zaka was built by Zaka Ullah Waheed, a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. The platform is live at qa-with-zaka-4pc9.vercel.app.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Where can I find Zaka Ullah Waheed's portfolio?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `Zaka Ullah Waheed's 3D interactive developer portfolio is at ${SITE_URL}. It features a live WebGL avatar, a 3D project carousel, and showcases projects including QA with Zaka, Zong Health Scanner, and MomCare AI.`,
+          },
+        },
+      ],
     },
     {
       "@type": "CreativeWork",
