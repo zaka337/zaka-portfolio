@@ -143,10 +143,18 @@ export default function Home() {
         </div>
       </Link>
 
-      {/* Visually hidden — crawlable description for search engines */}
-      <p style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
-        {'Zaka Ullah Waheed is a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. This is a 3D interactive portfolio featuring a real-time WebGL avatar built with Three.js. Open to remote work and freelance projects.'}
-      </p>
+      {/* Visually hidden — crawlable content for search engines */}
+      <div aria-hidden="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+        <h2>Zaka Ullah Waheed — Full-Stack Developer from Pakistan</h2>
+        <p>{'Zaka Ullah Waheed is a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. Creator of QA with Zaka — an AI-powered full-stack educational QA platform. Interned at Zong 5G. Building production-grade web apps, mobile apps, and automation tools since 2024. Open to remote work and freelance projects.'}</p>
+        <p>Skills: React, Next.js, TypeScript, Flutter, Firebase, Three.js, WebGL, QA Automation, Selenium, n8n, REST APIs, Tailwind CSS.</p>
+        <p>Projects: QA with Zaka, Zong Health Scanner, MomCare AI, Instagram Clone, Metro Mart, Docker web app.</p>
+        <nav>
+          <a href="/about">About Zaka Ullah Waheed</a>
+          <a href="/projects">Projects by Zaka Ullah Waheed</a>
+          <a href="/contact-me">Contact Zaka Ullah Waheed</a>
+        </nav>
+      </div>
     </main>
   );
 }

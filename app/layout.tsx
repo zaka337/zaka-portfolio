@@ -128,11 +128,18 @@ const jsonLd = {
       sameAs: [SOCIAL.github, SOCIAL.linkedin, SOCIAL.instagram],
       jobTitle: "Full-Stack Developer",
       description:
-        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work. Creator of a 3D interactive developer portfolio featuring a live WebGL avatar.",
+        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work. Creator of QA with Zaka — an AI-powered educational QA platform — and a 3D interactive developer portfolio.",
       email: SOCIAL.email,
       address: {
         "@type": "PostalAddress",
         addressCountry: "PK",
+      },
+      hasOccupation: {
+        "@type": "Occupation",
+        name: "Full-Stack Developer",
+        description: "Builds production-grade web apps, mobile apps, and QA automation tools using React, Next.js, Flutter, Firebase, and TypeScript.",
+        occupationalCategory: "15-1252.00",
+        skills: "React, Next.js, TypeScript, Flutter, Firebase, QA Automation, Selenium, n8n, Three.js, WebGL",
       },
       knowsAbout: [
         "React.js",
@@ -218,9 +225,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Preload the 3D avatar so the browser fetches it immediately on HTML parse,
             before JS hydrates — cuts perceived load time significantly */}
         <link rel="preload" href="/Avatar.glb" as="fetch" crossOrigin="anonymous" />
-        {/* Warm up DNS + TLS for the GitHub API used on the Projects page */}
         <link rel="preconnect" href="https://api.github.com" />
         <meta name="google-site-verification" content="DKB_MhzU-pvDYGsvo2EjCQA0mimMBQFvWqICbRasY1Q" />
+        {/* rel="me" — social identity proof for Google's Knowledge Graph */}
+        <link rel="me" href={SOCIAL.github} />
+        <link rel="me" href={SOCIAL.linkedin} />
+        <link rel="me" href={SOCIAL.instagram} />
+        <link rel="me" href={`mailto:${SOCIAL.email}`} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

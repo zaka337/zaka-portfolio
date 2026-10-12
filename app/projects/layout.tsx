@@ -34,6 +34,15 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home",     item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Projects", item: `${SITE_URL}/projects` },
+  ],
+};
+
 const projectsJsonLd = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
@@ -82,6 +91,10 @@ const projectsJsonLd = {
 export default function ProjectsLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(projectsJsonLd) }}

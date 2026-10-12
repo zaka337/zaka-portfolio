@@ -1,6 +1,6 @@
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
-  "https://zaka-portfolio-zaka-sattis-projects-00aacf21.vercel.app";
+  "https://zaka-portfolio-two.vercel.app";
 
 export const QA_ZAKA = {
   name: "QA with Zaka",
