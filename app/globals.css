@@ -491,6 +491,63 @@ canvas {
   .block-ml:hover { transform: translateY(-50%) translateX(-3px); }
 }
 
+/* ─── Page loader ───────────────────────────────────────────────── */
+
+#zk-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #f1ede2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#zk-loader.zk-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.zk-wordmark {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(4.5rem, 18vw, 11rem);
+  font-weight: 900;
+  color: #0d0d0d;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: zkReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+.zk-bar-track {
+  width: clamp(100px, 18vw, 180px);
+  height: 1.5px;
+  background: rgba(13, 13, 13, 0.14);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.zk-bar-fill {
+  height: 100%;
+  background: #0d0d0d;
+  border-radius: 1px;
+  animation: zkBar 2.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+@keyframes zkReveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zkBar {
+  from { width: 0%; }
+  to   { width: 82%; }
+}
+
 /* ─── Reduced motion ────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

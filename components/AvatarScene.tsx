@@ -49,6 +49,9 @@ function AvatarModel() {
       new THREE.Plane(new THREE.Vector3(0, 1, 0), -(worldChin - 0.08)),
     ];
 
+    // Signal the loading screen to dismiss
+    window.dispatchEvent(new Event('zk-ready'));
+
     scene.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         const mb = new THREE.Box3().setFromObject(obj);

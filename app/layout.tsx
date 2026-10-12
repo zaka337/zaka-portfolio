@@ -238,6 +238,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        {/* Loading screen — shown before React hydrates, dismissed when GLB loads */}
+        <div id="zk-loader" aria-hidden="true">
+          <span className="zk-wordmark">ZAKA.</span>
+          <div className="zk-bar-track">
+            <div className="zk-bar-fill" />
+          </div>
+        </div>
+        <script dangerouslySetInnerHTML={{ __html: `
+(function(){
+  function dismiss(){
+    var l=document.getElementById('zk-loader');
+    if(!l||l.classList.contains('zk-done'))return;
+    l.classList.add('zk-done');
+    setTimeout(function(){l.remove();},650);
+  }
+  window.addEventListener('zk-ready',dismiss,{once:true});
+  setTimeout(dismiss,4200);
+})();
+        `}} />
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
