@@ -116,6 +116,7 @@
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+  contain: layout paint;
 }
 
 .pj-ghost {
@@ -127,8 +128,8 @@
   line-height: 0.75;
   color: rgba(13, 13, 13, 0.07);
   user-select: none;
-  transform: translateY(calc(var(--p) * -22vh)) scale(calc(1 + var(--p) * 0.3));
-  transform-origin: right bottom;
+  transform: translateY(calc(var(--p) * -22vh));
+  will-change: transform;
   pointer-events: none;
 }
 
@@ -222,10 +223,9 @@
     rotateX(calc((1 - var(--t)) * 7deg))
     translateY(calc((var(--p) - 0.3) * -34px))
     scale(calc(1 + var(--z) * 0.38));
-  transition: box-shadow 0.3s;
+  backface-visibility: hidden;
   will-change: transform;
 }
-.pj-frame:hover { box-shadow: 0 50px 100px -35px rgba(13, 13, 13, 0.55), 0 8px 24px -12px rgba(13, 13, 13, 0.3); }
 
 .pj-bar {
   display: flex;
@@ -257,14 +257,14 @@
   overflow: hidden;
   background: #fff;
 }
-.pj-viewport iframe {
-  position: absolute;
-  top: 0; left: 0;
-  width: 1280px; height: 800px;
-  border: 0;
-  transform-origin: 0 0;
-  transform: scale(var(--s, 0.45));
-  pointer-events: none;
+.pj-viewport img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .pj-term {

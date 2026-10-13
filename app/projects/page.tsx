@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { SITE_URL } from "@/lib/site";
 import { useScrollUnlock, useChapterProgress, cv } from "@/lib/scrollStory";
 
@@ -18,7 +19,7 @@ interface Project {
   repo?: string;
   repoName?: string;
   language?: string;
-  preview?: boolean; // embed the live site in the frame
+  shot?: string; // captured screenshot shown in the frame
 }
 
 const GH = "https://github.com/zaka337";
@@ -37,7 +38,7 @@ const PROJECTS: Project[] = [
     repo: `${GH}/QA_with_ZAKA`,
     repoName: "QA_with_ZAKA",
     language: "TypeScript",
-    preview: true,
+    shot: "/projects/qa-with-zaka.jpg",
   },
   {
     id: "zong-health-scanner",
@@ -75,7 +76,7 @@ const PROJECTS: Project[] = [
     stack: ["E-commerce", "Web", "Netlify"],
     bg: "#c9d4b0",
     live: "https://glamourhubpk.netlify.app/",
-    preview: true,
+    shot: "/projects/glamourhub.jpg",
   },
   {
     id: "bazaarbox",
@@ -103,35 +104,14 @@ const PROJECTS: Project[] = [
     repo: `${GH}/zaka-portfolio`,
     repoName: "zaka-portfolio",
     language: "TypeScript",
+    shot: "/projects/portfolio.jpg",
   },
 ];
 
-/* Browser frame: live site preview (lazy) or a repo "terminal" for source-only projects. */
+/* Browser frame: captured screenshot, or a repo "terminal" for source-only projects. */
 function Frame({ p }: { p: Project }) {
-  const viewRef = useRef<HTMLDivElement>(null);
-  const [src, setSrc] = useState<string | null>(null);
   const href = p.live ?? p.repo ?? GH;
   const shown = (p.live ?? `github.com/zaka337/${p.repoName ?? ""}`).replace(/^https?:\/\//, "").replace(/\/$/, "");
-
-  useEffect(() => {
-    const el = viewRef.current;
-    if (!el || !p.preview || !p.live) return;
-    const setScale = () => el.style.setProperty("--s", String(el.clientWidth / 1280));
-    setScale();
-    const ro = new ResizeObserver(setScale);
-    ro.observe(el);
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setSrc(p.live!);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "100% 0px" }
-    );
-    io.observe(el);
-    return () => { ro.disconnect(); io.disconnect(); };
-  }, [p.live, p.preview]);
 
   return (
     <a className="pj-frame" href={href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${p.title}`}>
@@ -139,18 +119,16 @@ function Frame({ p }: { p: Project }) {
         <i /><i /><i />
         <span className="pj-url">{shown}</span>
       </div>
-      <div className="pj-viewport" ref={viewRef}>
-        {p.preview && p.live ? (
-          src && (
-            <iframe
-              src={src}
-              title={`${p.title} live preview`}
-              loading="lazy"
-              tabIndex={-1}
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin"
-            />
-          )
+      <div className="pj-viewport">
+        {p.shot ? (
+          <Image
+            src={p.shot}
+            alt={`${p.title} screenshot`}
+            width={1280}
+            height={800}
+            sizes="(max-width: 900px) 92vw, 54vw"
+            draggable={false}
+          />
         ) : (
           <div className="pj-term" aria-hidden="true">
             <span className="dim">$ git clone github.com/zaka337/{p.repoName}</span>
