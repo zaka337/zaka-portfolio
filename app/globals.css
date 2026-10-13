@@ -223,10 +223,11 @@ canvas {
 /* ─── Mobile (≤768px) ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  /* Avatar taller — cap visible from ~54dvh, chin ~68dvh, clears nav rows */
+  /* Face sits in the empty middle row between the name row and the nav cards */
   .avatar-scene {
-    top: 35dvh !important;
-    height: 45dvh !important;
+    top: 55dvh !important;
+    height: 76dvh !important;
+    transform: translateY(-50%);
   }
 
   html, body {
@@ -235,73 +236,41 @@ canvas {
     min-height: 100dvh;
   }
 
+  /* One fixed screen: name + SAY HI on top, clear middle row for the face,
+     2x2 nav cards at the bottom. */
   .portfolio-root {
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
+    height: 100dvh;
+    min-height: 540px;
+    overflow: hidden;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr auto;
-    align-items: start;
-    padding: 6vh 6vw;
-    gap: 4vw 6vw;
-    row-gap: 6vh;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto 1fr auto auto;
+    column-gap: 3vw;
+    row-gap: 1.4dvh;
+    padding: max(3dvh, 14px) 5vw max(3dvh, 14px);
   }
 
-  /* Name block — full width across both columns */
-  .block-tl {
-    position: static;
-    transform: none;
-    grid-column: 1 / -1;
+  .block-tl, .block-tr, .block-ml, .block-mr, .block-bl, .block-br {
+    inset: auto;
   }
 
-  /* Contact (top-right) — start not end, otherwise it drops into the avatar zone */
-  .block-tr {
-    position: static;
-    transform: none;
-    text-align: right;
-    align-self: start;
-  }
-
-  /* About (mid-left) */
-  .block-ml {
-    position: static;
-    transform: none;
-    text-align: left;
-  }
-
-  /* Role (mid-right) */
-  .block-mr {
-    position: static;
-    transform: none;
-    text-align: right;
-  }
-
-  /* Projects (bottom-left) */
-  .block-bl {
-    position: static;
-    transform: none;
-    text-align: left;
-  }
-
-  /* Bottom contact — links to /contact-me (different from SAY HI) */
-  .block-br {
-    position: static;
-    transform: none;
-    text-align: right;
-    grid-column: 2;
-  }
+  .block-tl { position: static; transform: none; grid-row: 1; grid-column: 1 / 5; align-self: start; }
+  .block-tr { position: static; transform: none; grid-row: 1; grid-column: 5 / 7; align-self: start; text-align: right; }
+  .block-ml { position: static; transform: none; grid-row: 3; grid-column: 1 / 4; text-align: left; }
+  .block-mr { position: static; transform: none; grid-row: 3; grid-column: 4 / 7; text-align: right; }
+  .block-bl { position: static; transform: none; grid-row: 4; grid-column: 1 / 4; text-align: left; }
+  .block-br { position: static; transform: none; grid-row: 4; grid-column: 4 / 7; text-align: right; }
 
   .title-huge {
-    font-size: clamp(3rem, 14vw, 6rem);
+    font-size: clamp(2.8rem, 13vw, 5.5rem);
   }
 
   .title-sub {
-    font-size: clamp(1.4rem, 7vw, 3rem);
+    font-size: clamp(1.1rem, 5.4vw, 2.6rem);
   }
 
   .nav-item {
-    font-size: clamp(1.3rem, 6vw, 2.5rem);
+    font-size: clamp(1rem, 5vw, 2rem);
   }
 
   /* Bordered card on every nav block */
@@ -565,18 +534,12 @@ html.zk-skip #zk-loader { display: none !important; }
 /* ─── Extra Small Mobile (≤480px) ───────────────────────────────── */
 
 @media (max-width: 480px) {
-  .portfolio-root {
-    grid-template-columns: 1fr !important;
-    gap: 3vh !important;
-    padding: 4vh 5vw !important;
-  }
-
+  .block-tr,
+  .block-ml,
+  .block-mr,
+  .block-bl,
   .block-br {
-    grid-column: 1 / -1 !important;
-  }
-
-  .block-tr, .block-mr, .block-br {
-    text-align: left !important;
+    padding: 8px 10px 10px !important;
   }
 
   .block-tr::after,
@@ -586,9 +549,6 @@ html.zk-skip #zk-loader { display: none !important; }
     display: none !important; /* Hide arrows on extremely small screens */
   }
 
-  .title-huge {
-    font-size: clamp(2.5rem, 16vw, 4.5rem) !important;
-  }
 }
 
 /* ─── Ultrawide (≥1600px) ───────────────────────────────────────── */
