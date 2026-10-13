@@ -238,6 +238,11 @@ export default function Projects() {
               </div>
               <Frame p={p} />
             </div>
+            <div className="pj-prog" aria-hidden="true">
+              <span><em>0{i + 1}</em></span>
+              <i><b /></i>
+              <span>0{PROJECTS.length}</span>
+            </div>
           </div>
         </section>
       ))}

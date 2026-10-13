@@ -208,7 +208,7 @@ export default function About() {
       <div className="st-pg" aria-hidden="true" />
 
       {/* 0 — HERO */}
-      <section className="st-chapter st-hero" data-chapter>
+      <section className="st-chapter st-hero" data-chapter data-dark-from="0.62">
         <div className="st-sticky">
           <div className="st-hero-content">
             <p className="st-hero-eyebrow">HEY, I&apos;M</p>
@@ -231,7 +231,7 @@ export default function About() {
       </section>
 
       {/* 1 — STORY */}
-      <section className="st-chapter st-dark st-story" data-chapter>
+      <section className="st-chapter st-dark st-story" data-chapter data-tone="dark">
         <div className="st-sticky">
           <Gear teeth={28} className="st-g3" />
           <Gear teeth={24} className="st-g1" />
@@ -246,7 +246,7 @@ export default function About() {
       </section>
 
       {/* 2 — TOOLKIT */}
-      <section className="st-chapter st-dark st-toolkit" data-chapter>
+      <section className="st-chapter st-dark st-toolkit" data-chapter data-tone="dark">
         <div className="st-sticky">
           <Gear teeth={36} className="st-g1" />
           <Gear teeth={16} className="st-g2" />
@@ -294,7 +294,7 @@ export default function About() {
       </section>
 
       {/* 4 — REAL TALK */}
-      <section className="st-chapter st-dark st-facts" data-chapter>
+      <section className="st-chapter st-dark st-facts" data-chapter data-tone="dark">
         <div className="st-sticky">
           <Beat i={0} total={factsTotal}>
             <p className="st-label">04 {'—'} HUMAN THINGS</p>
