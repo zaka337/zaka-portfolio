@@ -142,6 +142,15 @@ canvas {
   user-select: none;
 }
 
+.blink-dot {
+  animation: blinkDot 1s step-end infinite;
+}
+
+@keyframes blinkDot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
 .title-sub {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 900;

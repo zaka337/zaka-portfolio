@@ -102,7 +102,7 @@ export default function Home() {
         <div className="home-enter home-enter-0">
           <p className="label">YOU CAN CALL ME</p>
           <div className="nav-text">
-            <h1 className="title-huge">ZAKA.</h1>
+            <h1 className="title-huge">ZAKA<span className="blink-dot">.</span></h1>
             <p className="title-sub">OR WHATEVER.</p>
           </div>
         </div>
