@@ -75,14 +75,14 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 8vw 8vh;
+  padding: max(14vh, 64px) 8vw max(9vh, 48px);
   transform-origin: 30% 50%;
   transform: scale(calc(1 + var(--p) * 0.25));
   opacity: clamp(0, calc(1 - (var(--p) - 0.18) * 3.5), 1);
 }
 
 .st-hero-eyebrow {
-  margin-bottom: 1.2rem;
+  margin-bottom: clamp(0.6rem, 2vh, 1.2rem);
   font-size: clamp(0.65rem, 1vw, 0.85rem);
   font-weight: 500;
   letter-spacing: 0.2em;
@@ -91,12 +91,12 @@
 }
 
 .st-hero-name {
-  font-size: clamp(3.6rem, 13vw, 13rem);
+  font-size: clamp(2.6rem, min(13vw, 17vh), 13rem);
   font-weight: 900;
   letter-spacing: -0.04em;
   line-height: 0.85;
   text-transform: uppercase;
-  margin-bottom: 2rem;
+  margin-bottom: clamp(0.8rem, 3vh, 2rem);
 }
 
 .st-hero-role {
@@ -425,7 +425,7 @@
 }
 
 @media (max-width: 768px) {
-  .st-hero-content { padding: 0 6vw 8vh; }
+  .st-hero-content { padding: max(14vh, 64px) 6vw max(9vh, 48px); }
   .st-panel { padding: 0 7vw; }
   .st-journey-head { top: 11vh; left: 7vw; }
   .st-bar { left: 7vw; right: 7vw; }
