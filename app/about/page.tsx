@@ -4,21 +4,74 @@ import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 
+/* Globals lock html/body for the 3D home page. Here the viewport itself must scroll
+   (body overflow visible) or position:sticky pins against a non-scrolling body. */
 function useScrollUnlock() {
   useEffect(() => {
-    const prev = document.documentElement.style.overflowY;
-    document.documentElement.style.overflowY = "auto";
-    document.body.style.overflowY = "auto";
+    const html = document.documentElement;
+    const body = document.body;
+    const prev = { hy: html.style.overflowY, bo: body.style.overflow, bh: body.style.height };
+    html.style.overflowY = "auto";
+    body.style.overflow = "visible";
+    body.style.height = "auto";
     return () => {
-      document.documentElement.style.overflowY = prev;
-      document.body.style.overflowY = prev;
+      html.style.overflowY = prev.hy;
+      body.style.overflow = prev.bo;
+      body.style.height = prev.bh;
     };
   }, []);
 }
 
-/* ─── Typewriter ────────────────────────────────────────────────── *
- * Drives text via direct DOM mutation — zero setState calls per tick.
- * ─────────────────────────────────────────────────────────────────── */
+/* Writes --p (0..1 progress through each pinned chapter) and --pg (whole page). */
+function useChapterProgress(rootRef: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const chapters = Array.from(root.querySelectorAll<HTMLElement>("[data-chapter]"));
+    const last = new Map<HTMLElement, number>();
+    let lastPg = -1;
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+      for (const el of chapters) {
+        const r = el.getBoundingClientRect();
+        const span = r.height - vh;
+        const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+        const v = Math.round(p * 1000) / 1000;
+        if (last.get(el) !== v) {
+          last.set(el, v);
+          el.style.setProperty("--p", String(v));
+        }
+      }
+      const rr = root.getBoundingClientRect();
+      const total = rr.height - vh;
+      const pg = total > 0 ? Math.round(Math.min(1, Math.max(0, -rr.top / total)) * 1000) / 1000 : 0;
+      if (pg !== lastPg) {
+        lastPg = pg;
+        root.style.setProperty("--pg", String(pg));
+      }
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    // Capture: the scrolling element may be <body> rather than the window.
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    window.addEventListener("resize", onScroll);
+    update();
+    return () => {
+      window.removeEventListener("scroll", onScroll, { capture: true });
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [rootRef]);
+}
+
+/* ─── Hero text effects ─────────────────────────────────────────── */
+
 function Typewriter({ phrases, speed = 72, pause = 2200 }: {
   phrases: string[];
   speed?: number;
@@ -31,8 +84,8 @@ function Typewriter({ phrases, speed = 72, pause = 2200 }: {
     if (!el) return;
 
     let phraseIdx = 0;
-    let charIdx   = 0;
-    let deleting  = false;
+    let charIdx = 0;
+    let deleting = false;
     let timerId: ReturnType<typeof setTimeout>;
 
     const tick = () => {
@@ -43,13 +96,13 @@ function Typewriter({ phrases, speed = 72, pause = 2200 }: {
         return;
       }
       if (deleting && charIdx === 0) {
-        deleting  = false;
+        deleting = false;
         phraseIdx = (phraseIdx + 1) % phrases.length;
-        timerId   = setTimeout(tick, speed);
+        timerId = setTimeout(tick, speed);
         return;
       }
 
-      charIdx      += deleting ? -1 : 1;
+      charIdx += deleting ? -1 : 1;
       el.textContent = phrases[phraseIdx].slice(0, charIdx);
       timerId = setTimeout(tick, deleting ? speed * 0.5 : speed);
     };
@@ -61,60 +114,6 @@ function Typewriter({ phrases, speed = 72, pause = 2200 }: {
   return <span ref={spanRef} />;
 }
 
-
-const ROLES = [
-  "Full-Stack Developer.",
-  "React & Next.js Engineer.",
-  "Flutter App Builder.",
-  "QA Automation Engineer.",
-  "UI Perfectionist.",
-];
-
-const SKILLS: { cat: string; items: string[]; wide?: boolean }[] = [
-  { cat: "FRONTEND",          items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "JavaScript"], wide: true },
-  { cat: "MOBILE",            items: ["Flutter", "Dart"] },
-  { cat: "FULL-STACK & APIs", items: ["REST APIs", "Firebase", "MongoDB", "SQL"], wide: true },
-  { cat: "AUTOMATION & AI",   items: ["n8n Workflows", "AI-Assisted Dev"] },
-  { cat: "DEPLOYMENT",        items: ["Vercel", "Netlify", "Git / GitHub", "Docker"] },
-  { cat: "QA & TESTING",      items: ["Postman / Newman", "Selenium WebDriver", "Apache JMeter"], wide: true },
-];
-
-const TIMELINE = [
-  {
-    year: "2026",
-    title: "Zong 5G, QA with Zaka & 3D Portfolio",
-    desc: "QA Automation Intern at Zong 5G. Shipped QA with Zaka — a full-stack educational platform built end-to-end. Built an n8n-powered website health scanner. Then built this immersive 3D portfolio: cursor-tracking avatar, floating carousel, scroll-animated pages.",
-  },
-  {
-    year: "2025",
-    title: "Apexify Internship & Production Work",
-    desc: "Frontend Dev Intern at Apexify Technologies — built production-ready React interfaces. Deepened Next.js for production-scale work and sharpened full-stack integration skills.",
-  },
-  {
-    year: "2024",
-    title: "Mobile & E-Commerce",
-    desc: "Built BazaarBox -- a cross-platform e-commerce app in Flutter with Firebase auth and real-time sync. Shipped GlamourHub, a premium e-commerce web app for the Pakistani market.",
-  },
-  {
-    year: "2023",
-    title: "APIs, Testing & Workflow Automation",
-    desc: "Went deep into REST API integration, QA automation with Selenium and JMeter, and CI-ready Postman/Newman test collections. Learned that reliability matters as much as features.",
-  },
-  {
-    year: "2022",
-    title: "Where It All Started",
-    desc: "First lines of HTML. First React component. First bug that took hours to fix. Joined Air University for BS Information Technology. Been hooked ever since.",
-  },
-];
-
-const FACTS = [
-  { n: "01", text: "Pixel-perfect or it doesn't ship.",         tag: "OBSESSION"  },
-  { n: "02", text: "Best commits land after midnight.",          tag: "HABITS"     },
-  { n: "03", text: "Coffee, code, repeat. Non-negotiable.",     tag: "FUEL"       },
-  { n: "04", text: "More side projects than finished ones.",     tag: "CONFESSION" },
-  { n: "05", text: "1px off? Can't unsee it. Won't ignore it.", tag: "TRUTH"      },
-];
-
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 function scrambleChar(c: string): string {
@@ -124,7 +123,7 @@ function scrambleChar(c: string): string {
 
 function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
   const spanRef = useRef<HTMLSpanElement>(null);
-  const rafRef  = useRef<number>(0);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
     const el = spanRef.current;
@@ -132,7 +131,7 @@ function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
     el.textContent = text.split("").map(scrambleChar).join("");
 
     const timer = setTimeout(() => {
-      const start    = performance.now();
+      const start = performance.now();
       const DURATION = 700;
       const tick = (now: number) => {
         const progress = Math.min((now - start) / DURATION, 1);
@@ -146,498 +145,253 @@ function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
     return () => {
       clearTimeout(timer);
       cancelAnimationFrame(rafRef.current);
-      el.textContent = text; // reset so Strict Mode remount finds real text
+      el.textContent = text;
     };
   }, [text, delay]);
 
   return <span ref={spanRef} suppressHydrationWarning>{text}</span>;
 }
 
-const T: React.CSSProperties = { fontFamily: "'Helvetica Neue', Arial, sans-serif" };
+/* ─── Procedural gear (engraved-line look, no assets) ───────────── */
+
+function Gear({ teeth = 24, className }: { teeth?: number; className?: string }) {
+  const f = (n: number) => n.toFixed(2);
+  const ro = 96;
+  const ri = 84;
+  const step = (Math.PI * 2) / teeth;
+  const profile: [number, number][] = [[0, ri], [0.16, ri], [0.28, ro], [0.62, ro], [0.74, ri]];
+  let d = "";
+  for (let i = 0; i < teeth; i++) {
+    profile.forEach(([t, r], j) => {
+      const a = (i + t) * step;
+      d += `${i === 0 && j === 0 ? "M" : "L"}${f(Math.cos(a) * r)} ${f(Math.sin(a) * r)} `;
+    });
+  }
+  d += "Z";
+  return (
+    <svg className={`st-gear ${className ?? ""}`} viewBox="-100 -100 200 200" aria-hidden="true">
+      <path d={d} />
+      <circle r="72" />
+      <circle r="66" strokeDasharray="1.2 3.4" />
+      <circle r="24" />
+      <circle r="9" />
+      {Array.from({ length: 6 }, (_, k) => {
+        const a = (k * Math.PI) / 3;
+        return (
+          <line key={k} x1={f(Math.cos(a) * 24)} y1={f(Math.sin(a) * 24)} x2={f(Math.cos(a) * 72)} y2={f(Math.sin(a) * 72)} />
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ─── Beat: one statement that fades in/out across a chapter ────── */
+
+const cv = (o: Record<string, string | number>) => o as React.CSSProperties;
+
+function Beat({ i, total, children }: { i: number; total: number; children: React.ReactNode }) {
+  const cls = ["st-beat", i === 0 ? "st-beat-first" : "", i === total - 1 ? "st-beat-last" : ""].join(" ");
+  return <div className={cls} style={cv({ "--i": i, "--n": total })}>{children}</div>;
+}
+
+/* ─── Content ───────────────────────────────────────────────────── */
+
+const ROLES = [
+  "Full-Stack Developer.",
+  "React & Next.js Engineer.",
+  "Flutter App Builder.",
+  "QA Automation Engineer.",
+  "UI Perfectionist.",
+];
+
+const STORY = [
+  { a: "Frontend / Full-Stack Developer", b: "based in Islamabad, Pakistan." },
+  { a: "I design, build and ship web platforms end to end.", b: "React frontends, APIs, live on Vercel." },
+  { a: "I bring a QA mindset to everything I build.", b: "Reliability is baked in from the start." },
+];
+
+const SKILLS: { cat: string; items: string[] }[] = [
+  { cat: "Frontend", items: ["React.js", "Next.js", "Tailwind CSS", "HTML5", "CSS3", "JavaScript"] },
+  { cat: "Mobile", items: ["Flutter", "Dart"] },
+  { cat: "Full-Stack & APIs", items: ["REST APIs", "Firebase", "MongoDB", "SQL"] },
+  { cat: "Automation & AI", items: ["n8n Workflows", "AI-Assisted Dev"] },
+  { cat: "Deployment", items: ["Vercel", "Netlify", "Git / GitHub", "Docker"] },
+  { cat: "QA & Testing", items: ["Postman / Newman", "Selenium WebDriver", "Apache JMeter"] },
+];
+
+// Chronological: the story builds left to right.
+const TIMELINE = [
+  {
+    year: "2022",
+    title: "Where It All Started",
+    desc: "First lines of HTML. First React component. First bug that took hours to fix. Joined Air University for BS Information Technology. Been hooked ever since.",
+  },
+  {
+    year: "2023",
+    title: "APIs, Testing & Workflow Automation",
+    desc: "Went deep into REST API integration, QA automation with Selenium and JMeter, and CI-ready Postman/Newman test collections. Learned that reliability matters as much as features.",
+  },
+  {
+    year: "2024",
+    title: "Mobile & E-Commerce",
+    desc: "Built BazaarBox -- a cross-platform e-commerce app in Flutter with Firebase auth and real-time sync. Shipped GlamourHub, a premium e-commerce web app for the Pakistani market.",
+  },
+  {
+    year: "2025",
+    title: "Apexify Internship & Production Work",
+    desc: "Frontend Dev Intern at Apexify Technologies — built production-ready React interfaces. Deepened Next.js for production-scale work and sharpened full-stack integration skills.",
+  },
+  {
+    year: "2026",
+    title: "Zong 5G, QA with Zaka & 3D Portfolio",
+    desc: "QA Automation Intern at Zong 5G. Shipped QA with Zaka — a full-stack educational platform built end-to-end. Built an n8n-powered website health scanner. Then built this immersive 3D portfolio: cursor-tracking avatar, floating carousel, scroll-animated pages.",
+  },
+];
+
+const FACTS = [
+  { text: "Pixel-perfect or it doesn't ship.", tag: "OBSESSION" },
+  { text: "Best commits land after midnight.", tag: "HABITS" },
+  { text: "Coffee, code, repeat. Non-negotiable.", tag: "FUEL" },
+  { text: "More side projects than finished ones.", tag: "CONFESSION" },
+  { text: "1px off? Can't unsee it. Won't ignore it.", tag: "TRUTH" },
+];
+
+/* ─── Page ──────────────────────────────────────────────────────── */
 
 export default function About() {
   useScrollUnlock();
+  const rootRef = useRef<HTMLElement>(null);
+  useChapterProgress(rootRef);
+
+  const toolkitTotal = SKILLS.length + 1;
+  const factsTotal = FACTS.length + 1;
 
   return (
-    <main style={{ backgroundColor: "var(--paper)", minHeight: "100vh", overflowX: "hidden" }}>
+    <main ref={rootRef} className="st-root">
+      <div className="st-nav">
+        <Link href="/">{'←'} Back.</Link>
+        <span>About me</span>
+      </div>
+      <div className="st-pg" aria-hidden="true" />
 
-      {/* HERO */}
-      <section style={{
-        position: "relative",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        borderBottom: "1px solid rgba(13,13,13,0.12)",
-      }}>
-
-        {/* NAV ROW */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "4vh 4vw",
-          flexShrink: 0,
-        }}>
-          <Link
-            href="/"
-            style={{
-              ...T,
-              fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)",
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              color: "var(--ink-50)",
-              textDecoration: "none",
-              textTransform: "uppercase",
-              transition: "color 0.2s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--ink)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "var(--ink-50)")}
-          >
-            {'←'} BACK.
-          </Link>
-          <span style={{
-            ...T,
-            fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)",
-            fontWeight: 400,
-            letterSpacing: "0.12em",
-            color: "var(--ink-50)",
-            textTransform: "uppercase",
-          }}>
-            ABOUT ME
-          </span>
-        </div>
-
-        {/* HERO CONTENT */}
-        <div style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "0 8vw 8vh",
-        }}>
-          <p style={{
-            ...T,
-            fontSize: "clamp(0.65rem, 1vw, 0.85rem)",
-            fontWeight: 500,
-            letterSpacing: "0.2em",
-            color: "var(--ink-50)",
-            textTransform: "uppercase",
-            marginBottom: "1.2rem",
-          }}>
-            HEY, I&apos;M
-          </p>
-
-          <h1 aria-label="ZAKA ULLAH WAHEED" style={{
-            ...T,
-            fontSize: "clamp(4rem, 13vw, 13rem)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 0.85,
-            color: "var(--ink)",
-            textTransform: "uppercase",
-            marginBottom: "2rem",
-          }}>
-            <ScrambleText text="ZAKA" delay={80} /><br />
-            <ScrambleText text="ULLAH" delay={260} /><br />
-            <ScrambleText text="WAHEED." delay={440} />
-          </h1>
-
-          <div style={{
-            ...T,
-            fontSize: "clamp(1rem, 2.2vw, 2rem)",
-            fontWeight: 700,
-            letterSpacing: "-0.01em",
-            color: "var(--ink-70)",
-            minHeight: "2.5rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}>
-            <Typewriter phrases={ROLES} />
-            <span style={{
-              display: "inline-block",
-              width: 3,
-              height: "1.1em",
-              backgroundColor: "var(--ink)",
-              verticalAlign: "middle",
-              animation: "blink 0.9s step-end infinite",
-            }} />
+      {/* 0 — HERO */}
+      <section className="st-chapter st-hero" data-chapter>
+        <div className="st-sticky">
+          <div className="st-hero-content">
+            <p className="st-hero-eyebrow">HEY, I&apos;M</p>
+            <h1 className="st-hero-name" aria-label="ZAKA ULLAH WAHEED">
+              <ScrambleText text="ZAKA" delay={80} /><br />
+              <ScrambleText text="ULLAH" delay={260} /><br />
+              <ScrambleText text="WAHEED." delay={440} />
+            </h1>
+            <div className="st-hero-role">
+              <Typewriter phrases={ROLES} />
+              <span className="st-caret" />
+            </div>
+          </div>
+          <div className="st-iris" />
+          <div className="st-scroll-hint" aria-hidden="true">
+            <span>SCROLL</span>
+            <i />
           </div>
         </div>
-
-        {/* SCROLL INDICATOR */}
-        <div className="about-scroll-hint" style={{
-          position: "absolute",
-          bottom: "5vh",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 8,
-        }}>
-          <span style={{
-            ...T,
-            fontSize: "clamp(0.45rem, 0.6vw, 0.55rem)",
-            fontWeight: 500,
-            letterSpacing: "0.24em",
-            color: "var(--ink-50)",
-            textTransform: "uppercase",
-          }}>
-            SCROLL
-          </span>
-          <div style={{
-            width: 1,
-            height: 48,
-            backgroundColor: "var(--ink-50)",
-            animation: "scrollLine 1.8s ease-in-out infinite",
-          }} />
-        </div>
-
       </section>
 
-      {/* BIO */}
-      <section className="about-bio-grid about-section" style={{
-        padding: "12vh 8vw",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "6vw",
-        alignItems: "start",
-        borderBottom: "1px solid rgba(13,13,13,0.12)",
-      }}>
-        <Reveal>
-          <p style={{
-            ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
-            letterSpacing: "0.22em", color: "var(--ink-50)",
-            textTransform: "uppercase", marginBottom: "1.5rem",
-          }}>
-            01 {'—'} WHO AM I
-          </p>
-          <h2 style={{
-            ...T, fontSize: "clamp(3rem, 8vw, 8rem)", fontWeight: 900,
-            letterSpacing: "-0.04em", lineHeight: 0.85,
-            color: "var(--ink)", textTransform: "uppercase",
-          }}>
-            THE<br />STORY.
-          </h2>
-        </Reveal>
+      {/* 1 — STORY */}
+      <section className="st-chapter st-dark st-story" data-chapter>
+        <div className="st-sticky">
+          <Gear teeth={28} className="st-g3" />
+          <Gear teeth={24} className="st-g1" />
+          <Gear teeth={14} className="st-g2" />
+          {STORY.map((s, i) => (
+            <Beat key={i} i={i} total={STORY.length}>
+              <p className="st-line-a">{s.a}</p>
+              <p className="st-bw"><span className="st-b">{s.b}</span></p>
+            </Beat>
+          ))}
+        </div>
+      </section>
 
-        <Reveal delay={150}>
-          <div style={{ paddingTop: "clamp(0rem, 2vw, 2rem)" }}>
-            {[
-              "Frontend / Full-Stack Developer based in Islamabad, Pakistan. I design, build, and ship full-stack web platforms end-to-end: React frontends, backend APIs, database integration, and production deployment on Vercel.",
-              "I bring a QA mindset to everything I build. From writing Postman/Newman test collections to Selenium WebDriver automation -- reliability isn't an afterthought, it's baked in from the start.",
-              "Currently deepening Next.js for production-scale work and experimenting with AI-assisted development and n8n workflow automation. If it improves how software gets built, I'm already tinkering with it.",
-            ].map((para, i) => (
-              <p key={i} style={{
-                ...T, fontSize: "clamp(0.95rem, 1.3vw, 1.2rem)", fontWeight: 400,
-                lineHeight: 1.7, color: "var(--ink-70)",
-                marginBottom: i < 2 ? "1.4rem" : 0,
-              }}>
-                {para}
+      {/* 2 — TOOLKIT */}
+      <section className="st-chapter st-dark st-toolkit" data-chapter>
+        <div className="st-sticky">
+          <Gear teeth={36} className="st-g1" />
+          <Gear teeth={16} className="st-g2" />
+          <Gear teeth={12} className="st-g3" />
+          <Beat i={0} total={toolkitTotal}>
+            <p className="st-label">02 {'—'} TOOLKIT</p>
+            <h2 className="st-big-head">What I build with.</h2>
+          </Beat>
+          {SKILLS.map((s, i) => (
+            <Beat key={s.cat} i={i + 1} total={toolkitTotal}>
+              <h3 className="st-cat">{s.cat}</h3>
+              <p className="st-items">
+                {s.items.map((it, k) => (
+                  <span key={it} style={cv({ "--k": k })}>{it}</span>
+                ))}
               </p>
+            </Beat>
+          ))}
+        </div>
+      </section>
+
+      {/* 3 — JOURNEY */}
+      <section className="st-chapter st-journey" data-chapter>
+        <div className="st-sticky">
+          <div className="st-journey-head">
+            <p className="st-label">03 {'—'} JOURNEY</p>
+          </div>
+          <div
+            className="st-track"
+            style={cv({ width: `${TIMELINE.length * 100}%`, "--shift": `${((TIMELINE.length - 1) / TIMELINE.length) * 100}%` })}
+          >
+            {TIMELINE.map((t) => (
+              <div className="st-panel" key={t.year}>
+                <span className="st-year-ghost" aria-hidden="true">{t.year}</span>
+                <div className="st-panel-body">
+                  <p className="st-panel-year">{t.year}</p>
+                  <h2 className="st-panel-title">{t.title}</h2>
+                  <p className="st-panel-desc">{t.desc}</p>
+                </div>
+              </div>
             ))}
           </div>
-        </Reveal>
-      </section>
-
-      {/* SKILLS */}
-      <section className="about-section" style={{
-        padding: "12vh 8vw",
-        borderBottom: "1px solid rgba(13,13,13,0.12)",
-      }}>
-        <Reveal>
-          <p style={{
-            ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
-            letterSpacing: "0.22em", color: "var(--ink-50)",
-            textTransform: "uppercase", marginBottom: "0.6rem",
-          }}>
-            02 {'—'} TOOLKIT
-          </p>
-          <h2 style={{
-            ...T, fontSize: "clamp(2.5rem, 6vw, 6rem)", fontWeight: 900,
-            letterSpacing: "-0.04em", lineHeight: 0.85,
-            color: "var(--ink)", textTransform: "uppercase",
-            marginBottom: "4rem",
-          }}>
-            WHAT I BUILD WITH.
-          </h2>
-        </Reveal>
-
-        <div className="about-skills-grid" style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "1px",
-          backgroundColor: "rgba(13,13,13,0.12)",
-          border: "1px solid rgba(13,13,13,0.12)",
-        }}>
-          {SKILLS.map((s, i) => (
-            <div key={i} className={s.wide ? "skill-wide" : undefined}
-              style={{ overflow: "hidden", backgroundColor: "var(--paper)" }}>
-              <Reveal delay={i * 70} style={{ height: "100%" }}>
-                <div style={{
-                  backgroundColor: "var(--paper)",
-                  padding: "clamp(1.4rem, 2.5vw, 2.2rem)",
-                  height: "100%",
-                  boxSizing: "border-box",
-                }}>
-                  <p style={{
-                    ...T, fontSize: "clamp(0.45rem, 0.6vw, 0.56rem)", fontWeight: 700,
-                    letterSpacing: "0.22em", color: "var(--ink-50)",
-                    textTransform: "uppercase", marginBottom: "1rem",
-                  }}>
-                    {s.cat}
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {s.items.map(item => (
-                      <span key={item} style={{
-                        ...T, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", fontWeight: 700,
-                        color: "var(--ink)", letterSpacing: "-0.01em",
-                      }}>
-                        {item}
-                        <span style={{ color: "var(--ink-50)", marginLeft: 8 }}>{'·'}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          ))}
+          <div className="st-bar" aria-hidden="true"><i /></div>
         </div>
       </section>
 
-      {/* TIMELINE */}
-      <section className="about-section" style={{
-        padding: "12vh 8vw",
-        borderBottom: "1px solid rgba(13,13,13,0.12)",
-      }}>
-        <Reveal>
-          <p style={{
-            ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
-            letterSpacing: "0.22em", color: "var(--ink-50)",
-            textTransform: "uppercase", marginBottom: "0.6rem",
-          }}>
-            03 {'—'} JOURNEY
-          </p>
-          <h2 style={{
-            ...T, fontSize: "clamp(2.5rem, 6vw, 6rem)", fontWeight: 900,
-            letterSpacing: "-0.04em", lineHeight: 0.85,
-            color: "var(--ink)", textTransform: "uppercase",
-            marginBottom: "5rem",
-          }}>
-            HOW I GOT HERE.
-          </h2>
-        </Reveal>
-
-        <div>
-          {TIMELINE.map((item, i) => (
-            <Reveal key={i} delay={i * 100}>
-              <div className="about-timeline" style={{
-                display: "grid",
-                gridTemplateColumns: "120px 1fr",
-                gap: "3vw",
-                paddingBottom: "3.5rem",
-                marginBottom: "3.5rem",
-                borderBottom: i < TIMELINE.length - 1 ? "1px solid rgba(13,13,13,0.1)" : "none",
-              }}>
-                <div>
-                  <p style={{
-                    ...T, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900,
-                    color: "rgba(13,13,13,0.08)", letterSpacing: "-0.04em", lineHeight: 1,
-                  }}>
-                    {item.year}
-                  </p>
-                </div>
-                <div>
-                  <p style={{
-                    ...T, fontSize: "clamp(0.6rem, 0.8vw, 0.72rem)", fontWeight: 700,
-                    letterSpacing: "0.16em", color: "var(--ink-50)",
-                    textTransform: "uppercase", marginBottom: "0.6rem",
-                  }}>
-                    {item.year}
-                  </p>
-                  <h3 style={{
-                    ...T, fontSize: "clamp(1.2rem, 2vw, 1.8rem)", fontWeight: 800,
-                    color: "var(--ink)", letterSpacing: "-0.02em",
-                    marginBottom: "0.7rem",
-                  }}>
-                    {item.title}
-                  </h3>
-                  <p style={{
-                    ...T, fontSize: "clamp(0.85rem, 1.1vw, 1rem)", fontWeight: 400,
-                    color: "var(--ink-70)", lineHeight: 1.6,
-                  }}>
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* FUN FACTS */}
-      <section className="about-section" style={{
-        padding: "12vh 8vw",
-        borderBottom: "1px solid rgba(13,13,13,0.12)",
-      }}>
-        <Reveal>
-          <p style={{
-            ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
-            letterSpacing: "0.22em", color: "var(--ink-50)",
-            textTransform: "uppercase", marginBottom: "0.6rem",
-          }}>
-            04 {'—'} HUMAN THINGS
-          </p>
-          <h2 style={{
-            ...T, fontSize: "clamp(2.5rem, 6vw, 6rem)", fontWeight: 900,
-            letterSpacing: "-0.04em", lineHeight: 0.85,
-            color: "var(--ink)", textTransform: "uppercase",
-            marginBottom: "4rem",
-          }}>
-            REAL TALK.
-          </h2>
-        </Reveal>
-
-        <div style={{ borderTop: "1px solid rgba(13,13,13,0.14)" }}>
+      {/* 4 — REAL TALK */}
+      <section className="st-chapter st-dark st-facts" data-chapter>
+        <div className="st-sticky">
+          <Beat i={0} total={factsTotal}>
+            <p className="st-label">04 {'—'} HUMAN THINGS</p>
+            <h2 className="st-big-head">Real talk.</h2>
+          </Beat>
           {FACTS.map((f, i) => (
-            <Reveal key={i} delay={i * 60}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "clamp(1.2rem, 3vw, 3rem)",
-                  borderBottom: "1px solid rgba(13,13,13,0.14)",
-                  margin: "0 -8vw",
-                  padding: "clamp(1.2rem, 2.2vh, 1.8rem) 8vw",
-                  transition: "background 0.2s",
-                  cursor: "default",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,13,13,0.025)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-              >
-                <span style={{
-                  ...T, fontSize: "clamp(0.55rem, 0.7vw, 0.65rem)", fontWeight: 700,
-                  letterSpacing: "0.16em", color: "var(--ink-50)",
-                  flexShrink: 0, minWidth: "2.5rem",
-                }}>
-                  {f.n}
-                </span>
-                <p style={{
-                  ...T, flex: 1,
-                  fontSize: "clamp(1.4rem, 3vw, 3.2rem)",
-                  fontWeight: 900, letterSpacing: "-0.03em",
-                  color: "var(--ink)", lineHeight: 1.1,
-                }}>
-                  {f.text}
-                </p>
-                <span style={{
-                  ...T, fontSize: "clamp(0.48rem, 0.62vw, 0.58rem)", fontWeight: 700,
-                  letterSpacing: "0.2em", color: "var(--ink-50)",
-                  textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0,
-                }}>
-                  {f.tag}
-                </span>
-              </div>
-            </Reveal>
+            <Beat key={f.tag} i={i + 1} total={factsTotal}>
+              <p className="st-label">0{i + 1} / 0{FACTS.length}</p>
+              <p className="st-fact">{f.text}</p>
+              <p className="st-fact-tag">{f.tag}</p>
+            </Beat>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="about-section" style={{
-        padding: "14vh 8vw",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-        gap: "2rem",
-      }}>
+      {/* 5 — CLOSING */}
+      <section className="st-cta">
         <Reveal>
-          <p style={{
-            ...T, fontSize: "clamp(0.5rem, 0.7vw, 0.65rem)", fontWeight: 600,
-            letterSpacing: "0.22em", color: "var(--ink-50)",
-            textTransform: "uppercase", marginBottom: "0.8rem",
-          }}>
+          <p className="st-label" style={{ marginBottom: "0.8rem", color: "var(--ink-50)", opacity: 1 }}>
             THAT&apos;S ENOUGH ABOUT ME
           </p>
-          <h2 style={{
-            ...T, fontSize: "clamp(2.5rem, 7vw, 7rem)", fontWeight: 900,
-            letterSpacing: "-0.04em", lineHeight: 0.85,
-            color: "var(--ink)", textTransform: "uppercase",
-            marginBottom: "3rem",
-          }}>
-            LET&apos;S TALK<br />ABOUT YOUR<br />PROJECT.
+          <h2 className="st-cta-title">
+            Let&apos;s talk<br />about your<br />project.
           </h2>
-
-          <div style={{ display: "flex", gap: "1.2rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <Link
-              href="/contact"
-              style={{
-                ...T, display: "inline-block",
-                padding: "1rem 2.4rem",
-                border: "1.5px solid var(--ink)",
-                borderRadius: 2,
-                fontSize: "clamp(0.75rem, 1vw, 0.9rem)", fontWeight: 700,
-                letterSpacing: "0.14em", color: "var(--paper)",
-                textDecoration: "none", textTransform: "uppercase",
-                backgroundColor: "var(--ink)",
-                transition: "background 0.2s, color 0.2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ink)"; e.currentTarget.style.color = "var(--paper)"; }}
-            >
-              SAY HI
-            </Link>
-            <Link
-              href="/projects"
-              style={{
-                ...T, display: "inline-block",
-                padding: "1rem 2.4rem",
-                border: "1.5px solid rgba(13,13,13,0.3)",
-                borderRadius: 2,
-                fontSize: "clamp(0.75rem, 1vw, 0.9rem)", fontWeight: 700,
-                letterSpacing: "0.14em", color: "var(--ink-70)",
-                textDecoration: "none", textTransform: "uppercase",
-                transition: "border-color 0.2s, color 0.2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.3)"; e.currentTarget.style.color = "var(--ink-70)"; }}
-            >
-              SEE WORK
-            </Link>
+          <div className="st-cta-row">
+            <Link href="/contact" className="st-btn st-btn-solid">Say hi</Link>
+            <Link href="/projects" className="st-btn st-btn-ghost">See work</Link>
           </div>
         </Reveal>
       </section>
-
-      <style>{`
-        .skill-wide { grid-column: span 2; }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0; }
-        }
-        @keyframes scrollLine {
-          0%   { transform: scaleY(0); transform-origin: top;    opacity: 1; }
-          50%  { transform: scaleY(1); transform-origin: top;    opacity: 1; }
-          100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
-        }
-        @media (max-width: 768px) {
-          .about-section     { padding: 8vh 6vw !important; }
-          .about-bio-grid    { grid-template-columns: 1fr !important; }
-          .about-skills-grid { grid-template-columns: 1fr !important; }
-          .skill-wide        { grid-column: span 1 !important; }
-          .about-timeline    { display: block !important; }
-          .about-scroll-hint { display: none !important; }
-        }
-        @media (max-width: 480px) {
-          .about-section     { padding: 6vh 5vw !important; }
-          .about-timeline    { gap: 4vw !important; }
-        }
-        /* Also hide on very short viewports where it would crowd the name */
-        @media (max-height: 720px) {
-          .about-scroll-hint { display: none !important; }
-        }
-      `}</style>
     </main>
   );
 }

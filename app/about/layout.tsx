@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
+import "./about.css";
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

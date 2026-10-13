@@ -1,0 +1,437 @@
+/* About page — scroll story.
+   Each [data-chapter] section gets --p (0..1) from the page script; everything
+   below is pure CSS driven by that variable. */
+
+.st-root {
+  position: relative;
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
+  --pg: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* ─── Fixed chrome ──────────────────────────────────────────────── */
+
+.st-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  padding: 3.2vh 4vw;
+  color: #f1ede2;
+  mix-blend-mode: difference;
+  font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.st-nav a { pointer-events: auto; color: inherit; text-decoration: none; transition: opacity 0.2s; }
+.st-nav a:hover { opacity: 0.55; }
+
+.st-pg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  z-index: 51;
+  background: #f1ede2;
+  mix-blend-mode: difference;
+  transform-origin: left center;
+  transform: scaleX(var(--pg));
+}
+
+/* ─── Chapter scaffolding ───────────────────────────────────────── */
+
+.st-chapter { position: relative; --p: 0; }
+
+.st-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.st-dark .st-sticky { background: var(--ink); color: #f1ede2; }
+
+.st-label {
+  font-size: clamp(0.55rem, 0.8vw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+/* ─── Hero ──────────────────────────────────────────────────────── */
+
+.st-hero { height: 240vh; }
+.st-hero .st-sticky { background: var(--paper); }
+
+.st-hero-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw 8vh;
+  transform-origin: 30% 50%;
+  transform: scale(calc(1 + var(--p) * 0.25));
+  opacity: clamp(0, calc(1 - (var(--p) - 0.18) * 3.5), 1);
+}
+
+.st-hero-eyebrow {
+  margin-bottom: 1.2rem;
+  font-size: clamp(0.65rem, 1vw, 0.85rem);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--ink-50);
+  text-transform: uppercase;
+}
+
+.st-hero-name {
+  font-size: clamp(3.6rem, 13vw, 13rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.st-hero-role {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-70);
+}
+.st-caret {
+  display: inline-block;
+  width: 3px;
+  height: 1.1em;
+  background: var(--ink);
+  animation: stBlink 0.9s step-end infinite;
+}
+
+/* Dark circle that grows from the centre and becomes the next chapter */
+.st-iris {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 30vmax; height: 30vmax;
+  margin: -15vmax 0 0 -15vmax;
+  border-radius: 50%;
+  background: var(--ink);
+  transform: scale(calc(max(0, var(--p) - 0.35) * 14));
+  will-change: transform;
+}
+
+.st-scroll-hint {
+  position: absolute;
+  bottom: 5vh; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  opacity: clamp(0, calc(1 - var(--p) * 8), 1);
+}
+.st-scroll-hint span {
+  font-size: clamp(0.5rem, 0.65vw, 0.6rem);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  color: var(--ink-50);
+}
+.st-scroll-hint i {
+  display: block;
+  width: 1px; height: 48px;
+  background: var(--ink-50);
+  animation: stLine 1.8s ease-in-out infinite;
+}
+
+/* ─── Beats (one statement at a time) ───────────────────────────── */
+
+.st-beat {
+  --q: clamp(0, calc((var(--p) - var(--i) / var(--n)) * var(--n)), 1);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0 7vw;
+  text-align: center;
+  opacity: clamp(0, calc(min(var(--q) * 7, (1 - var(--q)) * 7)), 1);
+  transform: translateY(calc((0.5 - var(--q)) * 44px));
+  pointer-events: none;
+}
+.st-beat-first { opacity: clamp(0, calc((1 - var(--q)) * 7), 1); }
+.st-beat-last  { opacity: clamp(0, calc(var(--q) * 7), 1); }
+.st-beat-first.st-beat-last { opacity: 1; }
+
+.st-line-a {
+  font-size: clamp(1.05rem, 2.5vw, 2.1rem);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  opacity: 0.78;
+}
+
+/* Typed key phrase */
+.st-bw {
+  --t: clamp(0, calc((var(--q) - 0.12) * 3.2), 1);
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(1.7rem, 5.2vw, 4.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+.st-b {
+  display: inline-block;
+  clip-path: inset(-0.1em calc((1 - var(--t)) * 100%) -0.1em 0);
+}
+.st-bw::after {
+  content: "";
+  position: absolute;
+  top: 0.08em; bottom: 0.08em;
+  left: calc(var(--t) * 100%);
+  width: 3px;
+  background: currentColor;
+  animation: stBlink 0.9s step-end infinite;
+}
+
+/* ─── Story + gear decoration ───────────────────────────────────── */
+
+.st-story { height: 360vh; }
+.st-toolkit { height: 640vh; }
+.st-facts { height: 480vh; }
+
+.st-gear {
+  position: absolute;
+  left: 50%; top: 50%;
+  fill: none;
+  stroke: rgba(241, 237, 226, 0.26);
+  stroke-width: 1;
+  will-change: transform;
+}
+.st-gear path, .st-gear circle, .st-gear line { vector-effect: non-scaling-stroke; }
+
+.st-story .st-g1 {
+  width: 92vmin; height: 92vmin; margin: -46vmin 0 0 -46vmin;
+  transform: scale(calc(0.7 + var(--p) * 2.4)) rotate(calc(var(--p) * 150deg));
+}
+.st-story .st-g2 {
+  width: 54vmin; height: 54vmin; margin: -27vmin 0 0 -27vmin;
+  transform: translateX(calc(var(--p) * -34vmin)) rotate(calc(var(--p) * -260deg)) scale(calc(0.6 + var(--p) * 1.2));
+  opacity: 0.8;
+}
+.st-story .st-g3 {
+  width: 130vmin; height: 130vmin; margin: -65vmin 0 0 -65vmin;
+  transform: scale(calc(0.5 + var(--p) * 1.6)) rotate(calc(var(--p) * -90deg));
+  opacity: 0.55;
+}
+
+/* ─── Toolkit ───────────────────────────────────────────────────── */
+
+.st-toolkit .st-g1 {
+  width: min(92vmin, 980px); height: min(92vmin, 980px);
+  margin: calc(min(92vmin, 980px) / -2) 0 0 calc(min(92vmin, 980px) / -2);
+  transform: rotate(calc(var(--p) * 300deg));
+  stroke: rgba(241, 237, 226, 0.34);
+}
+.st-toolkit .st-g2 {
+  width: 38vmin; height: 38vmin; margin: -19vmin 0 0 -19vmin;
+  transform: translate(calc(min(46vw, 560px) * -1), 30vmin) rotate(calc(var(--p) * -420deg));
+  opacity: 0.7;
+}
+.st-toolkit .st-g3 {
+  width: 30vmin; height: 30vmin; margin: -15vmin 0 0 -15vmin;
+  transform: translate(min(46vw, 560px), -30vmin) rotate(calc(var(--p) * 460deg));
+  opacity: 0.7;
+}
+
+.st-cat {
+  font-size: clamp(2.2rem, 8vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+.st-items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35em 0.9em;
+  max-width: min(78vw, 900px);
+  margin-top: 0.8em;
+  font-size: clamp(1rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.st-items span {
+  opacity: clamp(0, calc((var(--q) - 0.08 - var(--k) * 0.06) * 9), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--q) - 0.08 - var(--k) * 0.06) * 9), 1)) * 14px));
+}
+.st-items span + span::before { content: "\00b7"; margin-right: 0.9em; opacity: 0.45; }
+
+.st-big-head {
+  font-size: clamp(2.6rem, 9vw, 8.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+/* ─── Journey (horizontal) ──────────────────────────────────────── */
+
+.st-journey { height: 450vh; }
+.st-journey .st-sticky { background: var(--paper); }
+
+.st-track {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  display: flex;
+  transform: translateX(calc(var(--p) * var(--shift) * -1));
+  will-change: transform;
+}
+.st-panel {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8vw;
+}
+.st-year-ghost {
+  position: absolute;
+  left: 3vw; top: 50%;
+  transform: translateY(-50%) translateX(calc(var(--p) * 9vw));
+  font-size: clamp(7rem, 32vw, 30rem);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  color: rgba(13, 13, 13, 0.06);
+  user-select: none;
+}
+.st-panel-body { position: relative; z-index: 1; max-width: 44rem; }
+.st-panel-year {
+  margin-bottom: 0.8rem;
+  font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--ink-50);
+}
+.st-panel-title {
+  margin-bottom: 1rem;
+  font-size: clamp(1.7rem, 4.6vw, 4.2rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  text-transform: uppercase;
+}
+.st-panel-desc {
+  font-size: clamp(0.95rem, 1.35vw, 1.25rem);
+  line-height: 1.65;
+  color: var(--ink-70);
+}
+.st-journey-head { position: absolute; top: 12vh; left: 8vw; z-index: 3; }
+.st-journey-head .st-label { color: var(--ink); }
+.st-bar {
+  position: absolute;
+  left: 8vw; right: 8vw; bottom: 7vh;
+  height: 1px;
+  background: rgba(13, 13, 13, 0.18);
+  z-index: 3;
+}
+.st-bar i {
+  display: block; height: 100%;
+  background: var(--ink);
+  transform-origin: left center;
+  transform: scaleX(var(--p));
+}
+
+/* ─── Real talk ─────────────────────────────────────────────────── */
+
+.st-facts .st-sticky {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 118%, rgba(241, 237, 226, 0.2), transparent 70%),
+    var(--ink);
+}
+.st-fact {
+  font-size: clamp(2rem, 7.6vw, 6.8rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  max-width: 16ch;
+}
+.st-fact-tag {
+  margin-top: 1.4rem;
+  font-size: clamp(0.6rem, 0.8vw, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  opacity: 0.55;
+}
+/* ─── Closing ───────────────────────────────────────────────────── */
+
+.st-cta {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 14vh 8vw;
+  text-align: center;
+  background: var(--paper);
+}
+.st-cta-title {
+  margin-bottom: 3rem;
+  font-size: clamp(2.5rem, 7vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+  text-transform: uppercase;
+}
+.st-cta-row { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
+.st-btn {
+  display: inline-block;
+  padding: 1rem 2.4rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.st-btn-solid { background: var(--ink); color: var(--paper); }
+.st-btn-solid:hover { background: transparent; color: var(--ink); }
+.st-btn-ghost { border-color: rgba(13, 13, 13, 0.3); color: var(--ink-70); }
+.st-btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ─── Keyframes ─────────────────────────────────────────────────── */
+
+@keyframes stBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes stLine {
+  0%   { transform: scaleY(0); transform-origin: top;    opacity: 1; }
+  50%  { transform: scaleY(1); transform-origin: top;    opacity: 1; }
+  100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .st-hero-content { padding: 0 6vw 8vh; }
+  .st-panel { padding: 0 7vw; }
+  .st-journey-head { top: 11vh; left: 7vw; }
+  .st-bar { left: 7vw; right: 7vw; }
+  .st-toolkit .st-g2, .st-toolkit .st-g3 { display: none; }
+}
+
+@media (max-height: 560px) {
+  .st-scroll-hint { display: none; }
+}
