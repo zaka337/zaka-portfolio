@@ -572,7 +572,7 @@ export default function About() {
 
           <div style={{ display: "flex", gap: "1.2rem", justifyContent: "center", flexWrap: "wrap" }}>
             <Link
-              href="/contact-me"
+              href="/contact"
               style={{
                 ...T, display: "inline-block",
                 padding: "1rem 2.4rem",

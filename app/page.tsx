@@ -109,7 +109,7 @@ export default function Home() {
       </div>
 
       {/* TOP RIGHT — contact */}
-      <Link href="/contact-me" className="block-tr nav-text" style={{ textDecoration: "none" }}>
+      <Link href="/contact" className="block-tr nav-text" style={{ textDecoration: "none" }}>
         <div className="home-enter home-enter-2">
           <p className="nav-item">SAY</p>
           <p className="nav-item">HI</p>
