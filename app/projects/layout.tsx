@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME, QA_ZAKA } from "@/lib/site";
+import "./projects.css";
 
 export const metadata: Metadata = {
   title: "Projects — QA with Zaka & More",

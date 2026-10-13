@@ -1,524 +1,256 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { SITE_URL } from "@/lib/site";
+import { useScrollUnlock, useChapterProgress, cv } from "@/lib/scrollStory";
 
-interface Repo {
-  id: number;
-  name: string;
-  description: string | null;
-  homepage: string | null;
-  language: string | null;
-  html_url: string;
+interface Project {
+  id: string;
+  title: string;
+  kind: string;
+  year: string;
+  pitch: string;
+  points: string[];
+  stack: string[];
+  bg: string;
+  live?: string;
+  repo?: string;
+  repoName?: string;
+  language?: string;
+  preview?: boolean; // embed the live site in the frame
 }
 
-const META: Record<string, { title: string; desc: string }> = {
-  "QA_with_ZAKA":           { title: "QA WITH ZAKA",    desc: "AI-powered Q&A platform" },
-  "Zong-health-scanner":    { title: "ZONG SCANNER",    desc: "Telecom health diagnostics" },
-  "momcare-ai-backend":     { title: "MOMCARE AI",      desc: "Maternal care AI backend" },
-  "ECOMMERCE-PLATFORM":     { title: "ECOMMERCE",       desc: "Mobile e-commerce app" },
-  "my-store":               { title: "MY STORE",        desc: "Storefront with checkout" },
-  "Instagram_Clone":        { title: "IG CLONE",        desc: "Feed & stories clone" },
-  "ecommerce-fullstack-design.": { title: "EC FULLSTACK", desc: "Full-stack e-commerce design" },
-  "my-portfolio":           { title: "OLD PORTFOLIO",   desc: "Previous portfolio site" },
-  "Metro-Mart":             { title: "METRO MART",      desc: "E-commerce Web Lab project" },
-  "My-Calculator":          { title: "CALCULATOR",      desc: "Minimal calculator app" },
-  "DockerTesting":          { title: "DOCKER",          desc: "Containerized web app" },
-  "devOps-t5":              { title: "DEVOPS T5",       desc: "DevOps pipeline project" },
-  "testAWS":                { title: "AWS DEPLOY",      desc: "TypeScript on AWS" },
-  "aws-elastic-beanstalk-express-js-sample": { title: "BEANSTALK", desc: "Express.js on AWS" },
-};
+const GH = "https://github.com/zaka337";
 
-const LIVE_URLS: Record<string, string> = {
-  "QA_with_ZAKA":  "https://qa-with-zaka-4pc9.vercel.app/",
-  "GlamourHub":    "https://glamourhubpk.netlify.app/",
-  "glamourhub":    "https://glamourhubpk.netlify.app/",
-  "MG-Outlet":     "https://glamourhubpk.netlify.app/",
-  "mg-outlet":     "https://glamourhubpk.netlify.app/",
-  "my-portfolio":  "https://zakasportfolio.netlify.app/",
-  "Zaka-Portfolio":"https://zakasportfolio.netlify.app/",
-  "zaka-portfolio":"https://zakasportfolio.netlify.app/",
-  "portfolio":     "https://zakasportfolio.netlify.app/",
-};
-
-const SKIP_HOMEPAGE = new Set([
-  "aws-elastic-beanstalk-express-js-sample",
-]);
-
-const COLORS = [
-  { bg: "#d4c9b0", ink: "#0d0d0d" },
-  { bg: "#c9d4b0", ink: "#1a3a1a" },
-  { bg: "#b0c9d4", ink: "#0d2a3a" },
-  { bg: "#d4b0c9", ink: "#3a0d2a" },
-  { bg: "#d4d0b0", ink: "#3a360d" },
-  { bg: "#c4b0d4", ink: "#280d3a" },
-  { bg: "#b0d4c4", ink: "#0d3a28" },
-  { bg: "#d4bab0", ink: "#3a1a0d" },
-  { bg: "#b0b4d4", ink: "#0d1040" },
-  { bg: "#d4c4b0", ink: "#3a2a0d" },
-  { bg: "#b4d4b0", ink: "#103a10" },
-  { bg: "#d4b0b0", ink: "#3a0d0d" },
+const PROJECTS: Project[] = [
+  {
+    id: "qa-with-zaka",
+    title: "QA with Zaka",
+    kind: "AI-powered education platform",
+    year: "2026",
+    pitch: "A full-stack educational QA platform, built and shipped end to end.",
+    points: ["Automated testing built into the product", "Real-time Q&A", "Production-grade web architecture"],
+    stack: ["React", "Next.js", "Firebase", "TypeScript"],
+    bg: "#d4c9b0",
+    live: "https://qa-with-zaka-4pc9.vercel.app/",
+    repo: `${GH}/QA_with_ZAKA`,
+    repoName: "QA_with_ZAKA",
+    language: "TypeScript",
+    preview: true,
+  },
+  {
+    id: "zong-health-scanner",
+    title: "Zong Health Scanner",
+    kind: "Automation / internship",
+    year: "2026",
+    pitch: "An n8n-powered website health scanner, built during my QA Automation internship at Zong 5G.",
+    points: ["Orchestrated with n8n workflows", "Telecom health diagnostics"],
+    stack: ["n8n", "JavaScript", "QA Automation"],
+    bg: "#b0c9d4",
+    repo: `${GH}/Zong-health-scanner`,
+    repoName: "Zong-health-scanner",
+    language: "JavaScript",
+  },
+  {
+    id: "momcare-ai",
+    title: "MomCare AI",
+    kind: "AI backend",
+    year: "2026",
+    pitch: "The AI backend for a maternal care app.",
+    points: ["Python AI backend", "Maternal care use case"],
+    stack: ["Python", "AI"],
+    bg: "#d4b0c9",
+    repo: `${GH}/momcare-ai-backend`,
+    repoName: "momcare-ai-backend",
+    language: "Python",
+  },
+  {
+    id: "glamourhub",
+    title: "GlamourHub",
+    kind: "E-commerce web app",
+    year: "2024",
+    pitch: "A premium e-commerce web app for the Pakistani market.",
+    points: ["Premium storefront experience", "Built for Pakistani shoppers", "Live on Netlify"],
+    stack: ["E-commerce", "Web", "Netlify"],
+    bg: "#c9d4b0",
+    live: "https://glamourhubpk.netlify.app/",
+    preview: true,
+  },
+  {
+    id: "bazaarbox",
+    title: "BazaarBox",
+    kind: "Mobile e-commerce app",
+    year: "2024",
+    pitch: "A cross-platform e-commerce app built in Flutter.",
+    points: ["Firebase authentication", "Real-time sync", "One codebase for mobile"],
+    stack: ["Flutter", "Dart", "Firebase"],
+    bg: "#d4d0b0",
+    repo: `${GH}/ECOMMERCE-PLATFORM`,
+    repoName: "ECOMMERCE-PLATFORM",
+    language: "Dart",
+  },
+  {
+    id: "portfolio",
+    title: "This Portfolio",
+    kind: "3D interactive portfolio",
+    year: "2026",
+    pitch: "The 3D portfolio you are standing inside.",
+    points: ["Cursor-tracking WebGL avatar", "Floating 3D project carousel", "Scroll-animated pages"],
+    stack: ["Next.js", "React", "Three.js", "TypeScript"],
+    bg: "#c4b0d4",
+    live: SITE_URL,
+    repo: `${GH}/zaka-portfolio`,
+    repoName: "zaka-portfolio",
+    language: "TypeScript",
+  },
 ];
 
-const AUTO_SPEED = 0.0018;
+/* Browser frame: live site preview (lazy) or a repo "terminal" for source-only projects. */
+function Frame({ p }: { p: Project }) {
+  const viewRef = useRef<HTMLDivElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const href = p.live ?? p.repo ?? GH;
+  const shown = (p.live ?? `github.com/zaka337/${p.repoName ?? ""}`).replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-function cardSpatial(i: number) {
-  const a = i * 2.39996;
-  const b = i * 1.61803;
-  const c = i * 1.32472;
-  return {
-    yOff:  Math.sin(a) * 110,
-    zAdd:  Math.cos(b) * 55,
-    tiltX: Math.sin(c) * 16,
-    tiltZ: Math.cos(a * 0.7) * 11,
-  };
-}
+  useEffect(() => {
+    const el = viewRef.current;
+    if (!el || !p.preview || !p.live) return;
+    const setScale = () => el.style.setProperty("--s", String(el.clientWidth / 1280));
+    setScale();
+    const ro = new ResizeObserver(setScale);
+    ro.observe(el);
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setSrc(p.live!);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "100% 0px" }
+    );
+    io.observe(el);
+    return () => { ro.disconnect(); io.disconnect(); };
+  }, [p.live, p.preview]);
 
-function getLiveUrl(repo: Repo): string | null {
-  return LIVE_URLS[repo.name]
-    ?? (SKIP_HOMEPAGE.has(repo.name) ? null
-       : repo.homepage?.startsWith("http") ? repo.homepage : null);
+  return (
+    <a className="pj-frame" href={href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${p.title}`}>
+      <div className="pj-bar" aria-hidden="true">
+        <i /><i /><i />
+        <span className="pj-url">{shown}</span>
+      </div>
+      <div className="pj-viewport" ref={viewRef}>
+        {p.preview && p.live ? (
+          src && (
+            <iframe
+              src={src}
+              title={`${p.title} live preview`}
+              loading="lazy"
+              tabIndex={-1}
+              referrerPolicy="no-referrer"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          )
+        ) : (
+          <div className="pj-term" aria-hidden="true">
+            <span className="dim">$ git clone github.com/zaka337/{p.repoName}</span>
+            <span>language&nbsp;&nbsp;&nbsp;{p.language}</span>
+            <span>status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{p.live ? "live + source" : "source on GitHub"}</span>
+            <span className="big">{p.title}<i className="pj-caret" /></span>
+          </div>
+        )}
+      </div>
+    </a>
+  );
 }
 
 export default function Projects() {
-  const [repos, setRepos]     = useState<Repo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [vp, setVp]           = useState({ w: 1280, h: 800 });
-  const [hovered, setHovered] = useState<{ title: string; desc: string } | null>(null);
-  const ringRef  = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLElement[]>([]);
-  const rotRef   = useRef(0);
-  const rafRef   = useRef<number>(0);
-  const ctrlRef  = useRef({ auto: true, dragging: false, startX: 0, startRot: 0 });
+  useScrollUnlock();
+  const rootRef = useRef<HTMLElement>(null);
+  useChapterProgress(rootRef);
 
-  /* ── Viewport tracking (debounced) ───────────────────────────────── */
-  useEffect(() => {
-    const update = () => setVp({ w: window.innerWidth, h: window.innerHeight });
-    update();
-    let t: ReturnType<typeof setTimeout>;
-    const debounced = () => { clearTimeout(t); t = setTimeout(update, 150); };
-    window.addEventListener("resize", debounced);
-    return () => { window.removeEventListener("resize", debounced); clearTimeout(t); };
-  }, []);
-
-  /* ── Responsive carousel dimensions ─────────────────────────────── */
-  const isMobile    = vp.w < 640;
-  const BASE_RADIUS = Math.max(220, Math.min(vp.w * 0.38, 650));
-  const CARD_W      = Math.round(Math.max(130, Math.min(BASE_RADIUS * 0.36, 200)));
-  const CARD_H      = Math.round(CARD_W * 0.78);
-  const PERSPECTIVE = Math.round(BASE_RADIUS * 4.8);
-  // Scale the whole 3D scene on narrow screens so depth is preserved without overflow
-  const carouselScale = isMobile ? Math.min(1, vp.w / 440) : 1;
-
-  /* ── GitHub fetch ──────────────────────────────────────────────── */
-  useEffect(() => {
-    fetch("https://api.github.com/users/zaka337/repos?sort=updated&per_page=100")
-      .then(r => r.json())
-      .then((data: Repo[]) => {
-        const filtered = data.filter((r: Repo) => r.language !== null);
-        filtered.sort((a, b) => {
-          const aLive = !!getLiveUrl(a);
-          const bLive = !!getLiveUrl(b);
-          return (bLive ? 1 : 0) - (aLive ? 1 : 0);
-        });
-        setRepos(filtered);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  /* ── 3D animation loop (all viewports) ────────────────────────── */
-  useEffect(() => {
-    if (!repos.length || !ringRef.current) return;
-    const ring = ringRef.current;
-    const n    = repos.length;
-    const ctrl = ctrlRef.current;
-    let autoTimer: ReturnType<typeof setTimeout>;
-
-    // Cache card elements once — avoids a live DOM query every rAF tick
-    requestAnimationFrame(() => {
-      cardsRef.current = Array.from(ring.querySelectorAll<HTMLElement>("[data-ci]"));
-    });
-
-    const tick = () => {
-      if (ctrl.auto && !ctrl.dragging) rotRef.current += AUTO_SPEED;
-      const deg = (rotRef.current * 180) / Math.PI;
-      ring.style.transform = `rotateX(-10deg) rotateY(${deg}deg)`;
-
-      cardsRef.current.forEach(card => {
-        const i    = parseInt(card.getAttribute("data-ci")!);
-        const eff  = (i / n) * Math.PI * 2 + rotRef.current;
-        const cosA = Math.cos(eff);
-
-        if (cosA < -0.08) {
-          card.style.opacity       = "0";
-          card.style.pointerEvents = "none";
-          return;
-        }
-        const t = Math.max(0, cosA);
-        const blur = (1 - t) * 14;
-        card.style.filter  = blur > 0.6
-          ? `blur(${blur.toFixed(1)}px)`
-          : `drop-shadow(0 14px 40px rgba(0,0,0,0.22))`;
-        card.style.opacity       = (0.18 + t * 0.82).toFixed(3);
-        card.style.zIndex        = String(Math.round(t * 100));
-        card.style.pointerEvents = t > 0.58 ? "auto" : "none";
-      });
-
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-
-    const onDown = (e: MouseEvent) => {
-      clearTimeout(autoTimer);
-      ctrl.auto = false; ctrl.dragging = true;
-      ctrl.startX = e.clientX; ctrl.startRot = rotRef.current;
-    };
-    const onMove = (e: MouseEvent) => {
-      if (!ctrl.dragging) return;
-      rotRef.current = ctrl.startRot - (e.clientX - ctrl.startX) * 0.005;
-    };
-    const onUp = () => {
-      ctrl.dragging = false;
-      autoTimer = setTimeout(() => { ctrl.auto = true; }, 1800);
-    };
-    const onTouchStart = (e: TouchEvent) => {
-      clearTimeout(autoTimer);
-      ctrl.auto = false; ctrl.dragging = true;
-      ctrl.startX = e.touches[0].clientX; ctrl.startRot = rotRef.current;
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      if (!ctrl.dragging) return;
-      rotRef.current = ctrl.startRot - (e.touches[0].clientX - ctrl.startX) * 0.005;
-    };
-    const onTouchEnd = () => {
-      ctrl.dragging = false;
-      autoTimer = setTimeout(() => { ctrl.auto = true; }, 1800);
-    };
-
-    window.addEventListener("mousedown",  onDown);
-    window.addEventListener("mousemove",  onMove, { passive: true });
-    window.addEventListener("mouseup",    onUp);
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove",  onTouchMove,  { passive: true });
-    window.addEventListener("touchend",   onTouchEnd);
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      clearTimeout(autoTimer);
-      window.removeEventListener("mousedown",  onDown);
-      window.removeEventListener("mousemove",  onMove);
-      window.removeEventListener("mouseup",    onUp);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove",  onTouchMove);
-      window.removeEventListener("touchend",   onTouchEnd);
-    };
-  }, [repos]);
-
-  const stepCarousel = (dir: number) => {
-    if (!repos.length) return;
-    rotRef.current -= dir * ((Math.PI * 2) / repos.length);
-    ctrlRef.current.auto = false;
-    setTimeout(() => { ctrlRef.current.auto = true; }, 2500);
-  };
-
-  const n = repos.length;
-
-  const arrowBase: React.CSSProperties = {
-    position: "absolute", top: "50%", transform: "translateY(-50%)",
-    zIndex: 200,
-    width: "clamp(36px, 5vw, 48px)",
-    height: "clamp(36px, 5vw, 48px)",
-    border: "1.5px solid rgba(13,13,13,0.22)", borderRadius: "50%",
-    background: "transparent", cursor: "pointer",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    color: "rgba(13,13,13,0.28)",
-    fontSize: "clamp(18px, 3vw, 28px)",
-    lineHeight: "1",
-    transition: "border-color 0.2s, color 0.2s",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-    touchAction: "manipulation",
-  };
+  const liveCount = PROJECTS.filter((p) => p.live).length;
 
   return (
-    <main style={{
-      width: "100vw",
-      height: "100dvh",
-      overflow: "hidden",
-      backgroundColor: "var(--paper)", position: "relative",
-      userSelect: "none",
-    }}>
-
-      <style>{`
-        @keyframes livePulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.3; transform: scale(0.65); }
-        }
-      `}</style>
-
-      {/* ── Back ──────────────────────────────────────────────── */}
-      <Link href="/" className="proj-fade proj-fade-0" style={{
-        position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "clamp(16px, 4vw, 40px)",
-        zIndex: 200,
-        fontFamily: "'Helvetica Neue', Arial, sans-serif",
-        fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: 600,
-        letterSpacing: "0.12em", color: "var(--ink-50)",
-        textDecoration: "none", textTransform: "uppercase",
-        transition: "color 0.2s",
-      }}
-        onMouseEnter={e => (e.currentTarget.style.color = "var(--ink)")}
-        onMouseLeave={e => (e.currentTarget.style.color = "var(--ink-50)")}>
-        {'←'} BACK.
-      </Link>
-
-      {/* ── Center label / hover preview ─────────────────────── */}
-      <div className="proj-fade proj-fade-1 projects-center-label" style={{
-        position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "50%",
-        transform: "translateX(-50%)", zIndex: 200,
-        textAlign: "center", pointerEvents: "none",
-        transition: "opacity 0.2s",
-      }}>
-        <span style={{
-          display: "block",
-          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: hovered ? 700 : 500,
-          letterSpacing: "0.12em", color: "var(--ink)",
-          textTransform: "uppercase", whiteSpace: "nowrap",
-          opacity: hovered ? 1 : 0.5,
-          transition: "opacity 0.2s, font-weight 0.15s",
-        }}>
-          {hovered ? hovered.title : "my_projects — github/zaka337"}
-        </span>
-        {hovered && (
-          <span style={{
-            display: "block",
-            fontFamily: "'Helvetica Neue', Arial, sans-serif",
-            fontSize: "clamp(0.5rem, 0.65vw, 0.58rem)", fontWeight: 400,
-            letterSpacing: "0.1em", color: "var(--ink-50)",
-            textTransform: "uppercase", whiteSpace: "nowrap",
-            marginTop: 3,
-          }}>
-            {hovered.desc}
-          </span>
-        )}
+    <main ref={rootRef} className="pj-root">
+      <div className="pj-nav">
+        <Link href="/">{'←'} Back.</Link>
+        <span>Selected work</span>
+        <Link href="/projects/all">All repos {'↗'}</Link>
       </div>
+      <div className="pj-pg" aria-hidden="true" />
 
-      {/* ── Repo count ────────────────────────────────────────── */}
-      {!loading && n > 0 && (
-        <span className="proj-fade proj-fade-2" style={{
-          position: "absolute", top: "clamp(16px, 4vh, 40px)", right: "clamp(16px, 4vw, 40px)",
-          zIndex: 200,
-          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: 400,
-          letterSpacing: "0.12em", color: "var(--ink-50)",
-          textTransform: "uppercase",
-        }}>
-          {n} repos
-        </span>
-      )}
+      {/* Hero + index */}
+      <section className="pj-hero">
+        <p className="pj-label">{PROJECTS.length} projects {'—'} {liveCount} live</p>
+        <h1 className="pj-hero-title">
+          Things<br />I&apos;ve shipped.
+        </h1>
+        <ol className="pj-index">
+          {PROJECTS.map((p, i) => (
+            <li key={p.id}>
+              <a href={`#${p.id}`}>
+                <span className="n">0{i + 1}</span>
+                <span className="t">{p.title}</span>
+                <span className={`k ${p.live ? "pj-live-dot" : ""}`}>{p.live ? "Live" : p.language}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-      {/* ── Loading ───────────────────────────────────────────── */}
-      {loading && (
-        <p style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)", zIndex: 200,
-          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          fontSize: "clamp(0.7rem, 1vw, 0.85rem)", fontWeight: 500,
-          letterSpacing: "0.14em", color: "var(--ink-50)",
-          textTransform: "uppercase",
-        }}>
-          FETCHING REPOS...
-        </p>
-      )}
-
-      {/* ── Hint (swipe on mobile, drag on desktop) ───────────── */}
-      {!loading && n > 0 && (
-        <span className="proj-fade proj-fade-3" style={{
-          position: "absolute", bottom: "4vh", left: "50%",
-          transform: "translateX(-50%)", zIndex: 200,
-          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 400,
-          letterSpacing: "0.26em", color: "var(--ink-50)",
-          textTransform: "uppercase", whiteSpace: "nowrap",
-        }}>
-          {isMobile ? "SWIPE TO EXPLORE" : "DRAG TO EXPLORE"}
-        </span>
-      )}
-
-      {/* ── Arrows (desktop only) ─────────────────────────────── */}
-      {!isMobile && !loading && (
-        <>
-          <button
-            aria-label="Previous project"
-            className="proj-fade proj-fade-3"
-            onClick={() => stepCarousel(-1)}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.22)"; e.currentTarget.style.color = "rgba(13,13,13,0.28)"; }}
-            style={{ ...arrowBase, left: "clamp(8px, 3vw, 40px)" }}>
-            &#8249;
-          </button>
-          <button
-            aria-label="Next project"
-            className="proj-fade proj-fade-3"
-            onClick={() => stepCarousel(1)}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.22)"; e.currentTarget.style.color = "rgba(13,13,13,0.28)"; }}
-            style={{ ...arrowBase, right: "clamp(8px, 3vw, 40px)" }}>
-            &#8250;
-          </button>
-        </>
-      )}
-
-      {/* ── 3D Scene (mobile gets CSS scale to preserve depth) ── */}
-      {!loading && n > 0 && (
-        <div className="proj-fade proj-fade-4" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-          {/* Scale wrapper — shrinks scene on narrow viewports without losing 3D depth */}
-          <div style={{
-            position: "absolute", inset: 0,
-            ...(isMobile ? {
-              transform: `scale(${carouselScale})`,
-              transformOrigin: "50% 42%",
-            } : {}),
-          }}>
-            <div style={{
-              position: "absolute", inset: 0,
-              perspective: `${PERSPECTIVE}px`,
-              perspectiveOrigin: "50% 38%",
-              cursor: isMobile ? "default" : "grab",
-            }}>
-              <div style={{
-                position: "absolute",
-                left: "50%", top: "50%",
-                width: 0, height: 0,
-                transform: "translate3d(0, 0, -240px)",
-                transformStyle: "preserve-3d",
-              }}>
-                <div ref={ringRef} style={{
-                  width: 0, height: 0,
-                  transformStyle: "preserve-3d",
-                  transform: "rotateX(-10deg) rotateY(0deg)",
-                }}>
-                  {repos.map((repo, i) => {
-                    const angleDeg = (i / n) * 360;
-                    const sp   = cardSpatial(i);
-                    const live = getLiveUrl(repo);
-                    const col  = COLORS[i % COLORS.length];
-                    const ink  = live ? "#0d0d0d" : col.ink;
-                    const meta  = META[repo.name];
-                    const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
-                    const desc  = meta?.desc  ?? repo.description ?? "Project";
-
-                    const cardTransform = [
-                      `rotateY(${angleDeg}deg)`,
-                      `translateZ(${BASE_RADIUS + sp.zAdd}px)`,
-                      `translateY(${sp.yOff}px)`,
-                      `rotateX(${sp.tiltX}deg)`,
-                      `rotateZ(${sp.tiltZ}deg)`,
-                    ].join(" ");
-
-                    return (
-                      <a
-                        key={repo.id}
-                        data-ci={String(i)}
-                        href={live ?? repo.html_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onMouseEnter={() => setHovered({ title, desc })}
-                        onMouseLeave={() => setHovered(null)}
-                        style={{
-                          position: "absolute",
-                          width: CARD_W, height: CARD_H,
-                          left: -CARD_W / 2, top: -CARD_H / 2,
-                          transform: cardTransform,
-                          backgroundColor: live ? "#fff" : col.bg,
-                          border: live
-                            ? "1px solid rgba(26,140,60,0.22)"
-                            : "1px solid rgba(0,0,0,0.1)",
-                          ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
-                          borderRadius: 6,
-                          padding: live
-                            ? `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px ${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.07)}px`
-                            : `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px`,
-                          textDecoration: "none",
-                          backfaceVisibility: "hidden",
-                          display: "flex", flexDirection: "column",
-                          justifyContent: "space-between",
-                          overflow: "hidden",
-                          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                          boxSizing: "border-box",
-                        }}
-                      >
-                        {/* Language + badge row */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          {repo.language && (
-                            <span style={{
-                              fontSize: Math.max(7, CARD_W * 0.047), fontWeight: 700, letterSpacing: "0.12em",
-                              color: ink, opacity: 0.55, textTransform: "uppercase",
-                              background: "rgba(0,0,0,0.08)", padding: "2px 6px", borderRadius: 2,
-                            }}>
-                              {repo.language}
-                            </span>
-                          )}
-                          {live ? (
-                            <span style={{
-                              display: "inline-flex", alignItems: "center", gap: 3,
-                              fontSize: Math.max(7, CARD_W * 0.05), fontWeight: 800, letterSpacing: "0.12em",
-                              color: "#fff", background: "#1a8c3c",
-                              padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
-                            }}>
-                              <span style={{
-                                width: 5, height: 5, borderRadius: "50%",
-                                background: "#7eff9e", flexShrink: 0,
-                                animation: "livePulse 1.4s ease-in-out infinite",
-                              }} />
-                              LIVE
-                            </span>
-                          ) : (
-                            <span style={{
-                              fontSize: Math.max(6, CARD_W * 0.043), fontWeight: 600, letterSpacing: "0.1em",
-                              color: ink, background: "rgba(0,0,0,0.08)",
-                              padding: "2px 6px", borderRadius: 2, textTransform: "uppercase",
-                              opacity: 0.45,
-                            }}>
-                              {'GITHUB ↗'}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Watermark */}
-                        <span style={{
-                          position: "absolute", bottom: -6, right: 8,
-                          fontSize: Math.round(CARD_W * 0.3), fontWeight: 900, color: ink,
-                          opacity: 0.06, userSelect: "none", lineHeight: 1,
-                        }}>
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-
-                        {/* Title + desc */}
-                        <div>
-                          <p style={{
-                            fontSize: Math.max(9, CARD_W * 0.068), fontWeight: 800, color: ink,
-                            textTransform: "uppercase", letterSpacing: "-0.01em",
-                            lineHeight: 1.1, margin: "0 0 4px",
-                          }}>
-                            {title}
-                          </p>
-                          <p style={{
-                            fontSize: Math.max(8, CARD_W * 0.054), fontWeight: 400, color: ink,
-                            opacity: 0.65, lineHeight: 1.4, margin: 0,
-                          }}>
-                            {desc}
-                          </p>
-                        </div>
-                      </a>
-                    );
-                  })}
+      {/* One chapter per project */}
+      {PROJECTS.map((p, i) => (
+        <section
+          key={p.id}
+          id={p.id}
+          className="pj-chapter"
+          data-chapter
+          style={cv({ "--bg": p.bg })}
+        >
+          <div className="pj-sticky">
+            <span className="pj-ghost" aria-hidden="true">0{i + 1}</span>
+            <div className="pj-grid">
+              <div className="pj-text">
+                <p className="pj-label pj-kind">
+                  0{i + 1} / 0{PROJECTS.length} {'—'} {p.kind} {'—'} {p.year}
+                </p>
+                <h2 className="pj-title">{p.title}</h2>
+                <p className="pj-pitch">{p.pitch}</p>
+                <ul className="pj-points">
+                  {p.points.map((pt) => <li key={pt}>{pt}</li>)}
+                </ul>
+                <div className="pj-chips">
+                  {p.stack.map((s) => <span className="pj-chip" key={s}>{s}</span>)}
+                </div>
+                <div className="pj-actions">
+                  {p.live && (
+                    <a className="pj-btn pj-btn-solid" href={p.live} target="_blank" rel="noopener noreferrer">
+                      Visit live {'↗'}
+                    </a>
+                  )}
+                  {p.repo && (
+                    <a className="pj-btn pj-btn-ghost" href={p.repo} target="_blank" rel="noopener noreferrer">
+                      Source {'↗'}
+                    </a>
+                  )}
                 </div>
               </div>
+              <Frame p={p} />
             </div>
           </div>
+        </section>
+      ))}
+
+      {/* Closing */}
+      <section className="pj-cta">
+        <p className="pj-label">That&apos;s the highlight reel</p>
+        <h2>There&apos;s more<br />on GitHub.</h2>
+        <div className="pj-actions" style={{ justifyContent: "center" }}>
+          <Link className="pj-btn pj-btn-solid" href="/projects/all">Explore all repos in 3D</Link>
+          <Link className="pj-btn pj-btn-ghost" href="/contact">Say hi</Link>
         </div>
-      )}
+      </section>
     </main>
   );
 }
