@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./nokia.css";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {

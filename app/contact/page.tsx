@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import NokiaPhone from "@/components/NokiaPhone";
 
 /* ─── Contact row ─────────────────────────────────────────────── */
 const rowText: React.CSSProperties = {
@@ -114,12 +114,11 @@ export default function Contact() {
             justify-content: center !important;
             align-items: center !important;
           }
-          .contact-nokia img {
-            width: clamp(200px, 56vw, 300px) !important;
+          .contact-nokia-stage { flex: none !important; }
+          .contact-nokia .nk {
+            width: clamp(260px, 84vw, 360px) !important;
             height: auto !important;
             max-height: none !important;
-            max-width: none !important;
-            aspect-ratio: auto !important;
           }
           .contact-details {
             padding: 1.2rem 1.4rem !important;
@@ -179,15 +178,15 @@ export default function Contact() {
         {/* Body */}
         <div className="contact-body" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
-          {/* Left — Nokia image */}
+          {/* Left — working Nokia */}
           <div className="contact-nokia" style={{ flex: "0 0 46%", borderRight: "1px solid var(--ink)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "1.5rem" }}>
-            <Image src="/mobile.jpg" alt="Nokia 3310"
-              width={1024} height={1024} priority
-              sizes="(max-width: 640px) 80vw, (max-width: 1080px) 42vw, 460px"
-              style={{ maxHeight: "100%", maxWidth: "100%",
-                objectFit: "contain", display: "block", width: "auto", height: "auto" }} />
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            padding: "1.5rem 1.5rem 1rem", minHeight: 0 }}>
+            <div className="contact-nokia-stage" style={{ flex: "1 1 0", minHeight: 0, width: "100%",
+              display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <NokiaPhone />
+            </div>
+            <p className="nk-caption">PRESS A KEY {'·'} 2 / 8 SCROLL {'·'} RED KEY BACK</p>
           </div>
 
           {/* Right — contact details */}
