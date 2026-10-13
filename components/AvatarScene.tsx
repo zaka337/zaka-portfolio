@@ -81,7 +81,10 @@ function AvatarModel() {
     el.style.setProperty("--face-cy", `${((top + chin) / 2).toFixed(2)}%`);
     el.style.setProperty("--face-h", `${(chin - top).toFixed(2)}%`);
     el.style.setProperty("--chin-y", `${chin.toFixed(2)}%`);
+    // Head height in px: lets CSS trim the sides relative to the face, not the screen width
+    el.style.setProperty("--face-px", `${(((chin - top) / 100) * el.clientHeight).toFixed(1)}px`);
     el.style.setProperty("--cut-y", `${pct(m.cutY).toFixed(2)}%`);
+    el.setAttribute("data-ready", "1");
   };
 
   useEffect(() => {
