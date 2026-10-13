@@ -375,6 +375,60 @@ canvas {
   animation: homeAvatarFade 900ms var(--ease-out) 60ms both;
 }
 
+/* Head framing. AvatarScene publishes --face-cy / --face-h / --cut-y (the head's
+   centre, height, chin and neck cut as % of the canvas) so these follow it at any size. */
+.avatar-scene canvas {
+  --neck-fade: linear-gradient(to bottom, #000 0%, #000 var(--chin-y, 56%), transparent var(--cut-y, 66%));
+  /* Fade the neck out, and trim the shoulders/arms off both sides */
+  --side-trim: linear-gradient(to right, transparent 24%, #000 34%, #000 66%, transparent 76%);
+  -webkit-mask-image: var(--neck-fade), var(--side-trim);
+  -webkit-mask-composite: source-in;
+  mask-image: var(--neck-fade), var(--side-trim);
+  mask-composite: intersect;
+  animation: avatarIn 1.3s var(--ease-out) 0.15s both;
+}
+
+.avatar-scene::before,
+.avatar-scene::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: var(--face-cy, 40%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Soft studio glow behind the head */
+.avatar-scene::before {
+  height: calc(var(--face-h, 40%) * 2.15);
+  background: radial-gradient(
+    circle,
+    rgba(255, 252, 244, 0.9) 0%,
+    rgba(255, 252, 244, 0.5) 38%,
+    rgba(255, 252, 244, 0) 68%
+  );
+}
+
+/* Slow-turning dashed ring, same language as the About page gears */
+.avatar-scene::after {
+  height: calc(var(--face-h, 40%) * 1.5);
+  border: 1px dashed rgba(13, 13, 13, 0.2);
+  animation: avatarSpin 140s linear infinite;
+}
+
+@keyframes avatarIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes avatarSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 /* ─── Projects entrance animations ──────────────────────────────── */
 
 @keyframes projFade {
