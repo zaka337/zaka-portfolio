@@ -251,7 +251,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     var l=document.getElementById('zk-loader');
     if(!l||l.classList.contains('zk-done'))return;
     l.classList.add('zk-done');
-    setTimeout(function(){l.remove();},650);
   }
   window.addEventListener('zk-ready',dismiss,{once:true});
   setTimeout(dismiss,4200);
