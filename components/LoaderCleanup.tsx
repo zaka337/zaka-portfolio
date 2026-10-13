@@ -2,26 +2,24 @@
 
 import { useEffect } from "react";
 
+// Never remove #zk-loader from the DOM: React owns it, and removing it breaks
+// later reconciliation (insertBefore/removeChild errors on navigation). Hide via CSS only.
 export default function LoaderCleanup() {
   useEffect(() => {
-    const l = document.getElementById("zk-loader");
-
-    // Already shown this session — remove immediately (CSS already hid it via zk-skip)
-    const alreadyShown = sessionStorage.getItem("zk-shown");
-    if (alreadyShown) {
-      l?.remove();
-      return;
-    }
-
-    // First visit — mark as shown and set up dismiss
-    try { sessionStorage.setItem("zk-shown", "1"); } catch (e) {}
+    let alreadyShown = false;
+    try {
+      alreadyShown = !!sessionStorage.getItem("zk-shown");
+      sessionStorage.setItem("zk-shown", "1");
+    } catch {}
 
     const dismiss = () => {
-      const el = document.getElementById("zk-loader");
-      if (!el || el.classList.contains("zk-done")) return;
-      el.classList.add("zk-done");
-      setTimeout(() => el.remove(), 650);
+      document.getElementById("zk-loader")?.classList.add("zk-done");
     };
+
+    if (alreadyShown) {
+      dismiss();
+      return;
+    }
 
     window.addEventListener("zk-ready", dismiss, { once: true });
     const t = setTimeout(dismiss, 4200);
