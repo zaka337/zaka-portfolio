@@ -220,8 +220,10 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-PK">
+    <html lang="en-PK" suppressHydrationWarning>
       <head>
+        {/* Hide loader immediately if already shown this session (prevents re-show on back nav) */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem('zk-shown'))document.documentElement.classList.add('zk-skip');}catch(e){}` }} />
         {/* Preload the 3D avatar so the browser fetches it immediately on HTML parse,
             before JS hydrates — cuts perceived load time significantly */}
         <link rel="preload" href="/Avatar.glb" as="fetch" crossOrigin="anonymous" />

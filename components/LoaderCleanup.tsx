@@ -4,14 +4,25 @@ import { useEffect } from "react";
 
 export default function LoaderCleanup() {
   useEffect(() => {
+    const l = document.getElementById("zk-loader");
+
+    // Already shown this session — remove immediately (CSS already hid it via zk-skip)
+    const alreadyShown = sessionStorage.getItem("zk-shown");
+    if (alreadyShown) {
+      l?.remove();
+      return;
+    }
+
+    // First visit — mark as shown and set up dismiss
+    try { sessionStorage.setItem("zk-shown", "1"); } catch (e) {}
+
     const dismiss = () => {
-      const l = document.getElementById("zk-loader");
-      if (!l || l.classList.contains("zk-done")) return;
-      l.classList.add("zk-done");
-      setTimeout(() => l.remove(), 650);
+      const el = document.getElementById("zk-loader");
+      if (!el || el.classList.contains("zk-done")) return;
+      el.classList.add("zk-done");
+      setTimeout(() => el.remove(), 650);
     };
 
-    // Dismiss when 3D avatar signals it's ready, or after 4.2s fallback
     window.addEventListener("zk-ready", dismiss, { once: true });
     const t = setTimeout(dismiss, 4200);
 

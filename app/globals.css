@@ -492,6 +492,8 @@ canvas {
 }
 
 /* ─── Page loader ───────────────────────────────────────────────── */
+/* Already shown this session — hide instantly so back-nav never re-shows it */
+html.zk-skip #zk-loader { display: none !important; }
 
 #zk-loader {
   position: fixed;
