@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  async redirects() {
+    return [{ source: "/contact", destination: "/contact-me", permanent: true }];
+  },
   async headers() {
     return [
       {
