@@ -245,17 +245,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="zk-bar-fill" />
           </div>
         </div>
-        <script dangerouslySetInnerHTML={{ __html: `
-(function(){
-  function dismiss(){
-    var l=document.getElementById('zk-loader');
-    if(!l||l.classList.contains('zk-done'))return;
-    l.classList.add('zk-done');
-  }
-  window.addEventListener('zk-ready',dismiss,{once:true});
-  setTimeout(dismiss,4200);
-})();
-        `}} />
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
