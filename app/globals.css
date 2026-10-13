@@ -391,8 +391,7 @@ canvas {
   animation: avatarIn 1.3s var(--ease-out) 0.1s both;
 }
 
-.avatar-scene::before,
-.avatar-scene::after {
+.avatar-scene::before {
   content: "";
   position: absolute;
   left: 50%;
@@ -415,21 +414,9 @@ canvas {
   );
 }
 
-/* Slow-turning dashed ring, same language as the About page gears */
-.avatar-scene::after {
-  height: calc(var(--face-h, 40%) * 1.5);
-  border: 1px dashed rgba(13, 13, 13, 0.2);
-  animation: avatarSpin 140s linear infinite;
-}
-
 @keyframes avatarIn {
   from { opacity: 0; transform: translateY(14px) scale(0.985); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes avatarSpin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* ─── Projects entrance animations ──────────────────────────────── */
