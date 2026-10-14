@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -92,9 +92,54 @@ function RoleBlock() {
   );
 }
 
-export default function Home() {
+function OpenStatus() {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const fmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Karachi" });
+    const tick = () => setTime(fmt.format(new Date()));
+    tick();
+    const id = setInterval(tick, 20000);
+    return () => clearInterval(id);
+  }, []);
   return (
-    <main className="portfolio-root">
+    <div className="home-status home-enter home-enter-5">
+      <i className="home-status-dot" aria-hidden="true" />
+      <span>OPEN FOR WORK {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""}</span>
+    </div>
+  );
+}
+
+export default function Home() {
+  const rootRef = useRef<HTMLElement>(null);
+
+  // Mouse parallax for the giant outlined word behind the face
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    let raf = 0;
+    let mx = 0;
+    let my = 0;
+    const onMove = (e: MouseEvent) => {
+      mx = (e.clientX / window.innerWidth - 0.5) * 2;
+      my = (e.clientY / window.innerHeight - 0.5) * 2;
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          root.style.setProperty("--mx", mx.toFixed(3));
+          root.style.setProperty("--my", my.toFixed(3));
+        });
+      }
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <main ref={rootRef} className="portfolio-root">
+      <div className="home-ghost" aria-hidden="true"><span>ZAKA</span></div>
       <AvatarScene />
 
       {/* TOP LEFT — name */}
@@ -114,6 +159,7 @@ export default function Home() {
           <p className="nav-item">SAY</p>
           <p className="nav-item">HI</p>
         </div>
+        <p className="nav-hint">PICK UP THE PHONE</p>
       </Link>
 
       {/* MID LEFT — about */}
@@ -122,6 +168,7 @@ export default function Home() {
           <p className="nav-item">MORE</p>
           <p className="nav-item">ABOUT ME</p>
         </div>
+        <p className="nav-hint">STORY {'·'} TOOLKIT {'·'} JOURNEY</p>
       </Link>
 
       {/* MID RIGHT — role scrambler */}
@@ -133,6 +180,7 @@ export default function Home() {
           <p className="nav-item">MY</p>
           <p className="nav-item">PROJECTS</p>
         </div>
+        <p className="nav-hint">6 FEATURED {'·'} ALL REPOS</p>
       </Link>
 
       {/* BOTTOM RIGHT — contact me page */}
@@ -141,7 +189,10 @@ export default function Home() {
           <p className="nav-item">CONTACT</p>
           <p className="nav-item">ME</p>
         </div>
+        <p className="nav-hint">START A PROJECT BRIEF</p>
       </Link>
+
+      <OpenStatus />
 
       {/* Visually hidden — crawlable content for search engines */}
       <div aria-hidden="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>

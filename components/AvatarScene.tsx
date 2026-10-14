@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, Suspense } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -65,6 +65,7 @@ function AvatarModel() {
   const paused = useRef(false);
   const initialized = useRef(false);
   const baseY = useRef(0);
+  const nodAt = useRef(-1);
   const metrics = useRef<{ topY: number; chinY: number; cutY: number } | null>(null);
 
   /* Publish where the head sits on screen so CSS can place the glow, ring and the
@@ -171,10 +172,13 @@ function AvatarModel() {
       mouse.current.y = (t.clientY / window.innerHeight - 0.5) * 2;
     };
     const onVisibility = () => { paused.current = document.hidden; };
+    const onNod = () => { nodAt.current = performance.now(); };
+    window.addEventListener("zk-nod", onNod);
     window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("touchmove", onTouch, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
+      window.removeEventListener("zk-nod", onNod);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("touchmove", onTouch);
       document.removeEventListener("visibilitychange", onVisibility);
@@ -194,7 +198,13 @@ function AvatarModel() {
     const sway = Math.sin(t * 0.55) * 0.045;
     const nod  = Math.sin(t * 0.4 + 1.3) * 0.018;
     bone.rotation.y = headRestRot.current.y + target.current.x * 0.55 + sway; // fuller neck turn left/right
-    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod;  // gentle up/down, chin safe
+    // Click-to-say-hi: a damped double nod
+    let hi = 0;
+    if (nodAt.current > 0) {
+      const since = (performance.now() - nodAt.current) / 1000;
+      if (since < 1.8) hi = Math.sin(since * 12) * Math.exp(-since * 3) * 0.24;
+    }
+    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod + hi;  // gentle up/down, chin safe
 
     // Breathing, depth parallax and a small lean into the turn
     const g = groupRef.current;
@@ -214,7 +224,24 @@ function AvatarModel() {
 
 useGLTF.preload("/Avatar.glb");
 
+const GREETINGS = ["HEY THERE!", "HI, I'M ZAKA", "NICE TO MEET YOU", "LET'S BUILD SOMETHING"];
+
 export default function AvatarScene() {
+  const [bubble, setBubble] = useState("");
+  const [shown, setShown] = useState(false);
+  const idx = useRef(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const sayHi = () => {
+    window.dispatchEvent(new Event("zk-nod"));
+    setBubble(GREETINGS[idx.current % GREETINGS.length]);
+    idx.current += 1;
+    setShown(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setShown(false), 2400);
+  };
+
   return (
     <div
       className="avatar-scene"
@@ -254,6 +281,11 @@ export default function AvatarScene() {
           <AvatarModel />
         </Suspense>
       </Canvas>
+
+      <button type="button" className="face-hit" aria-label="Say hi to Zaka's avatar" onClick={sayHi}>
+        <span className="face-hint" aria-hidden="true">SAY HI</span>
+      </button>
+      <div className={`face-bubble${shown ? " is-on" : ""}`} role="status" aria-live="polite">{shown ? bubble : ""}</div>
     </div>
   );
 }

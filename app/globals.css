@@ -414,6 +414,152 @@ canvas {
   );
 }
 
+/* ─── Home extras: ghost word, hints, status, say-hi ─────────────── */
+
+/* Giant outlined word behind the face; drifts against the mouse for depth */
+.home-ghost {
+  position: absolute;
+  left: 50%;
+  top: 41%;
+  z-index: 0;
+  transform: translate(-50%, -50%) translate(calc(var(--mx, 0) * -22px), calc(var(--my, 0) * -14px));
+  transition: transform 0.6s var(--ease-out);
+  font-size: min(26vw, 62vh);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(13, 13, 13, 0.13);
+  user-select: none;
+  pointer-events: none;
+  animation: homeAvatarFade 1.2s var(--ease-out) 0.2s both;
+}
+
+/* Corner hints: what is behind each link (desktop hover only) */
+.nav-hint { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-hint {
+    display: block;
+    position: absolute;
+    top: 100%;
+    margin-top: 0.6rem;
+    font-size: clamp(0.5rem, 0.7vw, 0.62rem);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+    color: var(--ink-50);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease, transform 0.35s var(--ease-out);
+    pointer-events: none;
+  }
+  .block-tr .nav-hint, .block-br .nav-hint { right: 0; }
+  .block-ml .nav-hint, .block-bl .nav-hint { left: 0; }
+  .block-bl .nav-hint, .block-br .nav-hint { top: auto; bottom: 100%; margin: 0 0 0.6rem; transform: translateY(-4px); }
+  .nav-text:hover .nav-hint, .nav-text:focus-visible .nav-hint { opacity: 1; transform: none; }
+}
+
+/* Live availability line, bottom centre */
+.home-status {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 5vh;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: clamp(0.5rem, 0.68vw, 0.62rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ink-50);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.home-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #1a8c3c;
+  animation: homePulse 1.4s ease-in-out infinite;
+}
+
+/* Click the face to say hi: invisible hit area over the head + hover hint + bubble */
+.face-hit {
+  position: absolute;
+  left: 50%;
+  top: var(--face-cy, 40%);
+  z-index: 3;
+  height: calc(var(--face-h, 40%) * 1.08);
+  aspect-ratio: 0.86;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  border-radius: 42%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.face-hit:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+.face-hint {
+  position: absolute;
+  left: 50%;
+  top: -0.2rem;
+  transform: translate(-50%, 4px);
+  padding: 0.28rem 0.65rem;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.3s var(--ease-out);
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .face-hit:hover .face-hint, .face-hit:focus-visible .face-hint { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.face-bubble {
+  position: absolute;
+  left: calc(50% + var(--face-px, 300px) * 0.34);
+  top: calc(var(--face-cy, 40%) - var(--face-h, 40%) * 0.56);
+  z-index: 4;
+  padding: 0.6rem 0.95rem;
+  border-radius: 14px 14px 14px 3px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: clamp(0.6rem, 0.85vw, 0.78rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  opacity: 0;
+  transform-origin: 0 100%;
+  transform: translateY(-100%) scale(0.6);
+  transition: opacity 0.2s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.face-bubble.is-on { opacity: 1; transform: translateY(-100%) scale(1); }
+.face-bubble:empty { padding: 0; }
+
+@keyframes homePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(0.65); }
+}
+
+@media (max-width: 768px) {
+  .home-status { display: none; }
+  .home-ghost { top: 48dvh; font-size: 30vw; }
+  .face-bubble { left: 50%; transform-origin: 50% 100%; transform: translate(-50%, -100%) scale(0.6); }
+  .face-bubble.is-on { transform: translate(-50%, -100%) scale(1); }
+}
+
 @keyframes avatarIn {
   from { opacity: 0; transform: translateY(14px) scale(0.985); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
