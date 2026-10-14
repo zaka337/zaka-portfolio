@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
+import Image from "next/image";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
@@ -222,16 +223,58 @@ function AvatarModel() {
   );
 }
 
-useGLTF.preload("/Avatar.glb");
-
 const GREETINGS = ["HEY THERE!", "HI, I'M ZAKA", "NICE TO MEET YOU", "LET'S BUILD SOMETHING"];
 
+type Mode = "pending" | "3d" | "still";
+
+/* Where the head sits on screen in the standard framing (same numbers the 3D scene
+   publishes), so the glow, hit area and neck line up with the still image too. */
+const STILL_LAYOUT = { cy: 41.32, h: 38.58, chin: 60.61, cut: 67.85 };
+
 export default function AvatarScene() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<Mode>("pending");
   const [bubble, setBubble] = useState("");
   const [shown, setShown] = useState(false);
   const idx = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
+
+  // Decide once: real 3D, or a still photo for visitors who prefer reduced motion
+  // or whose device cannot run WebGL (older phones, blocked GPU, privacy modes).
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let webgl = false;
+    try {
+      const c = document.createElement("canvas");
+      const gl = (c.getContext("webgl2") || c.getContext("webgl")) as WebGLRenderingContext | WebGL2RenderingContext | null;
+      webgl = !!gl;
+      gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    } catch {
+      webgl = false;
+    }
+    if (!reduce && webgl) {
+      useGLTF.preload("/Avatar.glb");
+      setMode("3d");
+    } else {
+      setMode("still");
+    }
+  }, []);
+
+  // Still mode has no 3D scene to publish the layout, so publish it here and
+  // release the loading screen.
+  useEffect(() => {
+    if (mode !== "still") return;
+    const el = wrapRef.current;
+    if (!el) return;
+    el.style.setProperty("--face-cy", `${STILL_LAYOUT.cy}%`);
+    el.style.setProperty("--face-h", `${STILL_LAYOUT.h}%`);
+    el.style.setProperty("--chin-y", `${STILL_LAYOUT.chin}%`);
+    el.style.setProperty("--cut-y", `${STILL_LAYOUT.cut}%`);
+    el.style.setProperty("--face-px", `${((STILL_LAYOUT.h / 100) * el.clientHeight).toFixed(1)}px`);
+    el.setAttribute("data-ready", "1");
+    window.dispatchEvent(new Event("zk-ready"));
+  }, [mode]);
 
   const sayHi = () => {
     window.dispatchEvent(new Event("zk-nod"));
@@ -244,6 +287,7 @@ export default function AvatarScene() {
 
   return (
     <div
+      ref={wrapRef}
       className="avatar-scene"
       style={{
         position: "fixed",
@@ -255,32 +299,52 @@ export default function AvatarScene() {
         backgroundColor: "transparent",
       }}
     >
-      <Canvas
-        camera={{ fov: 45, near: 0.1, far: 100, position: [0, 0, 3.0] }}
-        gl={{ antialias: true, alpha: true }}
-        events={undefined}
-        style={{
-          width: "100%", height: "100%",
-          display: "block",
-          background: "transparent",
-          pointerEvents: "none",
-        }}
-        onCreated={({ gl, scene: s }) => {
-          gl.setClearColor(0x000000, 0);
-          s.background = null;
-        }}
-      >
-        {/* Studio lighting: warm key, cool fill, two rims for edge separation */}
-        <hemisphereLight args={["#fff4e8", "#9a8a78", 0.26]} />
-        <directionalLight position={[2.6, 4.6, 3]} intensity={2.0} color="#fff0de" />
-        <directionalLight position={[-3, 1.4, 2.2]} intensity={0.5} color="#e6eeff" />
-        <directionalLight position={[-2.4, 2.6, -3]} intensity={1.3} color="#ffd9bd" />
-        <directionalLight position={[3, 2, -2.6]} intensity={0.9} color="#d2e2ff" />
-        <Suspense fallback={null}>
-          <Studio />
-          <AvatarModel />
-        </Suspense>
-      </Canvas>
+      {mode === "3d" && (
+        <Canvas
+          camera={{ fov: 45, near: 0.1, far: 100, position: [0, 0, 3.0] }}
+          gl={{ antialias: true, alpha: true }}
+          events={undefined}
+          style={{
+            width: "100%", height: "100%",
+            display: "block",
+            background: "transparent",
+            pointerEvents: "none",
+          }}
+          onCreated={({ gl, scene: s }) => {
+            gl.setClearColor(0x000000, 0);
+            s.background = null;
+            // If the GPU context is lost later, fall back to the still photo.
+            gl.domElement.addEventListener("webglcontextlost", (e) => {
+              e.preventDefault();
+              setMode("still");
+            });
+          }}
+        >
+          {/* Studio lighting: warm key, cool fill, two rims for edge separation */}
+          <hemisphereLight args={["#fff4e8", "#9a8a78", 0.26]} />
+          <directionalLight position={[2.6, 4.6, 3]} intensity={2.0} color="#fff0de" />
+          <directionalLight position={[-3, 1.4, 2.2]} intensity={0.5} color="#e6eeff" />
+          <directionalLight position={[-2.4, 2.6, -3]} intensity={1.3} color="#ffd9bd" />
+          <directionalLight position={[3, 2, -2.6]} intensity={0.9} color="#d2e2ff" />
+          <Suspense fallback={null}>
+            <Studio />
+            <AvatarModel />
+          </Suspense>
+        </Canvas>
+      )}
+
+      {mode === "still" && (
+        <Image
+          className="face-still"
+          src="/face-still.webp"
+          alt="Zaka Ullah Waheed's avatar"
+          width={760}
+          height={800}
+          priority
+          draggable={false}
+          sizes="(max-width: 768px) 70vw, 40vw"
+        />
+      )}
 
       <button type="button" className="face-hit" aria-label="Say hi to Zaka's avatar" onClick={sayHi}>
         <span className="face-hint" aria-hidden="true">SAY HI</span>

@@ -560,6 +560,22 @@ canvas {
   .face-bubble.is-on { transform: translate(-50%, -100%) scale(1); }
 }
 
+/* Still photo of the avatar: used when WebGL is unavailable or motion is reduced.
+   Sized as a share of the scene height so it matches the 3D head at any viewport. */
+.face-still {
+  position: absolute;
+  left: 50%;
+  top: 43.24%;
+  height: 49.22%;
+  width: auto;
+  aspect-ratio: 760 / 800;
+  translate: -50% -50%; /* not transform: the entrance animation owns transform */
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  animation: avatarIn 1.3s var(--ease-out) 0.1s both;
+}
+
 @keyframes avatarIn {
   from { opacity: 0; transform: translateY(14px) scale(0.985); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
