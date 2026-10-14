@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import ClientProviders from "./ClientProviders";
 import { SITE_URL, SITE_NAME, SOCIAL, QA_ZAKA } from "@/lib/site";
 
@@ -248,6 +249,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
         <ClientProviders>{children}</ClientProviders>
+        {/* Cookie-free page-view analytics (Vercel Web Analytics) */}
+        <Analytics />
       </body>
     </html>
   );
