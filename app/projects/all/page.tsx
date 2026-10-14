@@ -229,10 +229,10 @@ export default function Projects() {
     zIndex: 200,
     width: "clamp(36px, 5vw, 48px)",
     height: "clamp(36px, 5vw, 48px)",
-    border: "1.5px solid rgba(13,13,13,0.22)", borderRadius: "50%",
+    border: "1.5px solid rgba(var(--ink-rgb),0.22)", borderRadius: "50%",
     background: "transparent", cursor: "pointer",
     display: "flex", alignItems: "center", justifyContent: "center",
-    color: "rgba(13,13,13,0.28)",
+    color: "rgba(var(--ink-rgb),0.28)",
     fontSize: "clamp(18px, 3vw, 28px)",
     lineHeight: "1",
     transition: "border-color 0.2s, color 0.2s",
@@ -353,7 +353,7 @@ export default function Projects() {
             className="proj-fade proj-fade-3"
             onClick={() => stepCarousel(-1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.22)"; e.currentTarget.style.color = "rgba(13,13,13,0.28)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(var(--ink-rgb),0.22)"; e.currentTarget.style.color = "rgba(var(--ink-rgb),0.28)"; }}
             style={{ ...arrowBase, left: "clamp(8px, 3vw, 40px)" }}>
             &#8249;
           </button>
@@ -362,7 +362,7 @@ export default function Projects() {
             className="proj-fade proj-fade-3"
             onClick={() => stepCarousel(1)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.style.color = "var(--ink)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(13,13,13,0.22)"; e.currentTarget.style.color = "rgba(13,13,13,0.28)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(var(--ink-rgb),0.22)"; e.currentTarget.style.color = "rgba(var(--ink-rgb),0.28)"; }}
             style={{ ...arrowBase, right: "clamp(8px, 3vw, 40px)" }}>
             &#8250;
           </button>

@@ -56,7 +56,7 @@
 .cm-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: #1a8c3c;
+  background: var(--live);
   animation: cmPulse 1.4s ease-in-out infinite;
 }
 .cm-time { font-variant-numeric: tabular-nums; min-width: 5.5em; }
@@ -143,7 +143,7 @@
   transition: background 0.15s, color 0.15s, transform 0.1s;
   touch-action: manipulation;
 }
-.cm-chip:hover { background: rgba(13, 13, 13, 0.08); }
+.cm-chip:hover { background: rgba(var(--ink-rgb), 0.08); }
 .cm-chip:active { transform: scale(0.97); }
 .cm-chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 
@@ -162,9 +162,9 @@
   outline: none;
   resize: vertical;
 }
-.cm-field::placeholder { color: rgba(13, 13, 13, 0.32); }
+.cm-field::placeholder { color: rgba(var(--ink-rgb), 0.32); }
 .cm-field:focus { border-bottom-color: var(--ink); box-shadow: 0 1.5px 0 0 var(--ink); }
-.cm-field[aria-invalid="true"] { border-bottom-color: #b3261e; }
+.cm-field[aria-invalid="true"] { border-bottom-color: var(--danger); }
 textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
 
 .cm-two { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 40px); }
@@ -196,7 +196,7 @@ textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
 .cm-send span:last-child { font-size: 1.4em; font-weight: 300; line-height: 1; transition: transform 0.18s; }
 .cm-send:hover span:last-child { transform: translate(5px, -5px); }
 
-.cm-error { min-height: 1.1em; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #b3261e; }
+.cm-error { min-height: 1.1em; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--danger); }
 
 .cm-sent {
   border: 1.5px solid var(--ink);
@@ -248,7 +248,7 @@ textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
   color: var(--ink-50);
   transition: color 0.15s;
 }
-.cm-row:hover .cm-row-label, .cm-row:focus-visible .cm-row-label { color: rgba(241, 237, 226, 0.42); }
+.cm-row:hover .cm-row-label, .cm-row:focus-visible .cm-row-label { color: rgba(var(--paper-rgb), 0.42); }
 .cm-row-value {
   flex: 1;
   font-size: clamp(1.3rem, 3.8vw, 5rem);

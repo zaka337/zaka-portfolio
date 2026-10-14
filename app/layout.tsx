@@ -1,8 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import ClientProviders from "./ClientProviders";
+import ThemeToggle from "@/components/ThemeToggle";
 import { SITE_URL, SITE_NAME, SOCIAL, QA_ZAKA } from "@/lib/site";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1ede2" },
+    { media: "(prefers-color-scheme: dark)", color: "#121211" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -223,6 +231,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-PK" suppressHydrationWarning>
       <head>
+        {/* Apply the saved (else system) theme before first paint so there is no flash */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('zk-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />
         {/* Hide loader immediately if already shown this session (prevents re-show on back nav) */}
         <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem('zk-shown'))document.documentElement.classList.add('zk-skip');}catch(e){}` }} />
         {/* Preload the 3D avatar so the browser fetches it immediately on HTML parse,
@@ -250,6 +260,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         <ClientProviders>{children}</ClientProviders>
         {/* Cookie-free page-view analytics (Vercel Web Analytics) */}
+        <ThemeToggle />
         <Analytics />
       </body>
     </html>

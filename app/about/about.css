@@ -41,8 +41,8 @@
   transform-origin: left center;
   transform: scaleX(var(--pg));
 }
-.st-root[data-tone="dark"] .st-nav { color: #f1ede2; }
-.st-root[data-tone="dark"] .st-pg { background: #f1ede2; }
+.st-root[data-tone="dark"] .st-nav { color: var(--on-deep); }
+.st-root[data-tone="dark"] .st-pg { background: var(--on-deep); }
 
 /* ─── Chapter scaffolding ───────────────────────────────────────── */
 
@@ -56,7 +56,7 @@
   overflow: hidden;
 }
 
-.st-dark .st-sticky { background: var(--ink); color: #f1ede2; }
+.st-dark .st-sticky { background: var(--deep); color: var(--on-deep); }
 
 .st-label {
   font-size: clamp(0.55rem, 0.8vw, 0.72rem);
@@ -126,7 +126,7 @@
   width: 30vmax; height: 30vmax;
   margin: -15vmax 0 0 -15vmax;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--deep);
   transform: scale(calc(max(0, var(--p) - 0.35) * 14));
   will-change: transform;
 }
@@ -215,7 +215,7 @@
   position: absolute;
   left: 50%; top: 50%;
   fill: none;
-  stroke: rgba(241, 237, 226, 0.26);
+  stroke: rgba(var(--on-deep-rgb), 0.26);
   stroke-width: 1;
   will-change: transform;
 }
@@ -242,7 +242,7 @@
   width: min(92vmin, 980px); height: min(92vmin, 980px);
   margin: calc(min(92vmin, 980px) / -2) 0 0 calc(min(92vmin, 980px) / -2);
   transform: rotate(calc(var(--p) * 300deg));
-  stroke: rgba(241, 237, 226, 0.34);
+  stroke: rgba(var(--on-deep-rgb), 0.34);
 }
 .st-toolkit .st-g2 {
   width: 38vmin; height: 38vmin; margin: -19vmin 0 0 -19vmin;
@@ -315,7 +315,7 @@
   font-weight: 900;
   letter-spacing: -0.06em;
   line-height: 0.8;
-  color: rgba(13, 13, 13, 0.06);
+  color: rgba(var(--ink-rgb), 0.06);
   user-select: none;
 }
 .st-panel-body { position: relative; z-index: 1; max-width: 44rem; }
@@ -345,7 +345,7 @@
   position: absolute;
   left: 8vw; right: 8vw; bottom: 7vh;
   height: 1px;
-  background: rgba(13, 13, 13, 0.18);
+  background: rgba(var(--ink-rgb), 0.18);
   z-index: 3;
 }
 .st-bar i {
@@ -359,8 +359,8 @@
 
 .st-facts .st-sticky {
   background:
-    radial-gradient(ellipse 80% 55% at 50% 118%, rgba(241, 237, 226, 0.2), transparent 70%),
-    var(--ink);
+    radial-gradient(ellipse 80% 55% at 50% 118%, rgba(var(--on-deep-rgb), 0.2), transparent 70%),
+    var(--deep);
 }
 .st-fact {
   font-size: clamp(2rem, 7.6vw, 6.8rem);
@@ -414,7 +414,7 @@
 }
 .st-btn-solid { background: var(--ink); color: var(--paper); }
 .st-btn-solid:hover { background: transparent; color: var(--ink); }
-.st-btn-ghost { border-color: rgba(13, 13, 13, 0.3); color: var(--ink-70); }
+.st-btn-ghost { border-color: rgba(var(--ink-rgb), 0.3); color: var(--ink-70); }
 .st-btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
 
 /* ─── Keyframes ─────────────────────────────────────────────────── */

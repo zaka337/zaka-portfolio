@@ -17,6 +17,11 @@
   height: 100%;
   object-fit: contain;
   pointer-events: none;
+  /* The photo is a cut-out now, so give it depth and a rim that shows on either theme */
+  filter: drop-shadow(0 16px 24px rgba(var(--shadow-rgb), 0.22));
+}
+:root[data-theme="dark"] .nk-img {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.4)) drop-shadow(0 16px 28px rgba(0, 0, 0, 0.6));
 }
 
 .nk-lcd {

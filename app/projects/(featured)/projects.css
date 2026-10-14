@@ -69,9 +69,9 @@
 .pj-index {
   list-style: none;
   max-width: 62rem;
-  border-top: 1px solid rgba(13, 13, 13, 0.18);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.18);
 }
-.pj-index li { border-bottom: 1px solid rgba(13, 13, 13, 0.18); }
+.pj-index li { border-bottom: 1px solid rgba(var(--ink-rgb), 0.18); }
 .pj-index a {
   display: grid;
   grid-template-columns: 3rem 1fr auto;
@@ -92,7 +92,7 @@
   width: 6px; height: 6px;
   margin-right: 6px;
   border-radius: 50%;
-  background: #1a8c3c;
+  background: var(--live);
   animation: pjPulse 1.4s ease-in-out infinite;
 }
 
@@ -103,6 +103,7 @@
   --p: 0;
   height: 300vh;
   background: var(--bg);
+  background: color-mix(in srgb, var(--bg) var(--tint-mix), var(--paper));
   scroll-margin-top: 0;
   /* Scroll sequence (p = chapter progress):
      --t  0.00-0.22  frame tilts flat
@@ -126,7 +127,7 @@
   font-weight: 900;
   letter-spacing: -0.07em;
   line-height: 0.75;
-  color: rgba(13, 13, 13, 0.07);
+  color: rgba(var(--ink-rgb), 0.07);
   user-select: none;
   transform: translateY(calc(var(--p) * -22vh));
   will-change: transform;
@@ -169,17 +170,17 @@
 .pj-points li {
   position: relative;
   padding: 0.38em 0 0.38em 1.3em;
-  border-top: 1px solid rgba(13, 13, 13, 0.14);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.14);
   font-size: clamp(0.85rem, 1.1vw, 1rem);
   font-weight: 600;
 }
-.pj-points li:last-child { border-bottom: 1px solid rgba(13, 13, 13, 0.14); }
+.pj-points li:last-child { border-bottom: 1px solid rgba(var(--ink-rgb), 0.14); }
 .pj-points li::before { content: "+"; position: absolute; left: 0; font-weight: 800; }
 
 .pj-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: clamp(1rem, 3vh, 1.8rem); }
 .pj-chip {
   padding: 0.28rem 0.65rem;
-  border: 1px solid rgba(13, 13, 13, 0.3);
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
   border-radius: 99px;
   font-size: 0.64rem;
   font-weight: 700;
@@ -200,10 +201,10 @@
   text-transform: uppercase;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.pj-btn-solid { background: var(--ink); color: #f1ede2; }
+.pj-btn-solid { background: var(--ink); color: var(--paper); }
 .pj-btn-solid:hover { background: transparent; color: var(--ink); }
 .pj-btn-ghost { color: var(--ink); }
-.pj-btn-ghost:hover { background: var(--ink); color: #f1ede2; }
+.pj-btn-ghost:hover { background: var(--ink); color: var(--paper); }
 
 /* ─── Browser frame ─────────────────────────────────────────────── */
 
@@ -213,9 +214,9 @@
   text-decoration: none;
   border-radius: 10px;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid rgba(13, 13, 13, 0.2);
-  box-shadow: 0 40px 90px -35px rgba(13, 13, 13, 0.45), 0 8px 24px -12px rgba(13, 13, 13, 0.25);
+  background: var(--surface);
+  border: 1px solid rgba(var(--ink-rgb), 0.2);
+  box-shadow: 0 40px 90px -35px rgba(var(--shadow-rgb), 0.45), 0 8px 24px -12px rgba(var(--shadow-rgb), 0.25);
   transform-origin: right center;
   transform:
     perspective(1700px)
@@ -233,19 +234,19 @@
   gap: 6px;
   padding: 0 12px;
   height: 30px;
-  background: #ece8dc;
-  border-bottom: 1px solid rgba(13, 13, 13, 0.12);
+  background: var(--surface-2);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
 }
-.pj-bar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(13, 13, 13, 0.22); }
+.pj-bar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(var(--ink-rgb), 0.22); }
 .pj-url {
   flex: 1;
   margin-left: 8px;
   padding: 3px 10px;
   border-radius: 99px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--pill);
   font-size: 0.62rem;
   letter-spacing: 0.04em;
-  color: rgba(13, 13, 13, 0.55);
+  color: rgba(var(--ink-rgb), 0.55);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -255,7 +256,7 @@
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #fff;
+  background: var(--surface);
 }
 .pj-viewport img {
   display: block;
@@ -275,7 +276,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 0.55rem;
-  background: var(--ink);
+  background: #0d0d0d;
   color: #f1ede2;
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: clamp(0.7rem, 1.05vw, 0.95rem);
@@ -320,7 +321,7 @@
   position: relative;
   flex: 1;
   height: 1px;
-  background: rgba(13, 13, 13, 0.2);
+  background: rgba(var(--ink-rgb), 0.2);
 }
 .pj-prog b {
   position: absolute;

@@ -257,7 +257,7 @@ export default function NokiaPhone() {
   return (
     <div className="nk">
       <Image
-        src="/mobile.jpg"
+        src="/mobile-cutout.webp"
         alt="Nokia 3310 showing the words CALL ME"
         width={1024}
         height={1024}

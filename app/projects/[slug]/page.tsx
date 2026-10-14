@@ -101,7 +101,7 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
       </nav>
 
       {/* Hero */}
-      <header className="cs-hero" style={{ background: p.bg }}>
+      <header className="cs-hero" style={{ ["--bg" as string]: p.bg } as React.CSSProperties}>
         <p className="cs-label">{p.kind} {'—'} {p.year}</p>
         <h1 className="cs-title">{p.title}</h1>
         <p className="cs-summary">{p.summary}</p>

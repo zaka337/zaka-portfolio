@@ -18,7 +18,7 @@ function Row({ label, value, href, onClick }: {
 }) {
   return (
     <div style={{ paddingBottom: "0.9rem", marginBottom: "0.9rem",
-      borderBottom: "1px solid rgba(13,13,13,0.12)" }}>
+      borderBottom: "1px solid rgba(var(--ink-rgb),0.12)" }}>
       <p style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif",
         fontSize: "clamp(0.5rem, 0.65vw, 0.62rem)", fontWeight: 600,
         letterSpacing: "0.18em", color: "var(--ink-50)",
@@ -58,7 +58,7 @@ function CopyEmailRow() {
   };
   return (
     <div style={{ paddingBottom: "0.9rem", marginBottom: "0.9rem",
-      borderBottom: "1px solid rgba(13,13,13,0.12)" }}>
+      borderBottom: "1px solid rgba(var(--ink-rgb),0.12)" }}>
       <p style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif",
         fontSize: "clamp(0.5rem, 0.65vw, 0.62rem)", fontWeight: 600,
         letterSpacing: "0.18em", color: "var(--ink-50)",
@@ -75,7 +75,7 @@ function CopyEmailRow() {
           width: "100%", cursor: "pointer" }}>
         zakas2379@gmail.com
         <span style={{ fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 500,
-          letterSpacing: "0.14em", color: copied ? "#4a7a4a" : "var(--ink-50)",
+          letterSpacing: "0.14em", color: copied ? "var(--ok)" : "var(--ink-50)",
           textTransform: "uppercase", transition: "color 0.3s" }}>
           {copied ? "COPIED!" : "CLICK TO COPY"}
         </span>

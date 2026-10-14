@@ -1,9 +1,29 @@
 :root {
-  /* ── Color ────────────────────────────────────────────────────── */
+  /* ── Color: light (default) ───────────────────────────────────── */
   --paper:   #f1ede2;
   --ink:     #0d0d0d;
-  --ink-70:  rgba(13, 13, 13, 0.7);
-  --ink-50:  rgba(13, 13, 13, 0.5);
+  --paper-rgb: 241, 237, 226;
+  --ink-rgb:   13, 13, 13;
+  --ink-70:  rgba(var(--ink-rgb), 0.7);
+  --ink-50:  rgba(var(--ink-rgb), 0.5);
+
+  /* Sections that stay dark in both themes (About chapters, the iris wipe) */
+  --deep:        #0d0d0d;
+  --on-deep:     #f1ede2;
+  --on-deep-rgb: 241, 237, 226;
+
+  /* App-window chrome (browser frames) and small UI accents */
+  --surface:    #ffffff;
+  --surface-2:  #ece8dc;
+  --pill:       rgba(255, 255, 255, 0.7);
+  --shadow-rgb: 13, 13, 13;
+  --glow-rgb:   255, 252, 244;
+  --glow-a:     1;
+  --tint-mix:   100%;
+  --danger:     #b3261e;
+  --live:       #1a8c3c;
+  --ok:         #4a7a4a;
+  color-scheme: light;
 
   /* ── Motion: durations ────────────────────────────────────────── */
   --duration-fast:  160ms;   /* hover color flips, micro-interactions */
@@ -13,6 +33,69 @@
   /* ── Motion: easing ──────────────────────────────────────────── */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);   /* expo-out — fast start, smooth landing */
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* refined symmetric */
+}
+
+/* Dark theme. The head script sets data-theme before first paint; the media-query
+   block is the no-JavaScript fallback so the system preference still applies. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:   #121211;
+    --ink:     #ece7da;
+    --paper-rgb: 18, 18, 17;
+    --ink-rgb:   236, 231, 218;
+    --ink-70:  rgba(var(--ink-rgb), 0.72);
+    --ink-50:  rgba(var(--ink-rgb), 0.52);
+
+    --deep:        #060606;
+    --on-deep:     #ece7da;
+    --on-deep-rgb: 236, 231, 218;
+
+    --surface:    #1d1d1b;
+    --surface-2:  #272725;
+    --pill:       rgba(255, 255, 255, 0.07);
+    --shadow-rgb: 0, 0, 0;
+    --glow-rgb:   255, 244, 228;
+    --glow-a:     0.1;
+    --tint-mix:   26%;
+    --danger:     #ff8f86;
+    --live:       #4cc473;
+    --ok:         #7fc98a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:   #121211;
+  --ink:     #ece7da;
+  --paper-rgb: 18, 18, 17;
+  --ink-rgb:   236, 231, 218;
+  --ink-70:  rgba(var(--ink-rgb), 0.72);
+  --ink-50:  rgba(var(--ink-rgb), 0.52);
+
+  --deep:        #060606;
+  --on-deep:     #ece7da;
+  --on-deep-rgb: 236, 231, 218;
+
+  --surface:    #1d1d1b;
+  --surface-2:  #272725;
+  --pill:       rgba(255, 255, 255, 0.07);
+  --shadow-rgb: 0, 0, 0;
+  --glow-rgb:   255, 244, 228;
+  --glow-a:     0.1;
+  --tint-mix:   26%;
+  --danger:     #ff8f86;
+  --live:       #4cc473;
+  --ok:         #7fc98a;
+  color-scheme: dark;
+}
+
+/* Brief colour fade while the toggle is used (class is removed after 350ms) */
+html.theme-anim,
+html.theme-anim *,
+html.theme-anim *::before,
+html.theme-anim *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease,
+              fill 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 * {
@@ -288,8 +371,8 @@ canvas {
   .block-mr,
   .block-bl,
   .block-br {
-    background: rgba(241, 237, 226, 0.88);
-    border: 1px solid rgba(13, 13, 13, 0.22);
+    background: rgba(var(--paper-rgb), 0.88);
+    border: 1px solid rgba(var(--ink-rgb), 0.22);
     border-radius: 6px;
     padding: 10px 14px 22px;
     backdrop-filter: blur(6px);
@@ -309,7 +392,7 @@ canvas {
     right: 10px;
     font-size: 0.62rem;
     font-weight: 400;
-    color: rgba(13, 13, 13, 0.28);
+    color: rgba(var(--ink-rgb), 0.28);
     line-height: 1;
     pointer-events: none;
     transition: color 0.15s;
@@ -320,14 +403,14 @@ canvas {
   .block-ml:active,
   .block-bl:active,
   .block-br:active {
-    background: rgba(13, 13, 13, 0.07);
+    background: rgba(var(--ink-rgb), 0.07);
   }
 
   .block-tr:active::after,
   .block-ml:active::after,
   .block-bl:active::after,
   .block-br:active::after {
-    color: rgba(13, 13, 13, 0.6);
+    color: rgba(var(--ink-rgb), 0.6);
   }
 
   /* Text shadow is redundant with opaque card background — keep only for block-tl */
@@ -408,9 +491,9 @@ canvas {
   height: calc(var(--face-h, 40%) * 2.15);
   background: radial-gradient(
     circle,
-    rgba(255, 252, 244, 0.9) 0%,
-    rgba(255, 252, 244, 0.5) 38%,
-    rgba(255, 252, 244, 0) 68%
+    rgba(var(--glow-rgb), calc(0.9 * var(--glow-a))) 0%,
+    rgba(var(--glow-rgb), calc(0.5 * var(--glow-a))) 38%,
+    rgba(var(--glow-rgb), 0) 68%
   );
 }
 
@@ -430,7 +513,7 @@ canvas {
   line-height: 0.8;
   white-space: nowrap;
   color: transparent;
-  -webkit-text-stroke: 1.5px rgba(13, 13, 13, 0.13);
+  -webkit-text-stroke: 1.5px rgba(var(--ink-rgb), 0.13);
   user-select: none;
   pointer-events: none;
   animation: homeAvatarFade 1.2s var(--ease-out) 0.2s both;
@@ -481,7 +564,7 @@ canvas {
 .home-status-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #1a8c3c;
+  background: var(--live);
   animation: homePulse 1.4s ease-in-out infinite;
 }
 
@@ -683,7 +766,7 @@ html.zk-skip #zk-loader { display: none !important; }
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #f1ede2;
+  background: var(--paper);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -703,7 +786,7 @@ html.zk-skip #zk-loader { display: none !important; }
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(4.5rem, 18vw, 11rem);
   font-weight: 900;
-  color: #0d0d0d;
+  color: var(--ink);
   letter-spacing: -0.04em;
   line-height: 1;
   animation: zkReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
@@ -712,14 +795,14 @@ html.zk-skip #zk-loader { display: none !important; }
 .zk-bar-track {
   width: clamp(100px, 18vw, 180px);
   height: 1.5px;
-  background: rgba(13, 13, 13, 0.14);
+  background: rgba(var(--ink-rgb), 0.14);
   border-radius: 1px;
   overflow: hidden;
 }
 
 .zk-bar-fill {
   height: 100%;
-  background: #0d0d0d;
+  background: var(--ink);
   border-radius: 1px;
   animation: zkBar 2.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 }
@@ -773,3 +856,64 @@ html.zk-skip #zk-loader { display: none !important; }
   .title-sub   { font-size: clamp(4rem, 4.2vw, 7rem); }
   .nav-item    { font-size: clamp(3rem, 2.8vw, 5rem); }
 }
+
+/* ─── Theme toggle ──────────────────────────────────────────────── */
+
+.theme-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 9000;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 50%;
+  background: rgba(var(--paper-rgb), 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.theme-toggle:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.theme-toggle:active { transform: scale(0.92); }
+.theme-toggle svg { display: block; }
+
+/* One icon at a time, chosen from the attribute (no icon flash on load) */
+.theme-toggle .tt-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .tt-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .tt-sun { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .theme-toggle .tt-moon { display: none; }
+  :root:not([data-theme]) .theme-toggle .tt-sun { display: block; }
+}
+
+/* Home, desktop: sit beside the availability line instead of the corner */
+@media (min-width: 769px) {
+  .theme-toggle[data-route="home"] {
+    right: auto;
+    left: calc(50% + 176px);
+    bottom: calc(5vh - 9px);
+    width: 30px;
+    height: 30px;
+  }
+}
+/* Home, phones: left edge, level with the face (the corners hold the nav cards) */
+@media (max-width: 768px) {
+  .theme-toggle[data-route="home"] {
+    right: auto;
+    left: 8px;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .theme-toggle[data-route="home"]:active { transform: translateY(-50%) scale(0.92); }
+}
+
+@media print { .theme-toggle { display: none !important; } }

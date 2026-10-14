@@ -21,7 +21,7 @@
   letter-spacing: -0.07em;
   line-height: 0.75;
   color: transparent;
-  -webkit-text-stroke: 1.5px rgba(13, 13, 13, 0.13);
+  -webkit-text-stroke: 1.5px rgba(var(--ink-rgb), 0.13);
   user-select: none;
   pointer-events: none;
 }
