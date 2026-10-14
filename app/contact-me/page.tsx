@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useScrollUnlock } from "@/lib/scrollStory";
+import { NEEDS, TIMELINES, MAX_MESSAGE, sendContact } from "@/lib/contactForm";
 
 const EMAIL = "zakas2379@gmail.com";
 
@@ -49,16 +50,11 @@ function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
 /* ─── Content ───────────────────────────────────────────────────── */
 const TAPE = "AVAILABLE FOR WORK · BASED IN PAKISTAN · OPEN TO REMOTE · FULL-STACK DEVELOPER · QA AUTOMATION · REACT & NEXT.JS · FLUTTER BUILDER · ";
 
-const NEEDS = ["Website", "Web app", "Mobile app", "QA & test automation", "AI & automation", "Something else"];
-const TIMELINES = ["ASAP", "1-3 months", "Flexible"];
-
 const ROWS = [
   { label: "LINKEDIN",  display: "ZAKA ULLAH WAHEED",  href: "https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" },
   { label: "GITHUB",    display: "GITHUB.COM/ZAKA337", href: "https://github.com/zaka337" },
   { label: "INSTAGRAM", display: "@NOTXZAKA",          href: "https://www.instagram.com/notxzaka/" },
 ];
-
-const MAX_MSG = 1200;
 
 function buildBrief(f: { name: string; email: string; needs: string[]; timeline: string; message: string }) {
   const needs = f.needs.length ? f.needs.join(", ") : "Not sure yet";
@@ -97,7 +93,9 @@ export default function ContactMe() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [bad, setBad] = useState<"name" | "email" | "message" | "">("");
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "fallback">("idle");
+  const [hp, setHp] = useState(""); // honeypot: humans never see or fill it
+  const openedAt = useRef(Date.now());
   const [copied, setCopied] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -118,15 +116,34 @@ export default function ContactMe() {
   const toggleNeed = (n: string) =>
     setNeeds((cur) => (cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n]));
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) { setBad("name"); setError("Add your name"); nameRef.current?.focus(); return; }
-    if (email.trim() && !/^\S+@\S+\.\S+$/.test(email.trim())) { setBad("email"); setError("That email looks off"); emailRef.current?.focus(); return; }
-    if (!message.trim()) { setBad("message"); setError("Tell me a few words about it"); msgRef.current?.focus(); return; }
-    setBad(""); setError("");
+  const openMailApp = () => {
     const { subject, body } = buildBrief({ name, email, needs, timeline, message });
-    setSent(true);
     window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status === "sending") return;
+    if (!name.trim()) { setBad("name"); setError("Add your name"); nameRef.current?.focus(); return; }
+    if (!email.trim()) { setBad("email"); setError("Add your email so I can reply"); emailRef.current?.focus(); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setBad("email"); setError("That email looks off"); emailRef.current?.focus(); return; }
+    if (!message.trim()) { setBad("message"); setError("Tell me a few words about it"); msgRef.current?.focus(); return; }
+    setBad(""); setError(""); setStatus("sending");
+
+    const result = await sendContact({
+      name: name.trim(), email: email.trim(), needs, timeline, message: message.trim(),
+      website: hp, elapsed: Date.now() - openedAt.current,
+    });
+    if (result === "sent") { setStatus("sent"); return; }
+    if (result === "invalid") { setStatus("idle"); setError("Something in the form looks off. Check it and try again"); return; }
+    // The server could not send: hand the same brief to the visitor's mail app instead.
+    setStatus("fallback");
+    openMailApp();
+  };
+
+  const reset = () => {
+    setNeeds([]); setTimeline(""); setName(""); setEmail(""); setMessage(""); setHp("");
+    setError(""); setBad(""); setStatus("idle"); openedAt.current = Date.now();
   };
 
   const briefText = () => {
@@ -173,8 +190,8 @@ export default function ContactMe() {
           <p className="cm-label">START A PROJECT</p>
           <h2 id="brief-title">Tell me what you&apos;re building.</h2>
           <p>
-            Pick what fits, add a few words, and this opens a ready-to-send email to me
-            in your mail app. No account, no tracking.
+            Pick what fits, add a few words, and it lands straight in my inbox. No account needed.
+            If sending is not possible, it opens a ready-to-send email in your mail app instead.
           </p>
         </div>
 
@@ -212,7 +229,7 @@ export default function ContactMe() {
               />
             </div>
             <div>
-              <label className="cm-label" htmlFor="cm-email">YOUR EMAIL (OPTIONAL)</label>
+              <label className="cm-label" htmlFor="cm-email">YOUR EMAIL</label>
               <input
                 id="cm-email" ref={emailRef} className="cm-field" type="email" autoComplete="email" inputMode="email"
                 placeholder="jane@company.com" value={email} maxLength={120}
@@ -227,25 +244,43 @@ export default function ContactMe() {
             <textarea
               id="cm-msg" ref={msgRef} className="cm-field" rows={4}
               placeholder="What are you building, and what do you need from me?"
-              value={message} maxLength={MAX_MSG}
+              value={message} maxLength={MAX_MESSAGE}
               aria-invalid={bad === "message"}
               onChange={(e) => { setMessage(e.target.value); if (bad === "message") { setBad(""); setError(""); } }}
             />
-            <p className="cm-count">{message.length} / {MAX_MSG}</p>
+            <p className="cm-count">{message.length} / {MAX_MESSAGE}</p>
           </div>
+
+          {/* Spam trap: invisible to people, tempting to bots */}
+          <input
+            className="cm-hp" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"
+            value={hp} onChange={(e) => setHp(e.target.value)}
+          />
 
           <p className="cm-error" role="alert">{error}</p>
 
-          <button type="submit" className="cm-send">
-            <span>Send brief</span>
+          <button type="submit" className="cm-send" disabled={status === "sending"}>
+            <span>{status === "sending" ? "Sending..." : "Send brief"}</span>
             <span aria-hidden="true">{'↗'}</span>
           </button>
 
-          {sent && (
+          {status === "sent" && (
             <div className="cm-sent" role="status">
               <p>
-                <strong>Your mail app should be opening</strong> with the brief ready to send.
-                Nothing opened? Copy it and email me at <strong>{EMAIL}</strong>.
+                <strong>Sent. Thank you, {name.trim() || "friend"}.</strong> Your message is in my inbox,
+                and I&apos;ll reply to <strong>{email.trim()}</strong>.
+              </p>
+              <div className="cm-sent-actions">
+                <button type="button" className="cm-chip" onClick={reset}>Send another</button>
+              </div>
+            </div>
+          )}
+
+          {status === "fallback" && (
+            <div className="cm-sent" role="status">
+              <p>
+                <strong>I couldn&apos;t send that directly, so your mail app should be opening</strong> with the brief
+                ready to send. Nothing opened? Copy it and email me at <strong>{EMAIL}</strong>.
               </p>
               <div className="cm-sent-actions">
                 <button type="button" className="cm-chip" onClick={() => copyText(briefText(), "brief")}>

@@ -190,6 +190,9 @@ textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
   transition: background 0.18s, color 0.18s;
 }
 .cm-send:hover { background: transparent; color: var(--ink); }
+.cm-send:disabled { opacity: 0.6; cursor: progress; }
+.cm-send:disabled:hover { background: var(--ink); color: var(--paper); }
+.cm-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .cm-send span:last-child { font-size: 1.4em; font-weight: 300; line-height: 1; transition: transform 0.18s; }
 .cm-send:hover span:last-child { transform: translate(5px, -5px); }
 
