@@ -1,0 +1,150 @@
+/* Resume: a single-column A4 sheet that reads the same on screen and in print.
+   Sizes are in em so the sheet scales with one font-size (px on screen, pt in print). */
+
+.rs-page {
+  min-height: 100dvh;
+  padding: 0 clamp(12px, 4vw, 40px) 64px;
+  background: var(--paper);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+}
+
+/* ─── Toolbar (screen only) ─────────────────────────────────────── */
+
+.rs-toolbar {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 18px 0;
+  font-size: clamp(0.62rem, 0.85vw, 0.74rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.rs-toolbar a { color: var(--ink-50); text-decoration: none; transition: color 0.15s; }
+.rs-toolbar > a:hover { color: var(--ink); }
+.rs-tools { display: flex; gap: 0.6rem; }
+.rs-btn {
+  display: inline-block;
+  padding: 0.7rem 1.3rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  font: inherit;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.rs-btn-solid { background: var(--ink); color: #f1ede2 !important; }
+.rs-btn-solid:hover { background: transparent; color: var(--ink) !important; }
+.rs-btn-ghost { background: transparent; color: var(--ink); }
+.rs-btn-ghost:hover { background: var(--ink); color: #f1ede2; }
+
+/* ─── Sheet ─────────────────────────────────────────────────────── */
+
+.rs-sheet {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(22px, 5vw, 56px);
+  background: #fffdf8;
+  border: 1px solid rgba(13, 13, 13, 0.12);
+  box-shadow: 0 30px 70px -40px rgba(13, 13, 13, 0.35);
+  font-size: clamp(12.5px, 1.6vw, 15px);
+  line-height: 1.45;
+}
+
+.rs-head { padding-bottom: 0.9em; border-bottom: 2px solid var(--ink); }
+.rs-head h1 {
+  font-size: 2.5em;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.rs-title { margin-top: 0.45em; font-size: 1.08em; font-weight: 700; letter-spacing: 0.01em; }
+.rs-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15em 0;
+  margin-top: 0.55em;
+  font-size: 0.86em;
+  color: rgba(13, 13, 13, 0.78);
+}
+.rs-loc { font-weight: 400; color: rgba(13, 13, 13, 0.7); }
+.rs-loc::before { content: "| "; color: rgba(13, 13, 13, 0.35); }
+.rs-contact span + span::before { content: "|"; margin: 0 0.6em; color: rgba(13, 13, 13, 0.35); }
+.rs-contact a { color: inherit; text-decoration: none; }
+.rs-contact a:hover { text-decoration: underline; }
+
+.rs-sheet section { margin-top: 1.15em; }
+.rs-sheet h2 {
+  margin-bottom: 0.5em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid rgba(13, 13, 13, 0.35);
+  font-size: 0.82em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.rs-sheet p { font-size: 0.95em; }
+
+.rs-item { margin-bottom: 0.7em; break-inside: avoid; }
+.rs-item:last-child { margin-bottom: 0; }
+.rs-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1em; }
+.rs-row > span { flex-shrink: 0; font-size: 0.86em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rs-row p { font-size: 1em; }
+.rs-meta { font-size: 0.88em; font-weight: 400; color: rgba(13, 13, 13, 0.68); }
+.rs-meta::before { content: "| "; color: rgba(13, 13, 13, 0.35); }
+.rs-link { font-weight: 400 !important; color: rgba(13, 13, 13, 0.62); }
+
+.rs-sheet ul { margin: 0.3em 0 0 1.15em; }
+.rs-sheet li { padding-left: 0.1em; font-size: 0.93em; }
+.rs-sheet li + li { margin-top: 0.15em; }
+
+.rs-skills > div { display: grid; grid-template-columns: 9.5em 1fr; gap: 0.8em; padding: 0.18em 0; }
+.rs-skills dt { font-size: 0.9em; font-weight: 800; }
+.rs-skills dd { font-size: 0.93em; }
+
+@media (max-width: 700px) {
+  .rs-contact { flex-direction: column; }
+  .rs-contact span + span::before { content: none; }
+}
+
+@media (max-width: 600px) {
+  .rs-loc { display: block; margin-top: 0.15em; }
+  .rs-loc::before { content: none; }
+  .rs-row { flex-direction: column; gap: 0.1em; }
+  .rs-link { display: none; }
+  .rs-skills > div { grid-template-columns: 1fr; gap: 0.1em; }
+  .rs-head h1 { font-size: 2em; }
+}
+
+/* ─── Print: one A4 page ────────────────────────────────────────── */
+
+@page { size: A4; margin: 11mm 13mm; }
+
+@media print {
+  html, body { background: #fff !important; overflow: visible !important; height: auto !important; }
+  .custom-cursor-ring, .custom-cursor-dot, #zk-loader { display: none !important; }
+  .rs-toolbar { display: none !important; }
+  .rs-page { padding: 0; background: #fff; min-height: 0; }
+  .rs-sheet {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: #fff;
+    font-size: 9.4pt;
+    line-height: 1.38;
+  }
+  .rs-sheet a { color: inherit; text-decoration: none; }
+  .rs-contact { font-size: 0.8em; flex-wrap: nowrap; white-space: nowrap; }
+  .rs-sheet h2 { break-after: avoid; }
+  .rs-sheet section { break-inside: avoid-page; }
+  .rs-link { display: inline; }
+  .rs-row { flex-direction: row; }
+  .rs-skills > div { grid-template-columns: 9.5em 1fr; }
+}

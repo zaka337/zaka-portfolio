@@ -322,6 +322,7 @@ export default function About() {
           <div className="st-cta-row">
             <Link href="/contact" className="st-btn st-btn-solid">Say hi</Link>
             <Link href="/projects" className="st-btn st-btn-ghost">See work</Link>
+            <Link href="/resume" className="st-btn st-btn-ghost">Resume</Link>
           </div>
         </Reveal>
       </section>

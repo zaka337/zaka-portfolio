@@ -268,6 +268,11 @@ export default function ContactMe() {
           <span className="cm-row-value">{copied === "row" ? "COPIED!" : EMAIL.toUpperCase()}</span>
           <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
         </button>
+        <Link className="cm-row" href="/resume">
+          <span className="cm-row-label">RESUME</span>
+          <span className="cm-row-value">VIEW OR DOWNLOAD PDF</span>
+          <span className="cm-row-arrow" aria-hidden="true">{'→'}</span>
+        </Link>
         {ROWS.map((row) => (
           <a key={row.label} className="cm-row" href={row.href} target="_blank" rel="noopener noreferrer">
             <span className="cm-row-label">{row.label}</span>

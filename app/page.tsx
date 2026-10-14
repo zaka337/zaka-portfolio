@@ -203,6 +203,7 @@ export default function Home() {
         <nav>
           <a href="/about">About Zaka Ullah Waheed</a>
           <a href="/projects">Projects by Zaka Ullah Waheed</a>
+          <a href="/resume">Resume of Zaka Ullah Waheed</a>
           <a href="/contact-me">Contact Zaka Ullah Waheed</a>
         </nav>
       </div>
