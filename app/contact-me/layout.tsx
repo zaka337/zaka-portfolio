@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./contact-me.css";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const breadcrumbJsonLd = {

@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useScrollUnlock } from "@/lib/scrollStory";
+
+const EMAIL = "zakas2379@gmail.com";
 
 /* ─── Scramble animation ────────────────────────────────────────── */
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -43,271 +46,241 @@ function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
   return <span ref={spanRef} suppressHydrationWarning>{text}</span>;
 }
 
-/* ─── Marquee strip ─────────────────────────────────────────────── */
+/* ─── Content ───────────────────────────────────────────────────── */
 const TAPE = "AVAILABLE FOR WORK · BASED IN PAKISTAN · OPEN TO REMOTE · FULL-STACK DEVELOPER · QA AUTOMATION · REACT & NEXT.JS · FLUTTER BUILDER · ";
 
-/* ─── Contact rows ──────────────────────────────────────────────── */
+const NEEDS = ["Website", "Web app", "Mobile app", "QA & test automation", "AI & automation", "Something else"];
+const TIMELINES = ["ASAP", "1-3 months", "Flexible"];
+
 const ROWS = [
-  {
-    label: "EMAIL",
-    display: "ZAKAS2379@GMAIL.COM",
-    action: "copy" as const,
-  },
-  {
-    label: "LINKEDIN",
-    display: "ZAKA ULLAH WAHEED",
-    href: "https://www.linkedin.com/in/zaka-ullah-waheed-80380832a",
-  },
-  {
-    label: "GITHUB",
-    display: "GITHUB.COM/ZAKA337",
-    href: "https://github.com/zaka337",
-  },
-  {
-    label: "INSTAGRAM",
-    display: "@NOTXZAKA",
-    href: "https://www.instagram.com/notxzaka/",
-  },
+  { label: "LINKEDIN",  display: "ZAKA ULLAH WAHEED",  href: "https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" },
+  { label: "GITHUB",    display: "GITHUB.COM/ZAKA337", href: "https://github.com/zaka337" },
+  { label: "INSTAGRAM", display: "@NOTXZAKA",          href: "https://www.instagram.com/notxzaka/" },
 ];
+
+const MAX_MSG = 1200;
+
+function buildBrief(f: { name: string; email: string; needs: string[]; timeline: string; message: string }) {
+  const needs = f.needs.length ? f.needs.join(", ") : "Not sure yet";
+  const subject = `Project inquiry: ${f.needs.length ? f.needs.join(", ") : "General"} (${f.name.trim()})`;
+  const body = [
+    "Hi Zaka,",
+    "",
+    f.message.trim(),
+    "",
+    `-- ${f.name.trim()}`,
+    "",
+    `Needs: ${needs}`,
+    `Timeline: ${f.timeline || "Not sure yet"}`,
+    `Reply to: ${f.email.trim() || "(just reply to this email)"}`,
+  ].join("\n");
+  return { subject, body };
+}
 
 /* ─── Page ──────────────────────────────────────────────────────── */
 export default function ContactMe() {
-  // globals.css sets html/body overflow:hidden for the home 3D scene;
-  // unlock it so this scrollable page works correctly.
+  useScrollUnlock();
+
+  const [time, setTime] = useState("");
   useEffect(() => {
-    const prev = document.documentElement.style.overflowY;
-    document.documentElement.style.overflowY = "auto";
-    document.body.style.overflowY = "auto";
-    return () => {
-      document.documentElement.style.overflowY = prev;
-      document.body.style.overflowY = prev;
-    };
+    const fmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Karachi" });
+    const tick = () => setTime(fmt.format(new Date()));
+    tick();
+    const id = setInterval(tick, 20000);
+    return () => clearInterval(id);
   }, []);
 
-  const [hovered, setHovered] = useState<number | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [needs, setNeeds] = useState<string[]>([]);
+  const [timeline, setTimeline] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [bad, setBad] = useState<"name" | "email" | "message" | "">("");
+  const [sent, setSent] = useState(false);
+  const [copied, setCopied] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const msgRef = useRef<HTMLTextAreaElement>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => { clearTimeout(copyTimer.current); }, []);
 
-  const copy = useCallback(() => {
-    navigator.clipboard.writeText("zakas2379@gmail.com");
+  const flashCopied = useCallback((what: string) => {
+    setCopied(what);
     clearTimeout(copyTimer.current);
-    setCopied(true);
-    copyTimer.current = setTimeout(() => setCopied(false), 2200);
+    copyTimer.current = setTimeout(() => setCopied(""), 2200);
   }, []);
 
-  return (
-    <main style={{
-      width: "100%",
-      minHeight: "100dvh",
-      backgroundColor: "var(--paper)",
-      color: "var(--ink)",
-      fontFamily: "'Helvetica Neue', Arial, sans-serif",
-      overflowX: "hidden",
-      overflowY: "auto",
-    }}>
+  const copyText = useCallback((text: string, what: string) => {
+    navigator.clipboard?.writeText(text).then(() => flashCopied(what), () => flashCopied("failed"));
+  }, [flashCopied]);
 
-      <style>{`
-        @keyframes tape {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        .tape-inner {
-          display: flex;
-          white-space: nowrap;
-          will-change: transform;
-          animation: tape 28s linear infinite;
-        }
-        @media (max-width: 640px) {
-          .row-label { display: none !important; }
-          .row-value { font-size: clamp(1.1rem, 5.8vw, 2rem) !important; }
-          .hero-h1   { font-size: clamp(4.2rem, 22vw, 9rem) !important; }
-        }
-      `}</style>
+  const toggleNeed = (n: string) =>
+    setNeeds((cur) => (cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n]));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) { setBad("name"); setError("Add your name"); nameRef.current?.focus(); return; }
+    if (email.trim() && !/^\S+@\S+\.\S+$/.test(email.trim())) { setBad("email"); setError("That email looks off"); emailRef.current?.focus(); return; }
+    if (!message.trim()) { setBad("message"); setError("Tell me a few words about it"); msgRef.current?.focus(); return; }
+    setBad(""); setError("");
+    const { subject, body } = buildBrief({ name, email, needs, timeline, message });
+    setSent(true);
+    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const briefText = () => {
+    const { subject, body } = buildBrief({ name, email, needs, timeline, message });
+    return `To: ${EMAIL}\nSubject: ${subject}\n\n${body}`;
+  };
+
+  return (
+    <main className="cm-root">
 
       {/* ── Nav bar ──────────────────────────────────────────── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        display: "grid",
-        gridTemplateColumns: "1fr auto 1fr",
-        alignItems: "center",
-        padding: "0 clamp(20px, 5vw, 64px)",
-        height: 52,
-        borderBottom: "1px solid var(--ink)",
-        backgroundColor: "var(--paper)",
-      }}>
-        <Link href="/" style={{
-          fontSize: "clamp(0.52rem, 0.78vw, 0.68rem)", fontWeight: 600,
-          letterSpacing: "0.16em", color: "var(--ink-50)",
-          textDecoration: "none", textTransform: "uppercase",
-          transition: "color 0.15s",
-        }}
-          onMouseEnter={e => (e.currentTarget.style.color = "var(--ink)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "var(--ink-50)")}>
-          {'←'} BACK
-        </Link>
-
-        <span style={{
-          fontSize: "clamp(0.52rem, 0.78vw, 0.68rem)", fontWeight: 500,
-          letterSpacing: "0.18em", color: "var(--ink-50)",
-          textTransform: "uppercase",
-        }}>
-          CONTACT
-        </span>
-
-        <span style={{
-          fontSize: "clamp(0.52rem, 0.78vw, 0.68rem)", fontWeight: 500,
-          letterSpacing: "0.14em", color: "var(--ink-50)",
-          textTransform: "uppercase", textAlign: "right",
-        }}>
-          OPEN FOR WORK
-        </span>
+      <nav className="cm-nav">
+        <Link href="/">{'←'} BACK</Link>
+        <span>CONTACT</span>
+        <span>OPEN FOR WORK</span>
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <header style={{
-        padding: "clamp(40px, 8vh, 100px) clamp(20px, 5vw, 64px) clamp(32px, 5.5vh, 72px)",
-        borderBottom: "1px solid var(--ink)",
-      }}>
-        <p style={{
-          fontSize: "clamp(0.48rem, 0.7vw, 0.6rem)", fontWeight: 600,
-          letterSpacing: "0.24em", color: "var(--ink-50)",
-          textTransform: "uppercase",
-          marginBottom: "clamp(14px, 2.8vh, 30px)",
-        }}>
-          ZAKA ULLAH WAHEED — FULL-STACK DEVELOPER
-        </p>
+      <header className="cm-hero">
+        <div className="cm-meta">
+          <span>{'ZAKA ULLAH WAHEED — FULL-STACK DEVELOPER'}</span>
+          <span className="cm-status">
+            <i className="cm-dot" aria-hidden="true" />
+            OPEN FOR WORK {'·'} ISLAMABAD <span className="cm-time">{time ? `${time} PKT` : ""}</span>
+          </span>
+        </div>
 
-        <h1 className="hero-h1" style={{
-          fontWeight: 900,
-          fontSize: "clamp(4.5rem, 17vw, 19rem)",
-          lineHeight: 0.85,
-          letterSpacing: "-0.035em",
-          textTransform: "uppercase",
-          color: "var(--ink)",
-          margin: 0,
-        }}>
+        <h1 className="cm-h1">
           <ScrambleText text={"LET'S"} delay={80} /><br />
           <ScrambleText text="WORK." delay={200} />
         </h1>
       </header>
 
       {/* ── Availability tape ────────────────────────────────── */}
-      <div style={{
-        overflow: "hidden",
-        borderBottom: "1px solid var(--ink)",
-        padding: "9px 0",
-        fontSize: "clamp(0.46rem, 0.62vw, 0.56rem)", fontWeight: 600,
-        letterSpacing: "0.24em", color: "var(--ink-50)",
-        textTransform: "uppercase",
-        userSelect: "none",
-      }}>
-        <div className="tape-inner">
+      <div className="cm-tape" aria-hidden="true">
+        <div className="cm-tape-inner">
           <span>{TAPE}</span><span>{TAPE}</span>
         </div>
       </div>
 
-      {/* ── Contact rows ─────────────────────────────────────── */}
-      <section>
-        {ROWS.map((row, i) => {
-          const on = hovered === i;
-          const isEmail = row.action === "copy";
+      {/* ── Project brief ────────────────────────────────────── */}
+      <section className="cm-brief" aria-labelledby="brief-title">
+        <div className="cm-brief-head">
+          <p className="cm-label">START A PROJECT</p>
+          <h2 id="brief-title">Tell me what you&apos;re building.</h2>
+          <p>
+            Pick what fits, add a few words, and this opens a ready-to-send email to me
+            in your mail app. No account, no tracking.
+          </p>
+        </div>
 
-          const inner = (
-            <div
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={isEmail ? copy : undefined}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "clamp(12px, 3vw, 32px)",
-                padding: "clamp(18px, 3.8vh, 36px) clamp(20px, 5vw, 64px)",
-                borderBottom: "1px solid var(--ink)",
-                backgroundColor: on ? "var(--ink)" : "transparent",
-                color: on ? "var(--paper)" : "var(--ink)",
-                transition: "background-color 0.15s, color 0.15s",
-                cursor: "pointer",
-                textDecoration: "none",
-              }}
-            >
-              {/* Label */}
-              <span className="row-label" style={{
-                flexShrink: 0,
-                width: "clamp(56px, 7vw, 110px)",
-                fontSize: "clamp(0.46rem, 0.68vw, 0.58rem)",
-                fontWeight: 600,
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: on ? "rgba(241,237,226,0.42)" : "var(--ink-50)",
-                transition: "color 0.15s",
-              }}>
-                {row.label}
-              </span>
-
-              {/* Value */}
-              <span className="row-value" style={{
-                flex: 1,
-                fontWeight: 800,
-                fontSize: "clamp(1.3rem, 3.8vw, 5rem)",
-                letterSpacing: "-0.025em",
-                lineHeight: 1,
-                textTransform: "uppercase",
-                transition: "color 0.15s",
-              }}>
-                {isEmail && copied ? "COPIED!" : row.display}
-              </span>
-
-              {/* Arrow */}
-              <span style={{
-                flexShrink: 0,
-                fontSize: "clamp(1.1rem, 3.2vw, 4rem)",
-                fontWeight: 300,
-                lineHeight: 1,
-                opacity: on ? 1 : 0.14,
-                transform: on ? "translate(8px,-8px)" : "translate(0,0)",
-                transition: "opacity 0.15s, transform 0.15s",
-              }}>
-                {'↗'}
-              </span>
+        <form className="cm-form" onSubmit={submit} noValidate>
+          <fieldset className="cm-group">
+            <legend className="cm-label">I NEED...</legend>
+            <div className="cm-chips">
+              {NEEDS.map((n) => (
+                <button key={n} type="button" className="cm-chip" aria-pressed={needs.includes(n)} onClick={() => toggleNeed(n)}>
+                  {n}
+                </button>
+              ))}
             </div>
-          );
+          </fieldset>
 
-          return row.href ? (
-            <a key={i} href={row.href} target="_blank" rel="noopener noreferrer"
-              style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-              {inner}
-            </a>
-          ) : (
-            <div key={i}>{inner}</div>
-          );
-        })}
+          <fieldset className="cm-group">
+            <legend className="cm-label">TIMELINE</legend>
+            <div className="cm-chips">
+              {TIMELINES.map((t) => (
+                <button key={t} type="button" className="cm-chip" aria-pressed={timeline === t} onClick={() => setTimeline(timeline === t ? "" : t)}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="cm-two">
+            <div>
+              <label className="cm-label" htmlFor="cm-name">YOUR NAME</label>
+              <input
+                id="cm-name" ref={nameRef} className="cm-field" type="text" autoComplete="name"
+                placeholder="Jane Doe" value={name} maxLength={80}
+                aria-invalid={bad === "name"}
+                onChange={(e) => { setName(e.target.value); if (bad === "name") { setBad(""); setError(""); } }}
+              />
+            </div>
+            <div>
+              <label className="cm-label" htmlFor="cm-email">YOUR EMAIL (OPTIONAL)</label>
+              <input
+                id="cm-email" ref={emailRef} className="cm-field" type="email" autoComplete="email" inputMode="email"
+                placeholder="jane@company.com" value={email} maxLength={120}
+                aria-invalid={bad === "email"}
+                onChange={(e) => { setEmail(e.target.value); if (bad === "email") { setBad(""); setError(""); } }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="cm-label" htmlFor="cm-msg">TELL ME ABOUT IT</label>
+            <textarea
+              id="cm-msg" ref={msgRef} className="cm-field" rows={4}
+              placeholder="What are you building, and what do you need from me?"
+              value={message} maxLength={MAX_MSG}
+              aria-invalid={bad === "message"}
+              onChange={(e) => { setMessage(e.target.value); if (bad === "message") { setBad(""); setError(""); } }}
+            />
+            <p className="cm-count">{message.length} / {MAX_MSG}</p>
+          </div>
+
+          <p className="cm-error" role="alert">{error}</p>
+
+          <button type="submit" className="cm-send">
+            <span>Send brief</span>
+            <span aria-hidden="true">{'↗'}</span>
+          </button>
+
+          {sent && (
+            <div className="cm-sent" role="status">
+              <p>
+                <strong>Your mail app should be opening</strong> with the brief ready to send.
+                Nothing opened? Copy it and email me at <strong>{EMAIL}</strong>.
+              </p>
+              <div className="cm-sent-actions">
+                <button type="button" className="cm-chip" onClick={() => copyText(briefText(), "brief")}>
+                  {copied === "brief" ? "Copied!" : "Copy brief"}
+                </button>
+                <button type="button" className="cm-chip" onClick={() => copyText(EMAIL, "email")}>
+                  {copied === "email" ? "Copied!" : "Copy my email"}
+                </button>
+              </div>
+            </div>
+          )}
+        </form>
+      </section>
+
+      {/* ── Direct links ─────────────────────────────────────── */}
+      <p className="cm-direct-label">OR REACH ME DIRECTLY</p>
+      <section>
+        <button type="button" className="cm-row" onClick={() => copyText(EMAIL, "row")}>
+          <span className="cm-row-label">EMAIL</span>
+          <span className="cm-row-value">{copied === "row" ? "COPIED!" : EMAIL.toUpperCase()}</span>
+          <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
+        </button>
+        {ROWS.map((row) => (
+          <a key={row.label} className="cm-row" href={row.href} target="_blank" rel="noopener noreferrer">
+            <span className="cm-row-label">{row.label}</span>
+            <span className="cm-row-value">{row.display}</span>
+            <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
+          </a>
+        ))}
       </section>
 
       {/* ── Footer ───────────────────────────────────────────── */}
-      <footer style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 8,
-        padding: "clamp(14px, 2.4vh, 20px) clamp(20px, 5vw, 64px)",
-      }}>
-        <span style={{
-          fontSize: "clamp(0.46rem, 0.6vw, 0.54rem)", fontWeight: 400,
-          letterSpacing: "0.14em", color: "var(--ink-50)",
-          textTransform: "uppercase",
-        }}>
-          {'© 2025 — ZAKA ULLAH WAHEED'}
-        </span>
-        <span style={{
-          fontSize: "clamp(0.46rem, 0.6vw, 0.54rem)", fontWeight: 400,
-          letterSpacing: "0.14em", color: "var(--ink-50)",
-          textTransform: "uppercase",
-        }}>
-          BASED IN PAKISTAN
-        </span>
+      <footer className="cm-foot">
+        <span>{'© 2026 — ZAKA ULLAH WAHEED'}</span>
+        <span>BASED IN PAKISTAN</span>
       </footer>
     </main>
   );
