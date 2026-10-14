@@ -128,7 +128,7 @@ const jsonLd = {
       sameAs: [SOCIAL.github, SOCIAL.linkedin, SOCIAL.instagram],
       jobTitle: "Full-Stack Developer",
       description:
-        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work. Creator of QA with Zaka — an AI-powered educational QA platform — and a 3D interactive developer portfolio.",
+        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work. Creator of QA with Zaka — a QA automation learning platform — and a 3D interactive developer portfolio.",
       email: SOCIAL.email,
       address: {
         "@type": "PostalAddress",
@@ -182,7 +182,7 @@ const jsonLd = {
           name: "What is QA with Zaka?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "QA with Zaka is an AI-powered full-stack educational QA platform built and shipped by Zaka Ullah Waheed, a Full-Stack Developer from Pakistan. It features automated testing, real-time Q&A, and production-grade web architecture built with React, Next.js, and Firebase.",
+            text: "QA with Zaka is a full-stack QA automation learning platform built and shipped by Zaka Ullah Waheed, a Full-Stack Developer from Pakistan. It offers four structured courses (Python, Selenium, Playwright and Appium), a student dashboard with progress tracking, an AI assistant and Stripe payments, built with React, TypeScript, Vite and Supabase.",
           },
         },
         {

@@ -5,7 +5,7 @@ export const SITE_URL =
 export const QA_ZAKA = {
   name: "QA with Zaka",
   url:  "https://qa-with-zaka-4pc9.vercel.app/",
-  desc: "AI-powered full-stack educational QA platform built and shipped by Zaka Ullah Waheed — featuring automated testing, real-time Q&A, and production-grade web architecture.",
+  desc: "A full-stack QA automation learning platform by Zaka Ullah Waheed: four structured courses (Python, Selenium, Playwright and Appium), a student dashboard, an AI assistant and Stripe-powered access.",
 };
 
 export const SITE_NAME = "Zaka Ullah Waheed";

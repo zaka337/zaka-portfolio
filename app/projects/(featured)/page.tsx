@@ -3,118 +3,15 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SITE_URL } from "@/lib/site";
+import { PROJECTS, type Project } from "@/lib/projects";
 import { useScrollUnlock, useChapterProgress, cv } from "@/lib/scrollStory";
-
-interface Project {
-  id: string;
-  title: string;
-  kind: string;
-  year: string;
-  pitch: string;
-  points: string[];
-  stack: string[];
-  bg: string;
-  live?: string;
-  repo?: string;
-  repoName?: string;
-  language?: string;
-  shot?: string; // captured screenshot shown in the frame
-}
-
-const GH = "https://github.com/zaka337";
-
-const PROJECTS: Project[] = [
-  {
-    id: "qa-with-zaka",
-    title: "QA with Zaka",
-    kind: "AI-powered education platform",
-    year: "2026",
-    pitch: "A full-stack educational QA platform, built and shipped end to end.",
-    points: ["Automated testing built into the product", "Real-time Q&A", "Production-grade web architecture"],
-    stack: ["React", "Next.js", "Firebase", "TypeScript"],
-    bg: "#d4c9b0",
-    live: "https://qa-with-zaka-4pc9.vercel.app/",
-    repo: `${GH}/QA_with_ZAKA`,
-    repoName: "QA_with_ZAKA",
-    language: "TypeScript",
-    shot: "/projects/qa-with-zaka.jpg",
-  },
-  {
-    id: "zong-health-scanner",
-    title: "Zong Health Scanner",
-    kind: "Automation / internship",
-    year: "2026",
-    pitch: "An n8n-powered website health scanner, built during my QA Automation internship at Zong 5G.",
-    points: ["Orchestrated with n8n workflows", "Telecom health diagnostics"],
-    stack: ["n8n", "JavaScript", "QA Automation"],
-    bg: "#b0c9d4",
-    repo: `${GH}/Zong-health-scanner`,
-    repoName: "Zong-health-scanner",
-    language: "JavaScript",
-  },
-  {
-    id: "momcare-ai",
-    title: "MomCare AI",
-    kind: "AI backend",
-    year: "2026",
-    pitch: "The AI backend for a maternal care app.",
-    points: ["Python AI backend", "Maternal care use case"],
-    stack: ["Python", "AI"],
-    bg: "#d4b0c9",
-    repo: `${GH}/momcare-ai-backend`,
-    repoName: "momcare-ai-backend",
-    language: "Python",
-  },
-  {
-    id: "glamourhub",
-    title: "GlamourHub",
-    kind: "E-commerce web app",
-    year: "2024",
-    pitch: "A premium e-commerce web app for the Pakistani market.",
-    points: ["Premium storefront experience", "Built for Pakistani shoppers", "Live on Netlify"],
-    stack: ["E-commerce", "Web", "Netlify"],
-    bg: "#c9d4b0",
-    live: "https://glamourhubpk.netlify.app/",
-    shot: "/projects/glamourhub.jpg",
-  },
-  {
-    id: "bazaarbox",
-    title: "BazaarBox",
-    kind: "Mobile e-commerce app",
-    year: "2024",
-    pitch: "A cross-platform e-commerce app built in Flutter.",
-    points: ["Firebase authentication", "Real-time sync", "One codebase for mobile"],
-    stack: ["Flutter", "Dart", "Firebase"],
-    bg: "#d4d0b0",
-    repo: `${GH}/ECOMMERCE-PLATFORM`,
-    repoName: "ECOMMERCE-PLATFORM",
-    language: "Dart",
-  },
-  {
-    id: "portfolio",
-    title: "This Portfolio",
-    kind: "3D interactive portfolio",
-    year: "2026",
-    pitch: "The 3D portfolio you are standing inside.",
-    points: ["Cursor-tracking WebGL avatar", "Floating 3D project carousel", "Scroll-animated pages"],
-    stack: ["Next.js", "React", "Three.js", "TypeScript"],
-    bg: "#c4b0d4",
-    live: SITE_URL,
-    repo: `${GH}/zaka-portfolio`,
-    repoName: "zaka-portfolio",
-    language: "TypeScript",
-    shot: "/projects/portfolio.jpg",
-  },
-];
 
 /* Browser frame: captured screenshot, or a repo "terminal" for source-only projects. */
 function Frame({ p }: { p: Project }) {
-  const href = p.live ?? p.repo ?? GH;
   const shown = (p.live ?? `github.com/zaka337/${p.repoName ?? ""}`).replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return (
-    <a className="pj-frame" href={href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${p.title}`}>
+    <Link className="pj-frame" href={`/projects/${p.slug}`} aria-label={`Read the ${p.title} case study`}>
       <div className="pj-bar" aria-hidden="true">
         <i /><i /><i />
         <span className="pj-url">{shown}</span>
@@ -138,7 +35,7 @@ function Frame({ p }: { p: Project }) {
           </div>
         )}
       </div>
-    </a>
+    </Link>
   );
 }
 
@@ -166,8 +63,8 @@ export default function Projects() {
         </h1>
         <ol className="pj-index">
           {PROJECTS.map((p, i) => (
-            <li key={p.id}>
-              <a href={`#${p.id}`}>
+            <li key={p.slug}>
+              <a href={`#${p.slug}`}>
                 <span className="n">0{i + 1}</span>
                 <span className="t">{p.title}</span>
                 <span className={`k ${p.live ? "pj-live-dot" : ""}`}>{p.live ? "Live" : p.language}</span>
@@ -180,8 +77,8 @@ export default function Projects() {
       {/* One chapter per project */}
       {PROJECTS.map((p, i) => (
         <section
-          key={p.id}
-          id={p.id}
+          key={p.slug}
+          id={p.slug}
           className="pj-chapter"
           data-chapter
           style={cv({ "--bg": p.bg })}
@@ -199,11 +96,14 @@ export default function Projects() {
                   {p.points.map((pt) => <li key={pt}>{pt}</li>)}
                 </ul>
                 <div className="pj-chips">
-                  {p.stack.map((s) => <span className="pj-chip" key={s}>{s}</span>)}
+                  {p.chips.map((s) => <span className="pj-chip" key={s}>{s}</span>)}
                 </div>
                 <div className="pj-actions">
+                  <Link className="pj-btn pj-btn-solid" href={`/projects/${p.slug}`}>
+                    Read case study {'→'}
+                  </Link>
                   {p.live && (
-                    <a className="pj-btn pj-btn-solid" href={p.live} target="_blank" rel="noopener noreferrer">
+                    <a className="pj-btn pj-btn-ghost" href={p.live} target="_blank" rel="noopener noreferrer">
                       Visit live {'↗'}
                     </a>
                   )}

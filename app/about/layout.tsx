@@ -14,7 +14,7 @@ const breadcrumbJsonLd = {
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Meet Zaka Ullah Waheed — full-stack developer from Pakistan and creator of QA with Zaka, an AI-powered QA platform. Hands-on experience in React, Next.js, Flutter, TypeScript, Three.js, Firebase, and QA automation. Interned at Zong 5G. Building production apps since 2024.",
+    "Meet Zaka Ullah Waheed — full-stack developer from Pakistan and creator of QA with Zaka, a QA automation learning platform. Hands-on experience in React, Next.js, Flutter, TypeScript, Three.js, Firebase, and QA automation. Interned at Zong 5G. Building production apps since 2024.",
   alternates: { canonical: `${SITE_URL}/about` },
   openGraph: {
     title: `About ${SITE_NAME} — 3D Portfolio Developer`,

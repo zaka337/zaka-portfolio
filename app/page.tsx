@@ -197,7 +197,7 @@ export default function Home() {
       {/* Visually hidden — crawlable content for search engines */}
       <div aria-hidden="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
         <h2>Zaka Ullah Waheed — Full-Stack Developer from Pakistan</h2>
-        <p>{'Zaka Ullah Waheed is a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. Creator of QA with Zaka — an AI-powered full-stack educational QA platform. Interned at Zong 5G. Building production-grade web apps, mobile apps, and automation tools since 2024. Open to remote work and freelance projects.'}</p>
+        <p>{'Zaka Ullah Waheed is a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. Creator of QA with Zaka — a full-stack QA automation learning platform. Interned at Zong 5G. Building production-grade web apps, mobile apps, and automation tools since 2024. Open to remote work and freelance projects.'}</p>
         <p>Skills: React, Next.js, TypeScript, Flutter, Firebase, Three.js, WebGL, QA Automation, Selenium, n8n, REST APIs, Tailwind CSS.</p>
         <p>Projects: QA with Zaka, Zong Health Scanner, MomCare AI, Instagram Clone, Metro Mart, Docker web app.</p>
         <nav>

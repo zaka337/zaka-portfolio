@@ -13,8 +13,8 @@ interface Repo {
 }
 
 const META: Record<string, { title: string; desc: string }> = {
-  "QA_with_ZAKA":           { title: "QA WITH ZAKA",    desc: "AI-powered Q&A platform" },
-  "Zong-health-scanner":    { title: "ZONG SCANNER",    desc: "Telecom health diagnostics" },
+  "QA_with_ZAKA":           { title: "QA WITH ZAKA",    desc: "QA automation courses" },
+  "Zong-health-scanner":    { title: "ZONG SCANNER",    desc: "Website health scanner" },
   "momcare-ai-backend":     { title: "MOMCARE AI",      desc: "Maternal care AI backend" },
   "ECOMMERCE-PLATFORM":     { title: "ECOMMERCE",       desc: "Mobile e-commerce app" },
   "my-store":               { title: "MY STORE",        desc: "Storefront with checkout" },

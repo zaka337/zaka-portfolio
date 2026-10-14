@@ -5,7 +5,7 @@ import "./projects.css";
 export const metadata: Metadata = {
   title: "Projects — QA with Zaka & More",
   description:
-    "Explore Zaka Ullah Waheed's projects: QA with Zaka (AI-powered QA platform), Zong Health Scanner, MomCare AI, e-commerce platforms, and mobile apps — built with React, Next.js, Flutter, Firebase, and TypeScript.",
+    "Explore Zaka Ullah Waheed's projects: QA with Zaka (QA automation learning platform), Zong Health Scanner, MomCare AI, e-commerce platforms, and mobile apps — built with React, Next.js, Flutter, Firebase, and TypeScript.",
   keywords: [
     "QA with Zaka",
     "QA with Zaka platform",
@@ -23,14 +23,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: `QA with Zaka & Projects — ${SITE_NAME}`,
     description:
-      "QA with Zaka — AI-powered QA platform by Zaka Ullah Waheed. Plus Zong Health Scanner, MomCare AI, e-commerce & mobile apps. Full-Stack Developer from Pakistan.",
+      "QA with Zaka — QA automation learning platform by Zaka Ullah Waheed. Plus Zong Health Scanner, MomCare AI, e-commerce & mobile apps. Full-Stack Developer from Pakistan.",
     url: `${SITE_URL}/projects`,
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `QA with Zaka — ${SITE_NAME} Projects` }],
   },
   twitter: {
     title: `QA with Zaka & Projects — ${SITE_NAME}`,
     description:
-      "QA with Zaka — AI-powered QA platform. Zong Scanner, MomCare AI, e-commerce & mobile apps by Zaka Ullah Waheed.",
+      "QA with Zaka — QA automation learning platform. Zong Scanner, MomCare AI, e-commerce & mobile apps by Zaka Ullah Waheed.",
     images: ["/opengraph-image"],
   },
 };
@@ -51,7 +51,7 @@ const projectsJsonLd = {
   name: `QA with Zaka & Projects — ${SITE_NAME}`,
   url: `${SITE_URL}/projects`,
   description:
-    "A 3D interactive carousel of projects by Zaka Ullah Waheed, featuring QA with Zaka — an AI-powered full-stack educational QA platform — alongside Zong Health Scanner, MomCare AI, and more.",
+    "Featured projects by Zaka Ullah Waheed, each with its own case study, including QA with Zaka — a full-stack QA automation learning platform — alongside Zong Health Scanner, MomCare AI, and more.",
   author: {
     "@type": "Person",
     name: SITE_NAME,
@@ -81,7 +81,7 @@ const projectsJsonLd = {
       "@type": "SoftwareApplication",
       name: "MomCare AI",
       url: SITE_URL,
-      description: "AI-powered maternal care backend. Provides personalised health guidance for mothers using machine learning.",
+      description: "Machine-learning backend that predicts maternal health risk (low, mid or high) from a patient's vitals, lifestyle and background.",
       applicationCategory: "HealthApplication",
       operatingSystem: "Web",
       author: { "@type": "Person", name: SITE_NAME, url: SITE_URL },
