@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { VT323 } from "next/font/google";
+import NokiaSnake, { type SnakeHandle } from "@/components/NokiaSnake";
+import type { Dir } from "@/lib/snakeGame";
 
 const lcdFont = VT323({ weight: "400", subsets: ["latin"], display: "swap" });
 
@@ -18,8 +20,12 @@ const ITEMS: Item[] = [
   { label: "GITHUB", lines: ["GITHUB.COM/", "ZAKA337"], href: "https://github.com/zaka337" },
   { label: "INSTAGRAM", lines: ["@NOTXZAKA"], href: "https://www.instagram.com/notxzaka/" },
   { label: "WRITE MSG", lines: [] },
+  { label: "SNAKE", lines: [] },
 ];
-const WRITE = ITEMS.length - 1;
+const WRITE = ITEMS.findIndex((i) => i.label === "WRITE MSG");
+const SNAKE = ITEMS.findIndex((i) => i.label === "SNAKE");
+
+const SNAKE_KEYS: Record<string, Dir> = { "2": "up", "8": "down", "4": "left", "6": "right" };
 
 const MULTITAP: Record<string, string> = {
   "1": ".,?!'1",
@@ -28,7 +34,7 @@ const MULTITAP: Record<string, string> = {
   "0": " 0",
 };
 
-type Screen = "home" | "menu" | "detail" | "compose" | "sent";
+type Screen = "home" | "menu" | "detail" | "compose" | "sent" | "snake";
 
 /* Key centres/sizes as % of the 1024px photo. */
 const KEYS: { id: string; label: string; x: number; y: number; w: number; h: number }[] = [
@@ -87,6 +93,7 @@ export default function NokiaPhone() {
   const tap = useRef({ key: "", at: 0, idx: 0 });
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const sentTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const snakeRef = useRef<SnakeHandle>(null);
 
   useEffect(() => {
     const t = setInterval(() => setCaretOn((c) => !c), 520);
@@ -140,15 +147,17 @@ export default function NokiaPhone() {
 
   const back = useCallback(() => {
     tap.current.key = "";
-    setScreen((s) => (s === "detail" || s === "compose" || s === "sent" ? "menu" : "home"));
+    setScreen((s) => (s === "detail" || s === "compose" || s === "sent" || s === "snake" ? "menu" : "home"));
   }, []);
 
   const ok = useCallback(() => {
     if (screen === "home") { setScreen("menu"); return; }
     if (screen === "menu") {
       if (sel === WRITE) { setScreen("compose"); return; }
+      if (sel === SNAKE) { setScreen("snake"); return; }
       setItem(sel); setScreen("detail"); return;
     }
+    if (screen === "snake") { snakeRef.current?.action(); return; }
     if (screen === "detail") { open(ITEMS[item]); return; }
     if (screen === "compose") send();
   }, [screen, sel, item, open, send]);
@@ -158,6 +167,11 @@ export default function NokiaPhone() {
     if (id === "call" || id === "nav") { ok(); return; }
 
     if (screen === "home") { setScreen("menu"); return; }
+    if (screen === "snake") {
+      if (SNAKE_KEYS[id]) snakeRef.current?.turn(SNAKE_KEYS[id]);
+      else if (id === "5") snakeRef.current?.action();
+      return;
+    }
     if (screen === "compose") {
       if (id === "*") { setText((t) => t.slice(0, -1)); tap.current.key = ""; return; }
       if (MULTITAP[id]) multitap(id);
@@ -178,8 +192,20 @@ export default function NokiaPhone() {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const el = e.target;
-      if (el instanceof Element && el.closest("button, a, input, textarea, [contenteditable]")) return;
       const k = e.key;
+      const inControl = el instanceof Element && el.closest("button, a, input, textarea, [contenteditable]");
+      const steer = ({ ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", w: "up", s: "down", a: "left", d: "right", W: "up", S: "down", A: "left", D: "right" } as Record<string, Dir>)[k];
+      if (inControl) {
+        // While playing Snake the arrow keys steer even if a keypad button has focus
+        const onPhone = el instanceof Element && el.closest(".nk");
+        if (!(screen === "snake" && onPhone && steer)) return;
+      }
+      if (screen === "snake") {
+        if (steer) { e.preventDefault(); snakeRef.current?.turn(steer); }
+        else if (k === "Enter" || k === " ") { e.preventDefault(); snakeRef.current?.action(); }
+        else if (k === "Escape" || k === "Backspace") { e.preventDefault(); back(); }
+        return;
+      }
       if (screen === "compose" && k.length === 1) {
         e.preventDefault();
         typeChar(k);
@@ -242,10 +268,14 @@ export default function NokiaPhone() {
       />
 
       {screen !== "home" && (
-        <div className={`nk-lcd ${lcdFont.className}`} aria-live="polite">
-          {rows.map((r, i) => (
-            <div key={i} className={`nk-row${r.inv ? " nk-inv" : ""}`}>{r.t || " "}</div>
-          ))}
+        <div className={`nk-lcd ${lcdFont.className}`} aria-live={screen === "snake" ? "off" : "polite"}>
+          {screen === "snake" ? (
+            <NokiaSnake ref={snakeRef} />
+          ) : (
+            rows.map((r, i) => (
+              <div key={i} className={`nk-row${r.inv ? " nk-inv" : ""}`}>{r.t || " "}</div>
+            ))
+          )}
         </div>
       )}
 
