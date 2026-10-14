@@ -1,0 +1,98 @@
+/* Branded 404: a Nokia "no signal" moment on the site's paper-and-ink poster style. */
+
+.nf-root {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  padding: clamp(72px, 12vh, 140px) clamp(20px, 7vw, 100px);
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.nf-ghost {
+  position: absolute;
+  right: -2vw;
+  bottom: -9vh;
+  font-size: min(58vw, 92vh);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.75;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(13, 13, 13, 0.13);
+  user-select: none;
+  pointer-events: none;
+}
+
+.nf-content { position: relative; z-index: 1; width: 100%; max-width: 62rem; }
+
+.nf-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: clamp(18px, 3.4vh, 32px);
+  font-size: clamp(0.58rem, 0.8vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--ink-50);
+}
+
+/* Four bars that keep searching for a signal and never find one */
+.nf-bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 16px; }
+.nf-bars i {
+  width: 4px;
+  background: var(--ink);
+  opacity: 0.18;
+  animation: nfSearch 2.4s steps(1, end) infinite;
+}
+.nf-bars i:nth-child(1) { height: 4px;  animation-delay: 0s; }
+.nf-bars i:nth-child(2) { height: 8px;  animation-delay: 0.3s; }
+.nf-bars i:nth-child(3) { height: 12px; animation-delay: 0.6s; }
+.nf-bars i:nth-child(4) { height: 16px; animation-delay: 0.9s; }
+
+@keyframes nfSearch {
+  0%   { opacity: 0.18; }
+  12%  { opacity: 1; }
+  50%  { opacity: 1; }
+  62%  { opacity: 0.18; }
+  100% { opacity: 0.18; }
+}
+
+.nf-title {
+  font-size: clamp(2.6rem, min(8.4vw, 13vh), 7rem);
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+
+.nf-sub {
+  max-width: 28rem;
+  margin: clamp(18px, 3vh, 30px) 0 clamp(24px, 4vh, 42px);
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--ink-70);
+}
+
+.nf-links { border-top: 1px solid var(--ink); max-width: 30rem; }
+.nf-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 0.2rem;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: clamp(0.8rem, 1vw, 0.92rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background 0.18s, color 0.18s, padding 0.25s var(--ease-out);
+}
+.nf-links a:hover, .nf-links a:focus-visible { background: var(--ink); color: var(--paper); padding-left: 0.9rem; padding-right: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-bars i { animation: none; opacity: 0.18; }
+}
