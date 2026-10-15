@@ -1,19 +1,23 @@
 "use client";
 
-import { useRef, useEffect, useState, Suspense } from "react";
+import { useRef, useEffect, useLayoutEffect, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, PerformanceMonitor } from "@react-three/drei";
 import Image from "next/image";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-/* Soft studio reflections, generated locally (no HDR download). */
+/* Soft studio reflections, generated locally (no HDR download).
+   Created in a layout effect so the environment exists before the avatar's shaders are
+   compiled; otherwise they would be compiled twice, with and without it. Building it
+   is a one-off GPU shader compile that blocks the page, so it runs while the model is
+   still downloading. A 128px cube is plenty for soft light on rough skin and cloth. */
 function Studio() {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const pmrem = new THREE.PMREMGenerator(gl);
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04, 0.1, 100, { size: 128 }).texture;
     scene.environment = env;
     scene.environmentIntensity = 0.3;
     return () => {
@@ -54,8 +58,23 @@ function upgradeMaterial(m: THREE.Material): THREE.Material {
   return p;
 }
 
+const SCALE = 3.5;
+const VERTICAL_OFFSET = 0.1; // positive = face moves UP on screen
+
+type Prepared = {
+  baseY: number;
+  metrics: { topY: number; chinY: number; cutY: number };
+  headBone: THREE.Object3D | null;
+  headRest: { x: number; y: number };
+};
+
+/* useGLTF caches the glTF scene for the whole session, so it outlives navigation.
+   Preparing it (which removes meshes) must happen exactly once. */
+const prepared = new WeakMap<THREE.Object3D, Prepared>();
+
 function AvatarModel() {
   const { scene } = useGLTF("/Avatar.glb");
+  const stage = useThree((s) => s.scene);
   const groupRef = useRef<THREE.Group>(null);
   const headBone = useRef<THREE.Object3D | null>(null);
   const headRestRot = useRef({ x: 0, y: 0 });
@@ -64,7 +83,7 @@ function AvatarModel() {
   const mouse = useRef({ x: 0, y: 0 });
   const target = useRef({ x: 0, y: 0 });
   const paused = useRef(false);
-  const initialized = useRef(false);
+  const revealed = useRef(false);
   const baseY = useRef(0);
   const nodAt = useRef(-1);
   const metrics = useRef<{ topY: number; chinY: number; cutY: number } | null>(null);
@@ -86,74 +105,108 @@ function AvatarModel() {
     // Head height in px: lets CSS trim the sides relative to the face, not the screen width
     el.style.setProperty("--face-px", `${(((chin - top) / 100) * el.clientHeight).toFixed(1)}px`);
     el.style.setProperty("--cut-y", `${pct(m.cutY).toFixed(2)}%`);
-    el.setAttribute("data-ready", "1");
+    // The canvas fades in only once the head is actually drawable
+    if (revealed.current) el.setAttribute("data-ready", "1");
   };
 
-  useEffect(() => {
-    if (!groupRef.current || initialized.current) return;
-    initialized.current = true;
+  /* One-time setup, run before the first frame is drawn:
+     - drop everything below the chin (body, arms, legs are never seen) so their
+       shaders and textures are never built,
+     - build the physical materials up front (not after a first render with the
+       originals, which compiled every shader twice),
+     - compile the remaining shaders in parallel off the main thread
+       (KHR_parallel_shader_compile) and only then reveal the head and release the
+       loading screen. Before, compiling blocked the page for several seconds. */
+  useLayoutEffect(() => {
+    const g = groupRef.current;
+    if (!g) return;
+    let cancelled = false;
 
-    const SCALE = 3.5;
-    groupRef.current.scale.setScalar(SCALE);
-    groupRef.current.position.set(0, 0, 0);
-    groupRef.current.updateMatrixWorld(true);
+    g.scale.setScalar(SCALE);
+    g.position.set(0, 0, 0);
+    g.updateMatrixWorld(true);
 
-    const box = new THREE.Box3().setFromObject(groupRef.current);
-    const sz = box.getSize(new THREE.Vector3());
-    const fullHeight = sz.y;
+    let prep = prepared.get(scene);
+    if (!prep) {
+      const box = new THREE.Box3().setFromObject(g);
+      const fullHeight = box.getSize(new THREE.Vector3()).y;
 
-    const faceMidY = box.max.y - fullHeight * 0.09;
-    const chinY    = box.max.y - fullHeight * 0.145;
+      const faceMidY = box.max.y - fullHeight * 0.09;
+      const chinY    = box.max.y - fullHeight * 0.145;
 
-    // Positive offset = face moves UP on screen
-    const VERTICAL_OFFSET = 0.1;
-    groupRef.current.position.y = -(faceMidY) + VERTICAL_OFFSET;
-    baseY.current = groupRef.current.position.y;
-    groupRef.current.updateMatrixWorld(true);
+      const base = -faceMidY + VERTICAL_OFFSET;
+      g.position.y = base;
+      g.updateMatrixWorld(true);
 
-    const worldFaceMid = 0;
-    const worldChin    = chinY - faceMidY + VERTICAL_OFFSET;
-    const worldTop     = box.max.y - faceMidY + VERTICAL_OFFSET;
-    const cutY         = worldChin - 0.18; // neck fades out between chin and here
+      const worldChin = chinY - faceMidY + VERTICAL_OFFSET;
+      const worldTop  = box.max.y - faceMidY + VERTICAL_OFFSET;
+      const cutY      = worldChin - 0.18; // neck fades out between chin and here
 
-    camera.position.set(0, worldFaceMid, 3.0);
-    camera.lookAt(0, worldFaceMid, 0);
+      let bone: THREE.Object3D | null = null;
+      let rest = { x: 0, y: 0 };
+      const drop: THREE.Object3D[] = [];
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) {
+          const mb = new THREE.Box3().setFromObject(obj);
+          // A mesh whose whole bounding box is below the chin is never visible.
+          // Head and cap both extend well above worldChin, so they are kept.
+          if (mb.max.y < worldChin + 0.05) {
+            drop.push(obj);
+          } else {
+            obj.material = Array.isArray(obj.material)
+              ? obj.material.map(upgradeMaterial)
+              : upgradeMaterial(obj.material);
+          }
+        }
+        const n = obj.name.toLowerCase();
+        if (!bone && (n === "head" || n.endsWith("_head") || n.includes("head"))) {
+          bone = obj;
+          rest = { x: obj.rotation.x, y: obj.rotation.y };
+        }
+      });
+      drop.forEach((o) => o.removeFromParent());
+
+      prep = {
+        baseY: base,
+        metrics: { topY: worldTop, chinY: worldChin, cutY },
+        headBone: bone,
+        headRest: rest,
+      };
+      prepared.set(scene, prep);
+    } else {
+      g.position.y = prep.baseY;
+      g.updateMatrixWorld(true);
+    }
+
+    baseY.current = prep.baseY;
+    metrics.current = prep.metrics;
+    headBone.current = prep.headBone;
+    headRestRot.current = prep.headRest;
+
+    camera.position.set(0, 0, 3.0);
+    camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 
     // Small buffer so chin doesn't clip on slight downward tilt
-    gl.clippingPlanes = [
-      new THREE.Plane(new THREE.Vector3(0, 1, 0), -cutY),
-    ];
+    gl.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -prep.metrics.cutY)];
     gl.toneMappingExposure = 0.96;
 
-    metrics.current = { topY: worldTop, chinY: worldChin, cutY };
     publishLayout();
 
-    // Signal the loading screen to dismiss
-    window.dispatchEvent(new Event('zk-ready'));
+    g.visible = false;
+    const reveal = () => {
+      if (cancelled) return;
+      g.visible = true;
+      revealed.current = true;
+      publishLayout();
+      // Signal the loading screen to dismiss
+      window.dispatchEvent(new Event("zk-ready"));
+    };
+    gl.compileAsync(g, camera, stage).then(reveal, reveal);
 
-    scene.traverse((obj) => {
-      if (obj instanceof THREE.Mesh) {
-        obj.material = Array.isArray(obj.material)
-          ? obj.material.map(upgradeMaterial)
-          : upgradeMaterial(obj.material);
-
-        const mb = new THREE.Box3().setFromObject(obj);
-        // Hide any mesh whose entire bounding box is below the chin.
-        // Head/cap both extend well above worldChin so they're never hidden.
-        // Body, arms, and legs all sit below chin → hidden.
-        if (mb.max.y < worldChin + 0.05) {
-          obj.visible = false;
-        }
-      }
-      const n = obj.name.toLowerCase();
-      if (!headBone.current && (n === "head" || n.endsWith("_head") || n.includes("head"))) {
-        headBone.current = obj;
-        headRestRot.current = { x: obj.rotation.x, y: obj.rotation.y };
-      }
-    });
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene, camera, gl]);
+  }, [scene, camera, gl, stage]);
 
   // Re-publish after the canvas resizes (R3F updates the camera aspect first)
   useEffect(() => {
@@ -231,11 +284,36 @@ type Mode = "pending" | "3d" | "still";
    publishes), so the glow, hit area and neck line up with the still image too. */
 const STILL_LAYOUT = { cy: 41.32, h: 38.58, chin: 60.61, cut: 67.85 };
 
+/* Pixel budget for the canvas. A full-viewport canvas on a 4K or retina screen has
+   millions of pixels to fill every frame, which is what makes 120Hz hard to hold.
+   Start at a sensible ratio for the screen, then let PerformanceMonitor step it down
+   (or back up) from real frame times. */
+const MAX_CANVAS_PIXELS = 4_500_000;
+const MIN_DPR = 1;
+
+/* The canvas is a centred column, not the full viewport: a CSS mask already hides
+   everything outside roughly 0.65x the viewport height around the head, so drawing,
+   anti-aliasing and masking the rest was wasted work every frame (about half of all
+   pixels on a desktop screen). 0.82 leaves margin for the head turning. Phones are
+   narrower than this and keep their full width. */
+const CANVAS_WIDTH = "min(100vw, 82dvh)";
+
+function startingDpr() {
+  const device = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.min(window.innerWidth, 0.82 * window.innerHeight);
+  const fit = Math.sqrt(MAX_CANVAS_PIXELS / Math.max(1, w * window.innerHeight));
+  return Math.max(MIN_DPR, +Math.min(device, fit).toFixed(2));
+}
+
 export default function AvatarScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<Mode>("pending");
   const [bubble, setBubble] = useState("");
   const [shown, setShown] = useState(false);
+  // The ratio the screen starts at is also its ceiling: PerformanceMonitor only steps
+  // below it and back up to it.
+  const [maxDpr] = useState(startingDpr);
+  const [dpr, setDpr] = useState(maxDpr);
   const idx = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -301,11 +379,15 @@ export default function AvatarScene() {
     >
       {mode === "3d" && (
         <Canvas
+          dpr={dpr}
           camera={{ fov: 45, near: 0.1, far: 100, position: [0, 0, 3.0] }}
-          gl={{ antialias: true, alpha: true }}
+          // Edges are already crisp at 2x, where 4x multisampling a full-screen buffer
+          // is mostly wasted bandwidth. Low-density screens keep it.
+          gl={{ antialias: maxDpr < 1.5, alpha: true, powerPreference: "high-performance" }}
           events={undefined}
           style={{
-            width: "100%", height: "100%",
+            width: CANVAS_WIDTH, height: "100%",
+            margin: "0 auto",
             display: "block",
             background: "transparent",
             pointerEvents: "none",
@@ -320,14 +402,21 @@ export default function AvatarScene() {
             });
           }}
         >
+          {/* Watches real frame times. Below the target it renders fewer pixels, with
+              headroom it steps back up. 120Hz screens are held to a higher bar. */}
+          <PerformanceMonitor
+            bounds={(refreshRate) => (refreshRate > 90 ? [85, 110] : [50, 58])}
+            onDecline={() => setDpr((d) => Math.max(MIN_DPR, +(d - 0.25).toFixed(2)))}
+            onIncline={() => setDpr((d) => Math.min(maxDpr, +(d + 0.25).toFixed(2)))}
+          />
           {/* Studio lighting: warm key, cool fill, two rims for edge separation */}
           <hemisphereLight args={["#fff4e8", "#9a8a78", 0.26]} />
           <directionalLight position={[2.6, 4.6, 3]} intensity={2.0} color="#fff0de" />
           <directionalLight position={[-3, 1.4, 2.2]} intensity={0.5} color="#e6eeff" />
           <directionalLight position={[-2.4, 2.6, -3]} intensity={1.3} color="#ffd9bd" />
           <directionalLight position={[3, 2, -2.6]} intensity={0.9} color="#d2e2ff" />
+          <Studio />
           <Suspense fallback={null}>
-            <Studio />
             <AvatarModel />
           </Suspense>
         </Canvas>

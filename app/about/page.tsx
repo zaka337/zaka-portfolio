@@ -205,7 +205,7 @@ export default function About() {
         <Link href="/">{'←'} Back.</Link>
         <span>About me</span>
       </div>
-      <div className="st-pg" aria-hidden="true" />
+      <div className="st-pg" data-pg aria-hidden="true" />
 
       {/* 0 — HERO */}
       <section className="st-chapter st-hero" data-chapter data-dark-from="0.62">

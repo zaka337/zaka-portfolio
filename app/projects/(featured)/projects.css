@@ -6,7 +6,6 @@
   overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
-  --pg: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
@@ -31,6 +30,7 @@
 .pj-nav span { opacity: 0.5; }
 
 .pj-pg {
+  --pg: 0; /* written by the scroll script on this element only */
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 2px;

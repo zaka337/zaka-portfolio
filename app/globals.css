@@ -371,12 +371,12 @@ canvas {
   .block-mr,
   .block-bl,
   .block-br {
-    background: rgba(var(--paper-rgb), 0.88);
+    /* No backdrop-filter: it re-blurred the live 3D canvas behind five cards on
+       every frame, which is costly on phones. A near-opaque fill looks the same. */
+    background: rgba(var(--paper-rgb), 0.94);
     border: 1px solid rgba(var(--ink-rgb), 0.22);
     border-radius: 6px;
     padding: 10px 14px 22px;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     position: relative;
     transition: background 0.15s;
   }
@@ -691,25 +691,29 @@ canvas {
 
 /* ─── Custom cursor styles ───────────────────────────────────────── */
 
+/* The wrapper is only moved (transform, compositor); the visible circle is its
+   ::before, which grows with a transform too, so hovering never triggers layout. */
 .custom-cursor-ring {
   position: fixed;
   top: 0;
   left: 0;
-  width: 38px;
-  height: 38px;
-  margin-left: -19px;
-  margin-top: -19px;
-  border: 1.5px solid var(--ink);
-  border-radius: 50%;
+  width: 0;
+  height: 0;
   pointer-events: none;
   z-index: 9999;
   will-change: transform;
-  /* Smooth ring expansion on interactive hover */
-  transition:
-    width  var(--duration-fast) var(--ease-out),
-    height var(--duration-fast) var(--ease-out),
-    margin-left var(--duration-fast) var(--ease-out),
-    margin-top  var(--duration-fast) var(--ease-out);
+  contain: layout style;
+}
+.custom-cursor-ring::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: -19px;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .custom-cursor-dot {
@@ -725,17 +729,11 @@ canvas {
   pointer-events: none;
   z-index: 9999;
   will-change: transform;
+  contain: layout style;
 }
 
-/* Ring expands when the pointer is over any interactive element */
-@media (hover: hover) and (pointer: fine) {
-  html:has(a:hover, button:hover) .custom-cursor-ring {
-    width: 52px;
-    height: 52px;
-    margin-left: -26px;
-    margin-top: -26px;
-  }
-}
+/* Ring expands when the pointer is over a link or button (class set by CustomCursor) */
+.custom-cursor-ring.is-active::before { transform: scale(1.368); } /* 38px -> 52px */
 
 /* ─── Home page nav block hover transforms ──────────────────────── */
 
@@ -801,9 +799,11 @@ html.zk-skip #zk-loader { display: none !important; }
 }
 
 .zk-bar-fill {
+  width: 100%;
   height: 100%;
   background: var(--ink);
   border-radius: 1px;
+  transform-origin: left center;
   animation: zkBar 2.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 }
 
@@ -812,9 +812,11 @@ html.zk-skip #zk-loader { display: none !important; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* transform, not width: the bar then animates on the compositor and keeps moving
+   even while the main thread is busy compiling the 3D scene. */
 @keyframes zkBar {
-  from { width: 0%; }
-  to   { width: 82%; }
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(0.82); }
 }
 
 /* ─── Reduced motion ────────────────────────────────────────────── */
@@ -872,9 +874,7 @@ html.zk-skip #zk-loader { display: none !important; }
   padding: 0;
   border: 1px solid rgba(var(--ink-rgb), 0.3);
   border-radius: 50%;
-  background: rgba(var(--paper-rgb), 0.82);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  background: rgba(var(--paper-rgb), 0.92);
   color: var(--ink);
   cursor: pointer;
   touch-action: manipulation;

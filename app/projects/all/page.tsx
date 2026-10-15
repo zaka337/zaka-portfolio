@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 interface Repo {
@@ -60,7 +60,9 @@ const COLORS = [
   { bg: "#d4b0b0", ink: "#3a0d0d" },
 ];
 
-const AUTO_SPEED = 0.0018;
+// Radians per millisecond (0.0018 per frame at 60fps). Per-frame speed would spin
+// the carousel twice as fast on a 120Hz display.
+const AUTO_SPEED = 0.0018 / (1000 / 60);
 
 function cardSpatial(i: number) {
   const a = i * 2.39996;
@@ -109,6 +111,7 @@ export default function Projects() {
   const PERSPECTIVE = Math.round(BASE_RADIUS * 4.8);
   // Scale the whole 3D scene on narrow screens so depth is preserved without overflow
   const carouselScale = isMobile ? Math.min(1, vp.w / 440) : 1;
+  const n = repos.length;
 
   /* ── GitHub fetch ──────────────────────────────────────────────── */
   useEffect(() => {
@@ -135,35 +138,55 @@ export default function Projects() {
     const ctrl = ctrlRef.current;
     let autoTimer: ReturnType<typeof setTimeout>;
 
-    // Cache card elements once — avoids a live DOM query every rAF tick
+    // Cache card elements (and their index) once — no DOM query or attribute parse per tick
+    let cards: { el: HTMLElement; i: number }[] = [];
+    // Last values written per card. Styles are only touched when they change: the
+    // blur moves a hair per frame, so with 0.5px steps most frames write nothing.
+    const written: { o: number; b: number; z: number; p: number }[] = [];
     requestAnimationFrame(() => {
-      cardsRef.current = Array.from(ring.querySelectorAll<HTMLElement>("[data-ci]"));
+      cards = Array.from(ring.querySelectorAll<HTMLElement>("[data-ci]")).map((el) => ({
+        el,
+        i: parseInt(el.getAttribute("data-ci")!, 10),
+      }));
     });
 
-    const tick = () => {
-      if (ctrl.auto && !ctrl.dragging) rotRef.current += AUTO_SPEED;
+    let prev = 0;
+    const tick = (now: number) => {
+      const dt = prev ? Math.min(50, now - prev) : 1000 / 60;
+      prev = now;
+      if (ctrl.auto && !ctrl.dragging) rotRef.current += AUTO_SPEED * dt;
       const deg = (rotRef.current * 180) / Math.PI;
-      ring.style.transform = `rotateX(-10deg) rotateY(${deg}deg)`;
+      ring.style.transform = `rotateX(-10deg) rotateY(${deg.toFixed(3)}deg)`;
 
-      cardsRef.current.forEach(card => {
-        const i    = parseInt(card.getAttribute("data-ci")!);
+      for (let k = 0; k < cards.length; k++) {
+        const { el: card, i } = cards[k];
+        const w = (written[k] ||= { o: -1, b: -1, z: -1, p: -1 });
         const eff  = (i / n) * Math.PI * 2 + rotRef.current;
         const cosA = Math.cos(eff);
 
         if (cosA < -0.08) {
-          card.style.opacity       = "0";
-          card.style.pointerEvents = "none";
-          return;
+          if (w.o !== 0) {
+            card.style.opacity = "0";
+            card.style.pointerEvents = "none";
+            w.o = 0;
+            w.p = 0;
+          }
+          continue;
         }
         const t = Math.max(0, cosA);
-        const blur = (1 - t) * 14;
-        card.style.filter  = blur > 0.6
-          ? `blur(${blur.toFixed(1)}px)`
-          : `drop-shadow(0 14px 40px rgba(0,0,0,0.22))`;
-        card.style.opacity       = (0.18 + t * 0.82).toFixed(3);
-        card.style.zIndex        = String(Math.round(t * 100));
-        card.style.pointerEvents = t > 0.58 ? "auto" : "none";
-      });
+        const blur = Math.round((1 - t) * 14 * 2) / 2;
+        const op = Math.round((0.18 + t * 0.82) * 100) / 100;
+        const z = Math.round(t * 100);
+        const pe = t > 0.58 ? 1 : 0;
+
+        if (w.b !== blur) {
+          card.style.filter = blur > 0.6 ? `blur(${blur}px)` : `drop-shadow(0 14px 40px rgba(0,0,0,0.22))`;
+          w.b = blur;
+        }
+        if (w.o !== op) { card.style.opacity = String(op); w.o = op; }
+        if (w.z !== z)  { card.style.zIndex = String(z); w.z = z; }
+        if (w.p !== pe) { card.style.pointerEvents = pe ? "auto" : "none"; w.p = pe; }
+      }
 
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -222,7 +245,125 @@ export default function Projects() {
     setTimeout(() => { ctrlRef.current.auto = true; }, 2500);
   };
 
-  const n = repos.length;
+  /* The cards never change while hovering or dragging. Building them once (and
+     reusing the same elements on every render) means a hover no longer makes React
+     diff all 24 cards, which was costing 5ms+ layouts mid-drag. */
+  const cards = useMemo(() => repos.map((repo, i) => {
+    const angleDeg = (i / n) * 360;
+    const sp   = cardSpatial(i);
+    const live = getLiveUrl(repo);
+    const col  = COLORS[i % COLORS.length];
+    const ink  = live ? "#0d0d0d" : col.ink;
+    const meta  = META[repo.name];
+    const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
+    const desc  = meta?.desc  ?? repo.description ?? "Project";
+
+    const cardTransform = [
+      `rotateY(${angleDeg}deg)`,
+      `translateZ(${BASE_RADIUS + sp.zAdd}px)`,
+      `translateY(${sp.yOff}px)`,
+      `rotateX(${sp.tiltX}deg)`,
+      `rotateZ(${sp.tiltZ}deg)`,
+    ].join(" ");
+
+    return (
+      <a
+        key={repo.id}
+        data-ci={String(i)}
+        href={live ?? repo.html_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onMouseEnter={() => setHovered({ title, desc })}
+        onMouseLeave={() => setHovered(null)}
+        style={{
+          position: "absolute",
+          width: CARD_W, height: CARD_H,
+          left: -CARD_W / 2, top: -CARD_H / 2,
+          transform: cardTransform,
+          backgroundColor: live ? "#fff" : col.bg,
+          border: live
+            ? "1px solid rgba(26,140,60,0.22)"
+            : "1px solid rgba(0,0,0,0.1)",
+          ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
+          borderRadius: 6,
+          padding: live
+            ? `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px ${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.07)}px`
+            : `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px`,
+          textDecoration: "none",
+          backfaceVisibility: "hidden",
+          display: "flex", flexDirection: "column",
+          justifyContent: "space-between",
+          overflow: "hidden",
+          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Language + badge row */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {repo.language && (
+            <span style={{
+              fontSize: Math.max(7, CARD_W * 0.047), fontWeight: 700, letterSpacing: "0.12em",
+              color: ink, opacity: 0.55, textTransform: "uppercase",
+              background: "rgba(0,0,0,0.08)", padding: "2px 6px", borderRadius: 2,
+            }}>
+              {repo.language}
+            </span>
+          )}
+          {live ? (
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 3,
+              fontSize: Math.max(7, CARD_W * 0.05), fontWeight: 800, letterSpacing: "0.12em",
+              color: "#fff", background: "#1a8c3c",
+              padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
+            }}>
+              <span style={{
+                width: 5, height: 5, borderRadius: "50%",
+                background: "#7eff9e", flexShrink: 0,
+                willChange: "transform, opacity",
+                animation: "livePulse 1.4s ease-in-out infinite",
+              }} />
+              LIVE
+            </span>
+          ) : (
+            <span style={{
+              fontSize: Math.max(6, CARD_W * 0.043), fontWeight: 600, letterSpacing: "0.1em",
+              color: ink, background: "rgba(0,0,0,0.08)",
+              padding: "2px 6px", borderRadius: 2, textTransform: "uppercase",
+              opacity: 0.45,
+            }}>
+              {'GITHUB ↗'}
+            </span>
+          )}
+        </div>
+
+        {/* Watermark */}
+        <span style={{
+          position: "absolute", bottom: -6, right: 8,
+          fontSize: Math.round(CARD_W * 0.3), fontWeight: 900, color: ink,
+          opacity: 0.06, userSelect: "none", lineHeight: 1,
+        }}>
+          {String(i + 1).padStart(2, "0")}
+        </span>
+
+        {/* Title + desc */}
+        <div>
+          <p style={{
+            fontSize: Math.max(9, CARD_W * 0.068), fontWeight: 800, color: ink,
+            textTransform: "uppercase", letterSpacing: "-0.01em",
+            lineHeight: 1.1, margin: "0 0 4px",
+          }}>
+            {title}
+          </p>
+          <p style={{
+            fontSize: Math.max(8, CARD_W * 0.054), fontWeight: 400, color: ink,
+            opacity: 0.65, lineHeight: 1.4, margin: 0,
+          }}>
+            {desc}
+          </p>
+        </div>
+      </a>
+    );
+  }), [repos, n, BASE_RADIUS, CARD_W, CARD_H]);
 
   const arrowBase: React.CSSProperties = {
     position: "absolute", top: "50%", transform: "translateY(-50%)",
@@ -277,6 +418,7 @@ export default function Projects() {
         transform: "translateX(-50%)", zIndex: 200,
         textAlign: "center", pointerEvents: "none",
         transition: "opacity 0.2s",
+        contain: "layout",
       }}>
         <span style={{
           display: "block",
@@ -384,6 +526,7 @@ export default function Projects() {
               position: "absolute", inset: 0,
               perspective: `${PERSPECTIVE}px`,
               perspectiveOrigin: "50% 38%",
+              contain: "layout",
               cursor: isMobile ? "default" : "grab",
             }}>
               <div style={{
@@ -398,121 +541,7 @@ export default function Projects() {
                   transformStyle: "preserve-3d",
                   transform: "rotateX(-10deg) rotateY(0deg)",
                 }}>
-                  {repos.map((repo, i) => {
-                    const angleDeg = (i / n) * 360;
-                    const sp   = cardSpatial(i);
-                    const live = getLiveUrl(repo);
-                    const col  = COLORS[i % COLORS.length];
-                    const ink  = live ? "#0d0d0d" : col.ink;
-                    const meta  = META[repo.name];
-                    const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
-                    const desc  = meta?.desc  ?? repo.description ?? "Project";
-
-                    const cardTransform = [
-                      `rotateY(${angleDeg}deg)`,
-                      `translateZ(${BASE_RADIUS + sp.zAdd}px)`,
-                      `translateY(${sp.yOff}px)`,
-                      `rotateX(${sp.tiltX}deg)`,
-                      `rotateZ(${sp.tiltZ}deg)`,
-                    ].join(" ");
-
-                    return (
-                      <a
-                        key={repo.id}
-                        data-ci={String(i)}
-                        href={live ?? repo.html_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onMouseEnter={() => setHovered({ title, desc })}
-                        onMouseLeave={() => setHovered(null)}
-                        style={{
-                          position: "absolute",
-                          width: CARD_W, height: CARD_H,
-                          left: -CARD_W / 2, top: -CARD_H / 2,
-                          transform: cardTransform,
-                          backgroundColor: live ? "#fff" : col.bg,
-                          border: live
-                            ? "1px solid rgba(26,140,60,0.22)"
-                            : "1px solid rgba(0,0,0,0.1)",
-                          ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
-                          borderRadius: 6,
-                          padding: live
-                            ? `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px ${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.07)}px`
-                            : `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px`,
-                          textDecoration: "none",
-                          backfaceVisibility: "hidden",
-                          display: "flex", flexDirection: "column",
-                          justifyContent: "space-between",
-                          overflow: "hidden",
-                          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                          boxSizing: "border-box",
-                        }}
-                      >
-                        {/* Language + badge row */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          {repo.language && (
-                            <span style={{
-                              fontSize: Math.max(7, CARD_W * 0.047), fontWeight: 700, letterSpacing: "0.12em",
-                              color: ink, opacity: 0.55, textTransform: "uppercase",
-                              background: "rgba(0,0,0,0.08)", padding: "2px 6px", borderRadius: 2,
-                            }}>
-                              {repo.language}
-                            </span>
-                          )}
-                          {live ? (
-                            <span style={{
-                              display: "inline-flex", alignItems: "center", gap: 3,
-                              fontSize: Math.max(7, CARD_W * 0.05), fontWeight: 800, letterSpacing: "0.12em",
-                              color: "#fff", background: "#1a8c3c",
-                              padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
-                            }}>
-                              <span style={{
-                                width: 5, height: 5, borderRadius: "50%",
-                                background: "#7eff9e", flexShrink: 0,
-                                animation: "livePulse 1.4s ease-in-out infinite",
-                              }} />
-                              LIVE
-                            </span>
-                          ) : (
-                            <span style={{
-                              fontSize: Math.max(6, CARD_W * 0.043), fontWeight: 600, letterSpacing: "0.1em",
-                              color: ink, background: "rgba(0,0,0,0.08)",
-                              padding: "2px 6px", borderRadius: 2, textTransform: "uppercase",
-                              opacity: 0.45,
-                            }}>
-                              {'GITHUB ↗'}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Watermark */}
-                        <span style={{
-                          position: "absolute", bottom: -6, right: 8,
-                          fontSize: Math.round(CARD_W * 0.3), fontWeight: 900, color: ink,
-                          opacity: 0.06, userSelect: "none", lineHeight: 1,
-                        }}>
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-
-                        {/* Title + desc */}
-                        <div>
-                          <p style={{
-                            fontSize: Math.max(9, CARD_W * 0.068), fontWeight: 800, color: ink,
-                            textTransform: "uppercase", letterSpacing: "-0.01em",
-                            lineHeight: 1.1, margin: "0 0 4px",
-                          }}>
-                            {title}
-                          </p>
-                          <p style={{
-                            fontSize: Math.max(8, CARD_W * 0.054), fontWeight: 400, color: ink,
-                            opacity: 0.65, lineHeight: 1.4, margin: 0,
-                          }}>
-                            {desc}
-                          </p>
-                        </div>
-                      </a>
-                    );
-                  })}
+                  {cards}
                 </div>
               </div>
             </div>

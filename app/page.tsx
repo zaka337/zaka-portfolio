@@ -116,6 +116,10 @@ export default function Home() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root || window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    // Write the variables on the ghost word itself. On the root they were inherited by
+    // every element on the page, so each mouse move re-styled the whole home screen.
+    const ghost = root.querySelector<HTMLElement>(".home-ghost");
+    if (!ghost) return;
     let raf = 0;
     let mx = 0;
     let my = 0;
@@ -125,8 +129,8 @@ export default function Home() {
       if (!raf) {
         raf = requestAnimationFrame(() => {
           raf = 0;
-          root.style.setProperty("--mx", mx.toFixed(3));
-          root.style.setProperty("--my", my.toFixed(3));
+          ghost.style.setProperty("--mx", mx.toFixed(3));
+          ghost.style.setProperty("--my", my.toFixed(3));
         });
       }
     };

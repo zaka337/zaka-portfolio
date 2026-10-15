@@ -21,8 +21,8 @@ export function useScrollUnlock() {
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
-/* Writes --p (0..1 progress through each [data-chapter]) and --pg (whole page)
-   as CSS variables; all motion is then pure CSS.
+/* Writes --p (0..1 progress through each [data-chapter]) and --pg (whole page,
+   on [data-pg] elements only) as CSS variables; all motion is then pure CSS.
    --p is eased toward the real scroll position every frame, so wheel notches and
    touch flings glide instead of stepping. Requires useScrollUnlock (window scrolls).
    root[data-tone] flips light/dark under the fixed nav: chapters declare
@@ -32,6 +32,11 @@ export function useChapterProgress(rootRef: React.RefObject<HTMLElement | null>)
     const root = rootRef.current;
     if (!root) return;
     const chapters = Array.from(root.querySelectorAll<HTMLElement>("[data-chapter]"));
+    // --pg inherits, so writing it on the page root makes the browser re-style every
+    // element on every frame (measured: ~4-5ms per frame). Write it only on the
+    // elements that read it ([data-pg], the progress bar).
+    const pgEls = Array.from(root.querySelectorAll<HTMLElement>("[data-pg]"));
+    const pgTargets = pgEls.length ? pgEls : [root];
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const cur = new Map<HTMLElement, number>();
     const written = new Map<HTMLElement, number>();
@@ -102,7 +107,8 @@ export function useChapterProgress(rootRef: React.RefObject<HTMLElement | null>)
       const pg = total > 0 ? Math.round(clamp01((sy - rootGeo.top) / total) * 1000) / 1000 : 0;
       if (pg !== lastPg) {
         lastPg = pg;
-        root.style.setProperty("--pg", String(pg));
+        const v = String(pg);
+        for (const el of pgTargets) el.style.setProperty("--pg", v);
       }
 
       if (moving || performance.now() < activeUntil) raf = requestAnimationFrame(frame);

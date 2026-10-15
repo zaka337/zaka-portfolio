@@ -53,7 +53,7 @@ export default function Projects() {
         <span>Selected work</span>
         <Link href="/projects/all">All repos {'↗'}</Link>
       </div>
-      <div className="pj-pg" aria-hidden="true" />
+      <div className="pj-pg" data-pg aria-hidden="true" />
 
       {/* Hero + index */}
       <section className="pj-hero">

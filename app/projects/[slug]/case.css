@@ -113,6 +113,8 @@
   box-shadow: 0 40px 90px -35px rgba(var(--shadow-rgb), 0.45), 0 8px 24px -12px rgba(var(--shadow-rgb), 0.25);
   color: inherit;
   text-decoration: none;
+  /* Own layer: the large soft shadow is painted once instead of in every scroll tile */
+  will-change: transform;
   transition: transform 0.35s var(--ease-out), box-shadow 0.35s;
 }
 .cs-frame:hover { transform: translateY(-4px); box-shadow: 0 50px 100px -35px rgba(var(--shadow-rgb), 0.55), 0 8px 24px -12px rgba(var(--shadow-rgb), 0.3); }
