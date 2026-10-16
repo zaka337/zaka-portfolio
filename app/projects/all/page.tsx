@@ -82,10 +82,64 @@ function getLiveUrl(repo: Repo): string | null {
        : repo.homepage?.startsWith("http") ? repo.homepage : null);
 }
 
+/* Projects with a live site first. */
+function liveFirst(list: Repo[]): Repo[] {
+  return [...list].sort((a, b) => (getLiveUrl(b) ? 1 : 0) - (getLiveUrl(a) ? 1 : 0));
+}
+
+/* Accepts only a well-formed repo list. Anything else (an error object from GitHub,
+   junk in localStorage) is null, so the caller falls back instead of throwing. */
+function parseRepos(data: unknown): Repo[] | null {
+  if (!Array.isArray(data)) return null;
+  const repos = data.filter(
+    (r): r is Repo =>
+      !!r && typeof r.id === "number" && typeof r.name === "string"
+        && typeof r.html_url === "string" && typeof r.language === "string",
+  );
+  return repos.length ? repos : null;
+}
+
+/* Last good response, kept in the browser. Storage can be blocked or full, so every
+   access is guarded and the page works without it. */
+const SAVED_KEY = "zaka:repos:v1";
+
+function readSaved(): Repo[] | null {
+  try {
+    const raw = localStorage.getItem(SAVED_KEY);
+    return raw ? parseRepos(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSaved(repos: Repo[]) {
+  try {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(repos));
+  } catch {
+    /* private mode or quota: nothing to do */
+  }
+}
+
+/* Last resort, when neither GitHub nor a saved copy is available: the featured
+   projects from lib/projects.ts shaped like GitHub repos. Loaded on demand so the
+   case-study text stays out of this page's bundle. */
+async function featuredRepos(): Promise<Repo[]> {
+  const { PROJECTS } = await import("@/lib/projects");
+  return PROJECTS.map((p, i) => ({
+    id: -(i + 1),
+    name: p.repoName ?? p.title,
+    description: p.kind,
+    homepage: p.live ?? null,
+    language: p.language ?? null,
+    html_url: p.repo ?? p.live ?? "https://github.com/zaka337",
+  }));
+}
+
 export default function Projects() {
   const [repos, setRepos]     = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vp, setVp]           = useState({ w: 1280, h: 800 });
+  const [saved, setSaved]     = useState(false);
+  const [vp, setVp]          = useState({ w: 1280, h: 800 });
   const [hovered, setHovered] = useState<{ title: string; desc: string } | null>(null);
   const ringRef  = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLElement[]>([]);
@@ -113,21 +167,41 @@ export default function Projects() {
   const carouselScale = isMobile ? Math.min(1, vp.w / 440) : 1;
   const n = repos.length;
 
-  /* ── GitHub fetch ──────────────────────────────────────────────── */
+  /* ── Repo list ─────────────────────────────────────────────────────
+     /api/repos (GitHub, cached server-side) -> last good copy in localStorage ->
+     the featured projects. The page always ends up with cards to show. */
   useEffect(() => {
-    fetch("https://api.github.com/users/zaka337/repos?sort=updated&per_page=100")
-      .then(r => r.json())
-      .then((data: Repo[]) => {
-        const filtered = data.filter((r: Repo) => r.language !== null);
-        filtered.sort((a, b) => {
-          const aLive = !!getLiveUrl(a);
-          const bLive = !!getLiveUrl(b);
-          return (bLive ? 1 : 0) - (aLive ? 1 : 0);
-        });
-        setRepos(filtered);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    let alive = true;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+
+    (async () => {
+      let list: Repo[] | null = null;
+      try {
+        const res = await fetch("/api/repos", { signal: ctrl.signal });
+        if (res.ok) list = parseRepos(await res.json());
+      } catch {
+        /* offline, timed out or unmounted: fall through to the saved list */
+      }
+      clearTimeout(timer);
+      if (!alive) return;
+
+      const fresh = !!list;
+      if (list) {
+        writeSaved(list);
+      } else {
+        list = readSaved();
+        if (!list) {
+          try { list = await featuredRepos(); } catch { list = []; }
+          if (!alive) return;
+        }
+      }
+      setRepos(liveFirst(list));
+      setSaved(!fresh);
+      setLoading(false);
+    })();
+
+    return () => { alive = false; clearTimeout(timer); ctrl.abort(); };
   }, []);
 
   /* ── 3D animation loop (all viewports) ────────────────────────── */
@@ -471,6 +545,34 @@ export default function Projects() {
         }}>
           FETCHING REPOS...
         </p>
+      )}
+
+      {/* ── Nothing to show at all (every source failed) ─────── */}
+      {!loading && n === 0 && (
+        <p role="status" style={{
+          position: "absolute", top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)", zIndex: 200,
+          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+          fontSize: "clamp(0.7rem, 1vw, 0.85rem)", fontWeight: 500,
+          letterSpacing: "0.14em", color: "var(--ink-50)",
+          textTransform: "uppercase", textAlign: "center",
+        }}>
+          Projects are unavailable right now
+        </p>
+      )}
+
+      {/* ── Saved-list note (GitHub was unreachable or rate-limited) ── */}
+      {!loading && n > 0 && saved && (
+        <span role="status" className="proj-fade proj-fade-3" style={{
+          position: "absolute", bottom: "calc(4vh + 2.4em)", left: "50%",
+          transform: "translateX(-50%)", zIndex: 200,
+          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+          fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 400,
+          letterSpacing: "0.16em", color: "var(--ink-50)",
+          textTransform: "uppercase", whiteSpace: "nowrap",
+        }}>
+          Showing a saved list; GitHub is busy
+        </span>
       )}
 
       {/* ── Hint (swipe on mobile, drag on desktop) ───────────── */}
