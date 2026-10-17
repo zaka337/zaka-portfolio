@@ -27,7 +27,7 @@
 }
 .pj-nav a { pointer-events: auto; color: var(--ink); text-decoration: none; transition: opacity 0.2s; }
 .pj-nav a:hover { opacity: 0.5; }
-.pj-nav span { opacity: 0.5; }
+.pj-nav span { opacity: 0.62; } /* 0.5 was 3.5:1 on paper, under AA */
 
 .pj-pg {
   --pg: 0; /* written by the scroll script on this element only */
@@ -246,7 +246,7 @@
   background: var(--pill);
   font-size: 0.62rem;
   letter-spacing: 0.04em;
-  color: rgba(var(--ink-rgb), 0.55);
+  color: var(--ink-70);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

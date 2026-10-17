@@ -358,7 +358,7 @@ export default function Projects() {
           border: live
             ? "1px solid rgba(26,140,60,0.22)"
             : "1px solid rgba(0,0,0,0.1)",
-          ...(live ? { borderLeft: "4px solid #1a8c3c" } : {}),
+          ...(live ? { borderLeft: "4px solid #16803a" } : {}),
           borderRadius: 6,
           padding: live
             ? `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px ${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.07)}px`
@@ -387,7 +387,7 @@ export default function Projects() {
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 3,
               fontSize: Math.max(7, CARD_W * 0.05), fontWeight: 800, letterSpacing: "0.12em",
-              color: "#fff", background: "#1a8c3c",
+              color: "#fff", background: "#16803a",
               padding: "3px 7px", borderRadius: 3, textTransform: "uppercase",
             }}>
               <span style={{
@@ -464,6 +464,14 @@ export default function Projects() {
       userSelect: "none",
     }}>
 
+      {/* The page's heading for screen readers and search engines (the visible UI is the 3D carousel) */}
+      <h1 style={{
+        position: "absolute", width: 1, height: 1, margin: -1, padding: 0,
+        overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", border: 0,
+      }}>
+        All repositories by Zaka Ullah Waheed
+      </h1>
+
       <style>{`
         @keyframes livePulse {
           0%, 100% { opacity: 1; transform: scale(1); }
@@ -500,7 +508,7 @@ export default function Projects() {
           fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: hovered ? 700 : 500,
           letterSpacing: "0.12em", color: "var(--ink)",
           textTransform: "uppercase", whiteSpace: "nowrap",
-          opacity: hovered ? 1 : 0.5,
+          opacity: hovered ? 1 : 0.62,
           transition: "opacity 0.2s, font-weight 0.15s",
         }}>
           {hovered ? hovered.title : "my_projects — github/zaka337"}

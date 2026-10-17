@@ -5,7 +5,9 @@
   --paper-rgb: 241, 237, 226;
   --ink-rgb:   13, 13, 13;
   --ink-70:  rgba(var(--ink-rgb), 0.7);
-  --ink-50:  rgba(var(--ink-rgb), 0.5);
+  /* Faint labels. 0.5 measured 3.5:1 on the paper, under the 4.5:1 WCAG AA minimum for
+     small text; 0.6 is about 4.7:1. (The dark theme's 0.52 already passes.) */
+  --ink-50:  rgba(var(--ink-rgb), 0.6);
 
   /* Sections that stay dark in both themes (About chapters, the iris wipe) */
   --deep:        #0d0d0d;

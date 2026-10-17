@@ -63,7 +63,7 @@
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  opacity: 0.55;
+  opacity: 0.62; /* 0.55 was 4.1:1 on paper, under AA */
 }
 
 /* ─── Hero ──────────────────────────────────────────────────────── */
