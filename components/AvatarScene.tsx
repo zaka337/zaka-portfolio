@@ -1,31 +1,55 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect, useState, Suspense } from "react";
+import { useRef, useEffect, useLayoutEffect, useState, Suspense, use } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, PerformanceMonitor } from "@react-three/drei";
 import Image from "next/image";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { ENV_SIZE, ENV_SIGMA, preloadBakedEnv, bakedEnvTexture } from "@/lib/bakedEnv";
 
-/* Soft studio reflections, generated locally (no HDR download).
-   Created in a layout effect so the environment exists before the avatar's shaders are
-   compiled; otherwise they would be compiled twice, with and without it. Building it
-   is a one-off GPU shader compile that blocks the page, so it runs while the model is
-   still downloading. A 128px cube is plenty for soft light on rough skin and cloth. */
+/* Soft studio reflections, no HDR download. The environment map is pre-baked
+   (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
+   shader that freezes the page for 1-2s on a cold shader cache. A 128px cube is plenty
+   for soft light on rough skin and cloth.
+   If the baked file is missing, stale (another three revision) or cannot be read, it is
+   generated here exactly as before, while the model is still downloading. */
+const environments = new WeakMap<THREE.WebGLRenderer, Promise<THREE.Texture | null>>();
+
+function environmentFor(gl: THREE.WebGLRenderer) {
+  let env = environments.get(gl);
+  if (!env) {
+    env = preloadBakedEnv()
+      .then((baked) => {
+        if (baked) return bakedEnvTexture(baked);
+        const pmrem = new THREE.PMREMGenerator(gl);
+        const texture = pmrem.fromScene(new RoomEnvironment(), ENV_SIGMA, 0.1, 100, { size: ENV_SIZE }).texture;
+        pmrem.dispose();
+        return texture;
+      })
+      .catch(() => null); // no reflections is better than no avatar
+    environments.set(gl, env);
+  }
+  return env;
+}
+
+/* Sits in the same Suspense boundary as the model and suspends until the environment
+   exists, so both commit together and this layout effect (which runs first, being the
+   earlier sibling) sets it before the avatar's shaders are compiled; otherwise they would
+   be compiled twice, with and without it. The renderer owns the texture: R3F releases the
+   whole GL context when the canvas unmounts. */
 function Studio() {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
+  const env = use(environmentFor(gl));
   useLayoutEffect(() => {
-    const pmrem = new THREE.PMREMGenerator(gl);
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.04, 0.1, 100, { size: 128 }).texture;
+    if (!env) return;
     scene.environment = env;
     scene.environmentIntensity = 0.3;
     return () => {
       scene.environment = null;
-      env.dispose();
-      pmrem.dispose();
     };
-  }, [gl, scene]);
+  }, [scene, env]);
   return null;
 }
 
@@ -333,6 +357,7 @@ export default function AvatarScene() {
     }
     if (!reduce && webgl) {
       useGLTF.preload("/Avatar.glb");
+      preloadBakedEnv(); // fetched in parallel with the model
       setMode("3d");
     } else {
       setMode("still");
@@ -415,8 +440,8 @@ export default function AvatarScene() {
           <directionalLight position={[-3, 1.4, 2.2]} intensity={0.5} color="#e6eeff" />
           <directionalLight position={[-2.4, 2.6, -3]} intensity={1.3} color="#ffd9bd" />
           <directionalLight position={[3, 2, -2.6]} intensity={0.9} color="#d2e2ff" />
-          <Studio />
           <Suspense fallback={null}>
+            <Studio />
             <AvatarModel />
           </Suspense>
         </Canvas>

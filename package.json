@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "bake:env": "node scripts/bake-env.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
