@@ -6,10 +6,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { SITE_URL, SITE_NAME, SOCIAL, QA_ZAKA } from "@/lib/site";
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f1ede2" },
-    { media: "(prefers-color-scheme: dark)", color: "#121211" },
-  ],
+  // Light is the default theme for every visitor, so the browser chrome matches it.
+  themeColor: "#f1ede2",
 };
 
 export const metadata: Metadata = {
@@ -232,7 +230,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en-PK" suppressHydrationWarning>
       <head>
         {/* Apply the saved (else system) theme before first paint so there is no flash */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('zk-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `var t='light';try{if(localStorage.getItem('zk-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)` }} />
         {/* Hide loader immediately if already shown this session (prevents re-show on back nav) */}
         <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem('zk-shown'))document.documentElement.classList.add('zk-skip');}catch(e){}` }} />
         {/* Preload the 3D avatar so the browser fetches it immediately on HTML parse,
