@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useScrollUnlock } from "@/lib/scrollStory";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { BrandIcon, type BrandName } from "@/components/BrandIcons";
 import { NEEDS, TIMELINES, MAX_MESSAGE, sendContact } from "@/lib/contactForm";
 
 const EMAIL = "zakas2379@gmail.com";
@@ -51,10 +52,10 @@ function ScrambleText({ text, delay = 0 }: { text: string; delay?: number }) {
 /* ─── Content ───────────────────────────────────────────────────── */
 const TAPE = "AVAILABLE FOR WORK · BASED IN PAKISTAN · OPEN TO REMOTE · FULL-STACK DEVELOPER · QA AUTOMATION · REACT & NEXT.JS · FLUTTER BUILDER · ";
 
-const ROWS = [
-  { label: "LINKEDIN",  display: "ZAKA ULLAH WAHEED",  href: "https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" },
-  { label: "GITHUB",    display: "GITHUB.COM/ZAKA337", href: "https://github.com/zaka337" },
-  { label: "INSTAGRAM", display: "@NOTXZAKA",          href: "https://www.instagram.com/notxzaka/" },
+const ROWS: { label: string; icon: BrandName; display: string; href: string }[] = [
+  { label: "LINKEDIN",  icon: "linkedin",  display: "ZAKA ULLAH WAHEED", href: "https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" },
+  { label: "GITHUB",    icon: "github",    display: "@ZAKA337",          href: "https://github.com/zaka337" },
+  { label: "INSTAGRAM", icon: "instagram", display: "@NOTXZAKA",         href: "https://www.instagram.com/notxzaka/" },
 ];
 
 function buildBrief(f: { name: string; email: string; needs: string[]; timeline: string; message: string }) {
@@ -310,18 +311,18 @@ export default function ContactMe() {
       <section>
         <button type="button" className="cm-row" onClick={() => copyText(EMAIL, "row")}>
           <span className="cm-row-label">EMAIL</span>
-          <span className="cm-row-value">{copied === "row" ? "COPIED!" : EMAIL.toUpperCase()}</span>
+          <span className="cm-row-value"><BrandIcon name="mail" />{copied === "row" ? "COPIED!" : EMAIL.toUpperCase()}</span>
           <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
         </button>
         <Link className="cm-row" href="/resume">
           <span className="cm-row-label">RESUME</span>
-          <span className="cm-row-value">VIEW OR DOWNLOAD PDF</span>
+          <span className="cm-row-value"><BrandIcon name="resume" />VIEW OR DOWNLOAD PDF</span>
           <span className="cm-row-arrow" aria-hidden="true">{'→'}</span>
         </Link>
         {ROWS.map((row) => (
           <a key={row.label} className="cm-row" href={row.href} target="_blank" rel="noopener noreferrer">
             <span className="cm-row-label">{row.label}</span>
-            <span className="cm-row-value">{row.display}</span>
+            <span className="cm-row-value"><BrandIcon name={row.icon} />{row.display}</span>
             <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
           </a>
         ))}

@@ -275,6 +275,9 @@ textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
 }
 .cm-row:hover .cm-row-label, .cm-row:focus-visible .cm-row-label { color: rgba(var(--paper-rgb), 0.42); }
 .cm-row-value {
+  display: flex;
+  align-items: center;
+  gap: 0.34em;
   flex: 1;
   font-size: clamp(1.3rem, 3.8vw, 5rem);
   font-weight: 800;
@@ -282,6 +285,8 @@ textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
   line-height: 1;
   text-transform: uppercase;
 }
+.cm-row-value .brand-icon { width: 0.66em; height: 0.66em; }
+
 .cm-row-arrow {
   flex-shrink: 0;
   font-size: clamp(1.1rem, 3.2vw, 4rem);

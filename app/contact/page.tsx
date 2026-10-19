@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
 import NokiaPhone from "@/components/NokiaPhone";
-import { WhatsAppGlyph } from "@/components/WhatsAppButton";
+import { BrandIcon, type BrandName } from "@/components/BrandIcons";
 
 /* ─── Contact row ─────────────────────────────────────────────── */
 const rowText: React.CSSProperties = {
@@ -14,9 +14,11 @@ const rowText: React.CSSProperties = {
   cursor: "pointer",
 };
 
-function Row({ label, value, href, onClick }: {
-  label: string; value: React.ReactNode; href?: string; onClick?: () => void;
+function Row({ label, value, href, onClick, icon }: {
+  label: string; value: React.ReactNode; href?: string; onClick?: () => void; icon?: BrandName;
 }) {
+  // A platform logo before the username, in the text colour
+  const shown = icon ? <span className="brand-inline"><BrandIcon name={icon} />{value}</span> : value;
   return (
     <div style={{ paddingBottom: "0.9rem", marginBottom: "0.9rem",
       borderBottom: "1px solid rgba(var(--ink-rgb),0.12)" }}>
@@ -30,7 +32,7 @@ function Row({ label, value, href, onClick }: {
         <a href={href} target="_blank" rel="noopener noreferrer" style={rowText}
           onMouseEnter={e => (e.currentTarget.style.color = "var(--ink-50)")}
           onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}>
-          {value}
+          {shown}
         </a>
       ) : onClick ? (
         <button onClick={onClick}
@@ -38,10 +40,10 @@ function Row({ label, value, href, onClick }: {
           onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}
           style={{ ...rowText, background: "none", border: "none", padding: 0,
             textAlign: "left", width: "100%", cursor: "pointer" }}>
-          {value}
+          {shown}
         </button>
       ) : (
-        <p style={{ ...rowText, cursor: "default" }}>{value}</p>
+        <p style={{ ...rowText, cursor: "default" }}>{shown}</p>
       )}
     </div>
   );
@@ -74,7 +76,7 @@ function CopyEmailRow() {
         style={{ ...rowText, display: "flex", alignItems: "center", gap: "0.8rem",
           background: "none", border: "none", padding: 0, textAlign: "left",
           width: "100%", cursor: "pointer" }}>
-        zakas2379@gmail.com
+        <span className="brand-inline"><BrandIcon name="mail" />zakas2379@gmail.com</span>
         <span style={{ fontSize: "clamp(0.5rem, 0.65vw, 0.6rem)", fontWeight: 500,
           letterSpacing: "0.14em", color: copied ? "var(--ok)" : "var(--ink-50)",
           textTransform: "uppercase", transition: "color 0.3s" }}>
@@ -214,20 +216,18 @@ export default function Contact() {
             </div>
             {/* /whatsapp redirects to WhatsApp; the number is never on the page */}
             <div style={{ animation: "projFade 500ms var(--ease-out) 280ms both" }}>
-              <Row label="WHATSAPP"
-                value={<span className="wa-inline"><WhatsAppGlyph />Message me directly</span>}
-                href="/whatsapp" />
+              <Row label="WHATSAPP" icon="whatsapp" value="Message me directly" href="/whatsapp" />
             </div>
             <div style={{ animation: "projFade 500ms var(--ease-out) 340ms both" }}>
-              <Row label="LINKEDIN"  value="Zaka Ullah Waheed"
+              <Row label="LINKEDIN" icon="linkedin" value="Zaka Ullah Waheed"
                 href="https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" />
             </div>
             <div style={{ animation: "projFade 500ms var(--ease-out) 400ms both" }}>
-              <Row label="GITHUB"    value="github.com/zaka337"
+              <Row label="GITHUB" icon="github" value="@zaka337"
                 href="https://github.com/zaka337" />
             </div>
             <div style={{ animation: "projFade 500ms var(--ease-out) 460ms both" }}>
-              <Row label="INSTAGRAM" value="@notxzaka"
+              <Row label="INSTAGRAM" icon="instagram" value="@notxzaka"
                 href="https://www.instagram.com/notxzaka/" />
             </div>
           </div>

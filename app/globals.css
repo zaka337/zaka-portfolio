@@ -996,8 +996,7 @@ html.zk-skip #zk-loader { display: none !important; }
   100% { transform: scale(1.6);  opacity: 0; }
 }
 /* the phone gives one small ring when you point at it */
-a:hover > .wa-btn-main .wa-glyph svg,
-a:hover > .wa-inline .wa-glyph svg { animation: waWiggle 0.7s ease-in-out 1; }
+a:hover > .wa-btn-main .wa-glyph svg { animation: waWiggle 0.7s ease-in-out 1; }
 @keyframes waWiggle {
   0%, 100% { transform: rotate(0); }
   20%, 60% { transform: rotate(-14deg); }
@@ -1030,5 +1029,8 @@ a:hover > .wa-inline .wa-glyph svg { animation: waWiggle 0.7s ease-in-out 1; }
 .wa-btn-arrow { font-size: 1.4em; font-weight: 300; line-height: 1; transition: transform 0.18s; }
 .wa-btn:hover .wa-btn-arrow { transform: translate(5px, -5px); }
 
-/* Inside a plain contact row (the Nokia page): the logo before the words */
-.wa-inline { display: inline-flex; align-items: center; gap: 0.55em; }
+/* Platform logos beside the contact details (components/BrandIcons.tsx). They take the
+   text colour, so they follow the theme and invert on hover with the words beside them. */
+.brand-icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+.brand-icon-line { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.brand-inline { display: inline-flex; align-items: center; gap: 0.6em; }
