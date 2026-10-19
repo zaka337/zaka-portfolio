@@ -53,6 +53,26 @@ function Studio() {
   return null;
 }
 
+/* three's compile() builds shaders for the renderer's clipping state at that moment, but
+   the clipping planes only reach that state through a render. Without this, compileAsync
+   links a program with no clipping plane, and the first real frame needs another one with
+   the plane in it: linked synchronously, which froze the page for 0.7s+ right as the face
+   appeared. One draw-less render of a throwaway mesh makes compile see the plane, so the
+   program built in parallel is the one the first frame uses. If a three upgrade changes
+   this, the worst case is the old stall (check with a second linkProgram after zk-ready). */
+function primeClipping(gl: THREE.WebGLRenderer, camera: THREE.Camera) {
+  const probe = new THREE.Mesh(
+    new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3)),
+    new THREE.MeshBasicMaterial(),
+  );
+  probe.frustumCulled = false;
+  const scene = new THREE.Scene();
+  scene.add(probe);
+  gl.render(scene, camera);
+  probe.geometry.dispose();
+  probe.material.dispose();
+}
+
 /* The source materials are fully rough (flat, chalky). Rebuild them as physical
    materials so skin, hair and cloth catch light, keeping the original textures. */
 function upgradeMaterial(m: THREE.Material): THREE.Material {
@@ -214,6 +234,7 @@ function AvatarModel() {
     // Small buffer so chin doesn't clip on slight downward tilt
     gl.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -prep.metrics.cutY)];
     gl.toneMappingExposure = 0.96;
+    primeClipping(gl, camera);
 
     publishLayout();
 

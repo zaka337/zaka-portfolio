@@ -60,6 +60,8 @@ const COLORS = [
   { bg: "#d4b0b0", ink: "#3a0d0d" },
 ];
 
+const IDLE_LABEL = "my_projects — github/zaka337";
+
 // Radians per millisecond (0.0018 per frame at 60fps). Per-frame speed would spin
 // the carousel twice as fast on a 120Hz display.
 const AUTO_SPEED = 0.0018 / (1000 / 60);
@@ -140,8 +142,10 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
   const [saved, setSaved]     = useState(false);
   const [vp, setVp]          = useState({ w: 1280, h: 800 });
-  const [hovered, setHovered] = useState<{ title: string; desc: string } | null>(null);
   const ringRef  = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLSpanElement>(null);
+  const descRef  = useRef<HTMLSpanElement>(null);
   const cardsRef = useRef<HTMLElement[]>([]);
   const rotRef   = useRef(0);
   const rafRef   = useRef<number>(0);
@@ -204,6 +208,15 @@ export default function Projects() {
     return () => { alive = false; clearTimeout(timer); ctrl.abort(); };
   }, []);
 
+  /* Title and description of each card, shown in the top label while it is hovered. */
+  const labels = useMemo(() => repos.map((repo) => {
+    const meta = META[repo.name];
+    return {
+      title: meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase(),
+      desc:  meta?.desc  ?? repo.description ?? "Project",
+    };
+  }), [repos]);
+
   /* ── 3D animation loop (all viewports) ────────────────────────── */
   useEffect(() => {
     if (!repos.length || !ringRef.current) return;
@@ -216,7 +229,7 @@ export default function Projects() {
     let cards: { el: HTMLElement; i: number }[] = [];
     // Last values written per card. Styles are only touched when they change: the
     // blur moves a hair per frame, so with 0.5px steps most frames write nothing.
-    const written: { o: number; b: number; z: number; p: number }[] = [];
+    const written: { o: number; b: number; p: number }[] = [];
     requestAnimationFrame(() => {
       cards = Array.from(ring.querySelectorAll<HTMLElement>("[data-ci]")).map((el) => ({
         el,
@@ -234,7 +247,7 @@ export default function Projects() {
 
       for (let k = 0; k < cards.length; k++) {
         const { el: card, i } = cards[k];
-        const w = (written[k] ||= { o: -1, b: -1, z: -1, p: -1 });
+        const w = (written[k] ||= { o: -1, b: -1, p: -1 });
         const eff  = (i / n) * Math.PI * 2 + rotRef.current;
         const cosA = Math.cos(eff);
 
@@ -250,7 +263,6 @@ export default function Projects() {
         const t = Math.max(0, cosA);
         const blur = Math.round((1 - t) * 14 * 2) / 2;
         const op = Math.round((0.18 + t * 0.82) * 100) / 100;
-        const z = Math.round(t * 100);
         const pe = t > 0.58 ? 1 : 0;
 
         if (w.b !== blur) {
@@ -258,7 +270,6 @@ export default function Projects() {
           w.b = blur;
         }
         if (w.o !== op) { card.style.opacity = String(op); w.o = op; }
-        if (w.z !== z)  { card.style.zIndex = String(z); w.z = z; }
         if (w.p !== pe) { card.style.pointerEvents = pe ? "auto" : "none"; w.p = pe; }
       }
 
@@ -293,6 +304,38 @@ export default function Projects() {
       autoTimer = setTimeout(() => { ctrl.auto = true; }, 1800);
     };
 
+    /* Hover label. Going through React state re-rendered the whole page on every card
+       change, and the old font-weight transition re-laid the text out with a new font
+       lookup on every frame of the drag (about 9ms each on Windows). Now the label is
+       written once per card change, directly. */
+    let hovered = -1;
+    const setHovered = (i: number) => {
+      hovered = i;
+      const label = labelRef.current;
+      const title = titleRef.current;
+      const desc  = descRef.current;
+      if (!label || !title || !desc) return;
+      if (i < 0) {
+        label.removeAttribute("data-hover");
+        title.textContent = IDLE_LABEL;
+        desc.textContent = "";
+      } else {
+        title.textContent = labels[i].title;
+        desc.textContent = labels[i].desc;
+        label.setAttribute("data-hover", "");
+      }
+    };
+    const onOver = (e: MouseEvent) => {
+      const card = e.target instanceof Element ? e.target.closest("[data-ci]") : null;
+      const i = card ? parseInt(card.getAttribute("data-ci")!, 10) : -1;
+      if (i !== hovered) setHovered(i);
+    };
+    const onOut = (e: MouseEvent) => {
+      if (!(e.relatedTarget instanceof Node) || !ring.contains(e.relatedTarget)) setHovered(-1);
+    };
+    ring.addEventListener("mouseover", onOver, { passive: true });
+    ring.addEventListener("mouseout",  onOut,  { passive: true });
+
     window.addEventListener("mousedown",  onDown);
     window.addEventListener("mousemove",  onMove, { passive: true });
     window.addEventListener("mouseup",    onUp);
@@ -303,6 +346,9 @@ export default function Projects() {
     return () => {
       cancelAnimationFrame(rafRef.current);
       clearTimeout(autoTimer);
+      ring.removeEventListener("mouseover", onOver);
+      ring.removeEventListener("mouseout",  onOut);
+      if (hovered >= 0) setHovered(-1);
       window.removeEventListener("mousedown",  onDown);
       window.removeEventListener("mousemove",  onMove);
       window.removeEventListener("mouseup",    onUp);
@@ -310,7 +356,7 @@ export default function Projects() {
       window.removeEventListener("touchmove",  onTouchMove);
       window.removeEventListener("touchend",   onTouchEnd);
     };
-  }, [repos]);
+  }, [repos, labels]);
 
   const stepCarousel = (dir: number) => {
     if (!repos.length) return;
@@ -328,9 +374,7 @@ export default function Projects() {
     const live = getLiveUrl(repo);
     const col  = COLORS[i % COLORS.length];
     const ink  = live ? "#0d0d0d" : col.ink;
-    const meta  = META[repo.name];
-    const title = meta?.title ?? repo.name.replace(/[-_]/g, " ").toUpperCase();
-    const desc  = meta?.desc  ?? repo.description ?? "Project";
+    const { title, desc } = labels[i];
 
     const cardTransform = [
       `rotateY(${angleDeg}deg)`,
@@ -347,8 +391,6 @@ export default function Projects() {
         href={live ?? repo.html_url}
         target="_blank"
         rel="noopener noreferrer"
-        onMouseEnter={() => setHovered({ title, desc })}
-        onMouseLeave={() => setHovered(null)}
         style={{
           position: "absolute",
           width: CARD_W, height: CARD_H,
@@ -365,6 +407,9 @@ export default function Projects() {
             : `${Math.round(CARD_H * 0.09)}px ${Math.round(CARD_W * 0.08)}px`,
           textDecoration: "none",
           backfaceVisibility: "hidden",
+          // Opacity and blur are rewritten as the ring turns; hinting keeps them off the
+          // full repaint path (measured: fewer slow frames while dragging)
+          willChange: "opacity, filter",
           display: "flex", flexDirection: "column",
           justifyContent: "space-between",
           overflow: "hidden",
@@ -437,7 +482,7 @@ export default function Projects() {
         </div>
       </a>
     );
-  }), [repos, n, BASE_RADIUS, CARD_W, CARD_H]);
+  }), [repos, labels, n, BASE_RADIUS, CARD_W, CARD_H]);
 
   const arrowBase: React.CSSProperties = {
     position: "absolute", top: "50%", transform: "translateY(-50%)",
@@ -477,6 +522,10 @@ export default function Projects() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50%       { opacity: 0.3; transform: scale(0.65); }
         }
+        .pl-title { font-weight: 500; opacity: 0.62; transition: opacity 0.2s; }
+        .pl-desc  { display: none; }
+        [data-hover] .pl-title { font-weight: 700; opacity: 1; }
+        [data-hover] .pl-desc  { display: block; }
       `}</style>
 
       {/* ── Back ──────────────────────────────────────────────── */}
@@ -495,36 +544,30 @@ export default function Projects() {
       </Link>
 
       {/* ── Center label / hover preview ─────────────────────── */}
-      <div className="proj-fade proj-fade-1 projects-center-label" style={{
+      {/* Filled in straight from the DOM while a card is hovered (see the effect above) */}
+      <div ref={labelRef} className="proj-fade proj-fade-1 projects-center-label" style={{
         position: "absolute", top: "clamp(16px, 4vh, 40px)", left: "50%",
         transform: "translateX(-50%)", zIndex: 200,
         textAlign: "center", pointerEvents: "none",
         transition: "opacity 0.2s",
         contain: "layout",
       }}>
-        <span style={{
+        <span ref={titleRef} className="pl-title" style={{
           display: "block",
           fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", fontWeight: hovered ? 700 : 500,
+          fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)",
           letterSpacing: "0.12em", color: "var(--ink)",
           textTransform: "uppercase", whiteSpace: "nowrap",
-          opacity: hovered ? 1 : 0.62,
-          transition: "opacity 0.2s, font-weight 0.15s",
         }}>
-          {hovered ? hovered.title : "my_projects — github/zaka337"}
+          {IDLE_LABEL}
         </span>
-        {hovered && (
-          <span style={{
-            display: "block",
-            fontFamily: "'Helvetica Neue', Arial, sans-serif",
-            fontSize: "clamp(0.5rem, 0.65vw, 0.58rem)", fontWeight: 400,
-            letterSpacing: "0.1em", color: "var(--ink-50)",
-            textTransform: "uppercase", whiteSpace: "nowrap",
-            marginTop: 3,
-          }}>
-            {hovered.desc}
-          </span>
-        )}
+        <span ref={descRef} className="pl-desc" style={{
+          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+          fontSize: "clamp(0.5rem, 0.65vw, 0.58rem)", fontWeight: 400,
+          letterSpacing: "0.1em", color: "var(--ink-50)",
+          textTransform: "uppercase", whiteSpace: "nowrap",
+          marginTop: 3,
+        }} />
       </div>
 
       {/* ── Repo count ────────────────────────────────────────── */}
