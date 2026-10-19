@@ -303,6 +303,12 @@ export default function ContactMe() {
           <span className="cm-row-value">{copied === "row" ? "COPIED!" : EMAIL.toUpperCase()}</span>
           <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
         </button>
+        {/* /whatsapp redirects to WhatsApp with a message typed; the number is never on the page */}
+        <a className="cm-row" href="/whatsapp" target="_blank" rel="noopener noreferrer">
+          <span className="cm-row-label">WHATSAPP</span>
+          <span className="cm-row-value">MESSAGE ME DIRECTLY</span>
+          <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
+        </a>
         <Link className="cm-row" href="/resume">
           <span className="cm-row-label">RESUME</span>
           <span className="cm-row-value">VIEW OR DOWNLOAD PDF</span>

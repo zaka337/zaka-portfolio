@@ -55,6 +55,7 @@ Copy `.env.example` to `.env.local`. Everything is optional; the site runs witho
 | `RESEND_API_KEY` | Delivers the contact form by email. Without it the form falls back to the visitor's mail app. |
 | `CONTACT_TO` | Where messages go (defaults to zakas2379@gmail.com). |
 | `CONTACT_FROM` | Sender address. The default only delivers to the Resend account owner; use a verified domain otherwise. |
+| `WHATSAPP_NUMBER` | Your WhatsApp number (digits with country code, e.g. `923001234567`). The "WhatsApp" links go to `/whatsapp`, a server redirect, so the number is never on the page or in this repository. Without it they fall back to the contact form. |
 | `GITHUB_TOKEN` | Raises GitHub's API limit from 60 to 5,000 requests per hour for `/api/repos`. A token with no scopes is enough. |
 | `NEXT_PUBLIC_SITE_URL` | Overrides the site URL used for canonical links, the sitemap and Open Graph tags. |
 

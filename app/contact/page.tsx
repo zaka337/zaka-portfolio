@@ -211,15 +211,19 @@ export default function Contact() {
             <div style={{ animation: "projFade 500ms var(--ease-out) 220ms both" }}>
               <CopyEmailRow />
             </div>
+            {/* /whatsapp redirects to WhatsApp; the number is never on the page */}
             <div style={{ animation: "projFade 500ms var(--ease-out) 280ms both" }}>
+              <Row label="WHATSAPP"  value="Message me directly" href="/whatsapp" />
+            </div>
+            <div style={{ animation: "projFade 500ms var(--ease-out) 340ms both" }}>
               <Row label="LINKEDIN"  value="Zaka Ullah Waheed"
                 href="https://www.linkedin.com/in/zaka-ullah-waheed-80380832a" />
             </div>
-            <div style={{ animation: "projFade 500ms var(--ease-out) 340ms both" }}>
+            <div style={{ animation: "projFade 500ms var(--ease-out) 400ms both" }}>
               <Row label="GITHUB"    value="github.com/zaka337"
                 href="https://github.com/zaka337" />
             </div>
-            <div style={{ animation: "projFade 500ms var(--ease-out) 400ms both" }}>
+            <div style={{ animation: "projFade 500ms var(--ease-out) 460ms both" }}>
               <Row label="INSTAGRAM" value="@notxzaka"
                 href="https://www.instagram.com/notxzaka/" />
             </div>
