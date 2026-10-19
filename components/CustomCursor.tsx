@@ -57,7 +57,7 @@ export default function CustomCursor() {
     // element under the pointer changes (a global html:has(a:hover) rule made the
     // browser re-check selectors on every hover change instead).
     const onOver = (e: MouseEvent) => {
-      const el = e.target instanceof Element ? e.target.closest("a, button") : null;
+      const el = e.target instanceof Element ? e.target.closest("a, button, [data-hot]") : null;
       ring.classList.toggle("is-active", !!el);
     };
 

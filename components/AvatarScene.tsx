@@ -363,6 +363,20 @@ export default function AvatarScene() {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
+  // Other parts of the page can make the avatar say something (e.g. the title that falls apart).
+  useEffect(() => {
+    const onSay = (e: Event) => {
+      const d = (e as CustomEvent<{ text?: string; ms?: number }>).detail;
+      if (!d?.text) return;
+      setBubble(d.text);
+      setShown(true);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setShown(false), d.ms ?? 2400);
+    };
+    window.addEventListener("zk-say", onSay);
+    return () => window.removeEventListener("zk-say", onSay);
+  }, []);
+
   // Decide once: real 3D, or a still photo for visitors who prefer reduced motion
   // or whose device cannot run WebGL (older phones, blocked GPU, privacy modes).
   useEffect(() => {

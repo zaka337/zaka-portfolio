@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
+import { knockOver, stopKnockOver } from "@/lib/knockOver";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -111,6 +112,18 @@ function OpenStatus() {
 
 export default function Home() {
   const rootRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+
+  // Click the title and it falls apart (lib/knockOver.ts). Leaving the page ends it.
+  useEffect(() => stopKnockOver, []);
+  const knock = () => {
+    const el = titleRef.current;
+    if (!el) return;
+    knockOver(el, {
+      say: (text, ms) => window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } })),
+      nod: () => window.dispatchEvent(new Event("zk-nod")),
+    });
+  };
 
   // Mouse parallax for the giant outlined word behind the face
   useEffect(() => {
@@ -147,7 +160,7 @@ export default function Home() {
       <AvatarScene />
 
       {/* TOP LEFT — name */}
-      <div className="block-tl">
+      <div ref={titleRef} className="block-tl" data-hot onClick={knock}>
         <div className="home-enter home-enter-0">
           <p className="label">YOU CAN CALL ME</p>
           <div className="nav-text">
@@ -155,6 +168,10 @@ export default function Home() {
             <p className="title-sub">OR WHATEVER.</p>
           </div>
         </div>
+        {/* Keyboard route to the same click: visible only while focused */}
+        <button type="button" className="egg-key" onClick={(e) => { e.stopPropagation(); knock(); }}>
+          Knock the title over
+        </button>
       </div>
 
       {/* TOP RIGHT — contact */}
