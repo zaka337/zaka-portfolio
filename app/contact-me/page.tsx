@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useScrollUnlock } from "@/lib/scrollStory";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { NEEDS, TIMELINES, MAX_MESSAGE, sendContact } from "@/lib/contactForm";
 
 const EMAIL = "zakas2379@gmail.com";
@@ -295,6 +296,15 @@ export default function ContactMe() {
         </form>
       </section>
 
+      {/* ── WhatsApp: the number is never on the page (see /whatsapp) ── */}
+      <section className="cm-wa" aria-labelledby="wa-title">
+        <div className="cm-wa-copy">
+          <h2 id="wa-title">Prefer to chat?</h2>
+          <p>Skip the form and message me directly on WhatsApp.</p>
+        </div>
+        <WhatsAppButton teaser />
+      </section>
+
       {/* ── Direct links ─────────────────────────────────────── */}
       <p className="cm-direct-label">OR REACH ME DIRECTLY</p>
       <section>
@@ -303,12 +313,6 @@ export default function ContactMe() {
           <span className="cm-row-value">{copied === "row" ? "COPIED!" : EMAIL.toUpperCase()}</span>
           <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
         </button>
-        {/* /whatsapp redirects to WhatsApp with a message typed; the number is never on the page */}
-        <a className="cm-row" href="/whatsapp" target="_blank" rel="noopener noreferrer">
-          <span className="cm-row-label">WHATSAPP</span>
-          <span className="cm-row-value">MESSAGE ME DIRECTLY</span>
-          <span className="cm-row-arrow" aria-hidden="true">{'↗'}</span>
-        </a>
         <Link className="cm-row" href="/resume">
           <span className="cm-row-label">RESUME</span>
           <span className="cm-row-value">VIEW OR DOWNLOAD PDF</span>

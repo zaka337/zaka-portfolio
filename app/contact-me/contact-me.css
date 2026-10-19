@@ -211,6 +211,32 @@ textarea.cm-field { min-height: 6.5rem; line-height: 1.4; }
 
 /* ─── Direct links ──────────────────────────────────────────────── */
 
+/* "Prefer to chat?": the WhatsApp button, between the form and the direct links */
+.cm-wa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 4vw, 56px);
+  padding: clamp(28px, 5.5vh, 64px) var(--pad);
+  border-bottom: 1px solid var(--ink);
+}
+.cm-wa-copy h2 {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.8rem, 3.6vw, 3.8rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+.cm-wa-copy p {
+  margin: 0;
+  max-width: 28ch;
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  line-height: 1.5;
+  color: var(--ink-70);
+}
+
 .cm-direct-label {
   padding: clamp(18px, 3vh, 30px) var(--pad) 0;
   font-size: clamp(0.5rem, 0.68vw, 0.6rem);
