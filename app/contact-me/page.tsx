@@ -302,7 +302,7 @@ export default function ContactMe() {
           <h2 id="wa-title">Prefer to chat?</h2>
           <p>Skip the form and message me directly on WhatsApp.</p>
         </div>
-        <WhatsAppButton teaser />
+        <WhatsAppButton />
       </section>
 
       {/* ── Direct links ─────────────────────────────────────── */}

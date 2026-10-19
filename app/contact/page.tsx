@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
 import NokiaPhone from "@/components/NokiaPhone";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import { WhatsAppGlyph } from "@/components/WhatsAppButton";
 
 /* ─── Contact row ─────────────────────────────────────────────── */
 const rowText: React.CSSProperties = {
@@ -15,7 +15,7 @@ const rowText: React.CSSProperties = {
 };
 
 function Row({ label, value, href, onClick }: {
-  label: string; value: string; href?: string; onClick?: () => void;
+  label: string; value: React.ReactNode; href?: string; onClick?: () => void;
 }) {
   return (
     <div style={{ paddingBottom: "0.9rem", marginBottom: "0.9rem",
@@ -213,10 +213,10 @@ export default function Contact() {
               <CopyEmailRow />
             </div>
             {/* /whatsapp redirects to WhatsApp; the number is never on the page */}
-            <div style={{ animation: "projFade 500ms var(--ease-out) 280ms both",
-              paddingBottom: "0.9rem", marginBottom: "0.9rem",
-              borderBottom: "1px solid rgba(var(--ink-rgb),0.12)" }}>
-              <WhatsAppButton />
+            <div style={{ animation: "projFade 500ms var(--ease-out) 280ms both" }}>
+              <Row label="WHATSAPP"
+                value={<span className="wa-inline"><WhatsAppGlyph />Message me directly</span>}
+                href="/whatsapp" />
             </div>
             <div style={{ animation: "projFade 500ms var(--ease-out) 340ms both" }}>
               <Row label="LINKEDIN"  value="Zaka Ullah Waheed"

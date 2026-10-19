@@ -966,140 +966,69 @@ html.zk-skip #zk-loader { display: none !important; }
   cursor: pointer;
 }
 
-/* ─── WhatsApp button (components/WhatsAppButton.tsx) ───────────── */
+/* ─── WhatsApp (components/WhatsAppButton.tsx) ──────────────────── */
+/* In the site's own language: ink on paper, uppercase, letter-spaced, thin lines.
+   WhatsApp is recognisable by its logo; the only motion is a faint ring around it. */
 
-.wa-wrap { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0.9rem; max-width: 100%; }
-
-.wa-btn {
-  --wa-green: #25d366;  /* WhatsApp brand green */
-  --wa-teal: #075e54;   /* WhatsApp brand dark teal */
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  max-width: 100%;
-  padding: 0.65rem 1.4rem 0.65rem 0.65rem;
-  border-radius: 999px;
-  background: var(--wa-green);
-  color: #06281d; /* near-black green: 9:1 on the brand green (white would be 2:1) */
-  text-decoration: none;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  box-shadow: 0 10px 24px -10px rgba(37, 211, 102, 0.85), 0 2px 6px rgba(0, 0, 0, 0.14);
-  transition: transform 0.2s var(--ease-out), box-shadow 0.2s ease, background 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-/* The classic WhatsApp "pulse": a copy of the button that swells and fades, forever.
-   transform and opacity only, so it never causes layout or repaint of the page. */
-.wa-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--wa-green);
-  animation: waPulse 2.6s ease-out infinite;
-}
-@keyframes waPulse {
-  0%   { transform: scale(1, 1);       opacity: 0.55; }
-  70%  { transform: scale(1.16, 1.55); opacity: 0; }
-  100% { transform: scale(1.16, 1.55); opacity: 0; }
-}
-
-.wa-btn:hover {
-  background: #2ee676;
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px -12px rgba(37, 211, 102, 0.95), 0 3px 8px rgba(0, 0, 0, 0.16);
-}
-.wa-btn:active { transform: translateY(0) scale(0.98); }
-.wa-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 999px; }
-
-.wa-icon {
+/* The logo takes its colour from the text around it and sizes itself in em. */
+.wa-glyph {
   position: relative;
   flex: none;
-  display: grid;
+  display: inline-grid;
   place-items: center;
-  width: 2.8rem;
-  height: 2.8rem;
-  border-radius: 50%;
-  background: var(--wa-teal);
+  width: 1.3em;
+  height: 1.3em;
 }
-.wa-icon svg {
-  width: 1.55rem;
-  height: 1.55rem;
-  fill: #fff;
-  transform-origin: 50% 60%;
-  /* the phone gives a little ring every few seconds */
-  animation: waRing 6s ease-in-out 2.5s infinite;
-}
-.wa-btn:hover .wa-icon svg { animation: waRing 0.8s ease-in-out 1; }
-@keyframes waRing {
-  0%, 16%, 100% { transform: rotate(0); }
-  3%, 9%  { transform: rotate(-16deg); }
-  6%, 12% { transform: rotate(16deg); }
-}
-
-.wa-text { display: flex; flex-direction: column; gap: 0.12rem; min-width: 0; line-height: 1.1; }
-.wa-text b { font-size: clamp(1rem, 1.4vw, 1.2rem); font-weight: 800; letter-spacing: -0.01em; }
-.wa-text small { font-size: 0.74rem; font-weight: 600; color: #0a3b2a; }
-.wa-arrow { margin-left: 0.15rem; font-size: 1.2rem; font-weight: 700; transition: transform 0.2s var(--ease-out); }
-.wa-btn:hover .wa-arrow { transform: translate(3px, -3px); }
-
-/* The chat teaser: a "typing..." bubble, then Zaka's message. Both sit in the same grid
-   cell, so nothing moves when one replaces the other. */
-.wa-chat { display: grid; max-width: min(22rem, 100%); }
-.wa-chat > .wa-bubble { grid-area: 1 / 1; }
-.wa-bubble {
-  position: relative;
-  align-self: start;
-  justify-self: start;
-  padding: 0.5rem 0.85rem 0.55rem;
-  border-radius: 0 0.85rem 0.85rem 0.85rem;
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.22);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.92rem;
-  line-height: 1.35;
-}
-/* the little tail on the top-left, like a real incoming message */
-.wa-bubble::before {
+.wa-glyph svg { width: 100%; height: 100%; fill: currentColor; transform-origin: 50% 60%; }
+.wa-glyph::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: -0.45rem;
-  width: 0.6rem;
-  height: 0.7rem;
-  background: var(--surface);
-  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  inset: -0.2em;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: waRing 3.2s ease-out infinite; /* transform and opacity only */
 }
-.wa-bubble b { display: block; margin-bottom: 0.1rem; font-size: 0.74rem; font-weight: 800; color: #075e54; }
-:root[data-theme="dark"] .wa-bubble b { color: #5fd8a6; }
+@keyframes waRing {
+  0%   { transform: scale(0.72); opacity: 0.55; }
+  65%  { transform: scale(1.6);  opacity: 0; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+/* the phone gives one small ring when you point at it */
+a:hover > .wa-btn-main .wa-glyph svg,
+a:hover > .wa-inline .wa-glyph svg { animation: waWiggle 0.7s ease-in-out 1; }
+@keyframes waWiggle {
+  0%, 100% { transform: rotate(0); }
+  20%, 60% { transform: rotate(-14deg); }
+  40%, 80% { transform: rotate(14deg); }
+}
 
-.wa-typing {
+/* The outlined twin of the "Send brief" bar (.cm-send): same size, type and hover. */
+.wa-btn {
   display: flex;
   align-items: center;
-  gap: 0.28rem;
-  height: 2.1rem;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: clamp(16px, 2.4vh, 22px) clamp(18px, 2.4vw, 30px);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s;
+  -webkit-tap-highlight-color: transparent;
 }
-.wa-chat[data-play] .wa-typing { animation: waHide 0.25s ease 2.2s both; }
-.wa-typing i {
-  width: 0.46rem;
-  height: 0.46rem;
-  border-radius: 50%;
-  background: var(--ink-50);
-}
-.wa-chat[data-play] .wa-typing i { animation: waDot 1s ease-in-out infinite; }
-.wa-chat[data-play] .wa-typing i:nth-child(2) { animation-delay: 0.16s; }
-.wa-chat[data-play] .wa-typing i:nth-child(3) { animation-delay: 0.32s; }
-@keyframes waDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-0.3rem); opacity: 1; } }
-@keyframes waHide { to { opacity: 0; visibility: hidden; } }
+.wa-btn:hover { background: var(--ink); color: var(--paper); }
+.wa-btn-main { display: inline-flex; align-items: center; gap: 0.9em; min-width: 0; }
+.wa-btn-arrow { font-size: 1.4em; font-weight: 300; line-height: 1; transition: transform 0.18s; }
+.wa-btn:hover .wa-btn-arrow { transform: translate(5px, -5px); }
 
-.wa-msg {
-  opacity: 0;
-  transform: translateY(6px) scale(0.96);
-  transform-origin: 0 0;
-}
-.wa-chat[data-play] .wa-msg { animation: waIn 0.42s var(--ease-out) 2.3s both; }
-@keyframes waIn { to { opacity: 1; transform: none; } }
+/* Inside a plain contact row (the Nokia page): the logo before the words */
+.wa-inline { display: inline-flex; align-items: center; gap: 0.55em; }
