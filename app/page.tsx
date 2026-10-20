@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
 import { knockOver, stopKnockOver } from "@/lib/knockOver";
+import EggDebug from "@/components/EggDebug";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -214,6 +215,7 @@ export default function Home() {
       </Link>
 
       <OpenStatus />
+      <EggDebug />
 
       {/* Visually hidden — crawlable content for search engines */}
       <div aria-hidden="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
