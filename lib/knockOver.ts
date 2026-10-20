@@ -41,10 +41,6 @@ interface Controller {
 
 let active: Controller | null = null;
 
-/* Lets components/EggDebug.tsx (?egg-debug) report what happened. Nothing listens otherwise. */
-const report = (stage: string, info = "") =>
-  window.dispatchEvent(new CustomEvent("zk-egg", { detail: { stage, info } }));
-
 const STEP = 1 / 240;         // physics step (s)
 const SHAKE_MS = 380;         // trembling before the letters let go
 const RETURN_MS = 720;        // flight home
@@ -143,19 +139,16 @@ export function stopKnockOver() {
 
 /** Returns false if nothing happened (already running, no text found). */
 export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
-  report("called");
-  if (active) { report("refused", "already running"); return false; }
+  if (active) return false;
 
   /* Reduced motion (a device setting) gets a calm version instead of none: the letters
      do not shake, spin, leap or bounce, they simply let go and settle, they can still be
      dragged, and they fade out instead of flying home. */
   const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (calm) report("calm", "reduced motion is on");
 
   const glyphs = gather(source);
   if (!glyphs.length) {
     // Never fail silently: the avatar still answers
-    report("refused", `no letters found (canvas2d ${measureCtx ? "ok" : "missing"})`);
     hooks.say("WHATEVER.");
     return false;
   }
@@ -371,10 +364,9 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   };
 
   /* ── Frame loop ── */
-  const startReturn = (now: number, why = "") => {
+  const startReturn = (now: number) => {
     if (phase === "return") return;
     phase = "return";
-    report("return", why);
     returnAt = now;
     hint.classList.remove("is-on");
     if (calm) {
@@ -385,9 +377,9 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       source.removeAttribute("data-egg");
       if (typeof layer.animate === "function") {
         layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: "ease-out", fill: "forwards" })
-          .onfinish = () => finish("faded away");
+          .onfinish = () => finish();
       } else {
-        finish("put back");
+        finish();
       }
       return;
     }
@@ -410,13 +402,13 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
     if (phase === "shake") {
       if (shakeMs) render(1 + 3.5 * Math.min(1, (now - t0) / shakeMs));
-      if (now - t0 >= shakeMs) { phase = "fall"; release(); acc = 0; report("fall"); }
+      if (now - t0 >= shakeMs) { phase = "fall"; release(); acc = 0; }
     } else if (phase === "fall") {
       acc += dtReal;
       while (acc >= STEP) { step(STEP); acc -= STEP; }
       render(0);
       if (now - t0 > shakeMs + 1100) hint.classList.add("is-on");
-      if (now - touched > IDLE_MS && !bodies.some((b) => b.held)) startReturn(now, "quiet for a while");
+      if (now - touched > IDLE_MS && !bodies.some((b) => b.held)) startReturn(now);
     } else {
       let done = true;
       for (const b of bodies) {
@@ -430,7 +422,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
         b.a = tw.a0 + (tw.a1 - tw.a0) * e;
       }
       render(0);
-      if (done && now - returnAt > RETURN_MS) { finish("home again"); return; }
+      if (done && now - returnAt > RETURN_MS) { finish(); return; }
     }
     raf = requestAnimationFrame(frame);
   };
@@ -461,26 +453,25 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   const onDocDown = (e: PointerEvent) => {
     if ((e.target as Element | null)?.closest(".egg-letter")) return;
     if (performance.now() - t0 < IGNORE_RETURN_MS) return;
-    startReturn(performance.now(), "touch outside the letters");
+    startReturn(performance.now());
   };
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === "Escape") startReturn(performance.now(), "Escape");
+    if (e.key === "Escape") startReturn(performance.now());
   };
-  const onHide = () => { if (document.hidden) finish("page hidden"); };
+  const onHide = () => { if (document.hidden) finish(); };
   const onResize = () => {
     // A phone resizes the window every time the browser's toolbar slides in or out, and that
     // only changes the height: carry on, with the floor where the screen now ends. A new
     // width means the layout really changed (rotation, desktop window): the measurements no
     // longer match the screen, so the letters go home.
-    if (window.innerWidth !== W) { finish(`window width changed to ${window.innerWidth}`); return; }
+    if (window.innerWidth !== W) { finish(); return; }
     H = window.innerHeight;
     floor = H - 1;
   };
 
-  function finish(why = "stopped") {
+  function finish() {
     if (finished) return;
     finished = true;
-    report("end", why);
     if (raf) cancelAnimationFrame(raf);
     layer.removeEventListener("pointerdown", onLayerDown);
     window.removeEventListener("pointermove", onMove);
@@ -496,7 +487,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     if (active === controller) active = null;
   }
 
-  const controller: Controller = { stop: () => finish("left the page") };
+  const controller: Controller = { stop: finish };
   active = controller;
 
   layer.addEventListener("pointerdown", onLayerDown);
@@ -510,6 +501,5 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
   render(0);
   raf = requestAnimationFrame(frame);
-  report("start", `${bodies.length} letters on a ${W}x${H} screen`);
   return true;
 }
