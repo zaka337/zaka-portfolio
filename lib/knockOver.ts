@@ -161,6 +161,11 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   let floor = H - 1;
   const head = headCollider(W);
   let firstHit = false;
+  let gravX = 0, gravY = g;   // where "down" is: a phone's tilt turns it
+  let ceiling = false;        // once gravity can point anywhere, the top edge is a wall too
+  let tilt = false;           // a phone's tilt is steering gravity
+  let pull = false;           // desktop: space is held and the letters are drawn to the cursor
+  const ptr = { x: W / 2, y: H / 2 };
 
   /* ── Build the overlay: one clone per letter, laid exactly over the original ── */
   const layer = document.createElement("div");
@@ -192,7 +197,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   const touch = window.matchMedia("(hover: none)").matches;
   hint.textContent = touch
     ? `Tap anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around`
-    : `Click anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around`;
+    : `Click anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around${calm ? "" : " · hold space to pull them in"}`;
 
   document.body.appendChild(layer);
   document.body.appendChild(hint);
@@ -240,7 +245,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
      passes through the line n . p = offset (for the floor, the y value; for a wall, x or -x).
      Every corner past the edge gets an impulse with friction at that corner, so the letter
      picks up spin and settles on its side. */
-  const boxContact = (b: Body, nx: number, ny: number, edge: number, e0: number, isFloor: boolean) => {
+  const boxContact = (b: Body, nx: number, ny: number, edge: number, e0: number) => {
     const c = Math.cos(b.a), s = Math.sin(b.a);
     let deepest = 0;
     const hits: { rx: number; ry: number; d: number }[] = [];
@@ -249,7 +254,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       const rx = lx * c - ly * s, ry = lx * s + ly * c;
       const px = b.x + rx, py = b.y + ry;
       // distance inside the playfield (negative = past the edge)
-      const d = isFloor ? edge - py : nx > 0 ? px - edge : edge - px;
+      const d = ny < 0 ? edge - py : ny > 0 ? py - edge : nx > 0 ? px - edge : edge - px;
       if (d < 0) { hits.push({ rx, ry, d }); if (d < deepest) deepest = d; }
     }
     if (!hits.length) return;
@@ -283,8 +288,17 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
         b.vx = Math.max(-5000, Math.min(5000, (b.gx - b.x) * 22));
         b.vy = Math.max(-5000, Math.min(5000, (b.gy - b.y) * 22));
         b.w *= 0.9;
+      } else if (pull) {
+        // Space held: the letters are drawn to the cursor, easing off as they arrive
+        const dx = ptr.x - b.x, dy = ptr.y - b.y, d = Math.hypot(dx, dy) || 1;
+        const a = 2.4 * g * Math.min(1, d / (0.18 * H));
+        b.vx += (dx / d) * a * dt;
+        b.vy += (dy / d) * a * dt;
+        b.vx *= 1 - 2.2 * dt;
+        b.vy *= 1 - 2.2 * dt;
       } else {
-        b.vy += g * dt;
+        b.vx += gravX * dt;
+        b.vy += gravY * dt;
         b.vx *= 1 - 0.04 * dt;
       }
       b.x += b.vx * dt;
@@ -295,11 +309,18 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
       // Screen edges: the glyph's box, so letters tumble onto their sides and lie flat
       b.w *= 1 - 0.25 * dt;
-      boxContact(b, 0, -1, floor, 0.32 * bounce, true);
-      boxContact(b, 1, 0, 0, 0.45 * bounce, false);
-      boxContact(b, -1, 0, W, 0.45 * bounce, false);
-      // Come to rest instead of jittering
-      if (b.y + Math.max(b.hw, b.hh) * 1.5 > floor && Math.abs(b.vx) < 9 && Math.abs(b.vy) < 14 && Math.abs(b.w) < 0.5) {
+      boxContact(b, 0, -1, floor, 0.32 * bounce);
+      boxContact(b, 1, 0, 0, 0.45 * bounce);
+      boxContact(b, -1, 0, W, 0.45 * bounce);
+      if (ceiling) boxContact(b, 0, 1, 0, 0.32 * bounce);
+      // Come to rest instead of jittering, but only against an edge that gravity is pressing it onto
+      const m = Math.max(b.hw, b.hh) * 1.5;
+      const pressed =
+        (gravY > 0.25 * g && b.y + m > floor) ||
+        (ceiling && gravY < -0.25 * g && b.y - m < 0) ||
+        (gravX > 0.25 * g && b.x + m > W) ||
+        (gravX < -0.25 * g && b.x - m < 0);
+      if (!pull && pressed && Math.abs(b.vx) < 9 && Math.abs(b.vy) < 14 && Math.abs(b.w) < 0.5) {
         b.vx = 0; b.vy = 0; b.w = 0;
       }
 
@@ -407,7 +428,8 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       acc += dtReal;
       while (acc >= STEP) { step(STEP); acc -= STEP; }
       render(0);
-      if (now - t0 > shakeMs + 1100) hint.classList.add("is-on");
+      if (now - t0 > shakeMs + 1100) { hint.classList.add("is-on"); tiltBtn?.classList.add("is-on"); }
+      if (pull) touched = now;
       if (now - touched > IDLE_MS && !bodies.some((b) => b.held)) startReturn(now);
     } else {
       let done = true;
@@ -442,6 +464,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     try { b.el.setPointerCapture(e.pointerId); } catch { /* not capturable: window listeners below still work */ }
   };
   const onMove = (e: PointerEvent) => {
+    ptr.x = e.clientX; ptr.y = e.clientY;
     for (const b of bodies) {
       if (b.held) { b.gx = e.clientX - b.ox; b.gy = e.clientY - b.oy; touched = performance.now(); }
     }
@@ -451,13 +474,24 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     touched = performance.now();
   };
   const onDocDown = (e: PointerEvent) => {
-    if ((e.target as Element | null)?.closest(".egg-letter")) return;
+    if ((e.target as Element | null)?.closest(".egg-letter, .egg-tilt")) return;
     if (performance.now() - t0 < IGNORE_RETURN_MS) return;
     startReturn(performance.now());
   };
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") startReturn(performance.now());
+    // Desktop: hold space and gravity points at the cursor
+    if (e.code === "Space" && !touch && !calm && phase === "fall" &&
+        !(e.target as HTMLElement | null)?.closest?.("input, textarea, [contenteditable]")) {
+      e.preventDefault();
+      pull = true;
+      ceiling = true;
+    }
   };
+  const onKeyUp = (e: KeyboardEvent) => {
+    if (e.code === "Space") pull = false;
+  };
+  const onBlur = () => { pull = false; };
   const onHide = () => { if (document.hidden) finish(); };
   const onResize = () => {
     // A phone resizes the window every time the browser's toolbar slides in or out, and that
@@ -469,6 +503,88 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     floor = H - 1;
   };
 
+  /* ── Tilt: a phone's own tilt steers gravity, and shaking it scatters the letters ──
+     Android sends motion freely. iPhones ask first, and only inside a tap, so there the
+     letters wait for a "Tilt your phone" button. Not offered with reduced motion. */
+  type MotionEventCtor = typeof DeviceMotionEvent & { requestPermission?: () => Promise<"granted" | "denied"> };
+  const motion = typeof DeviceMotionEvent !== "undefined" ? (DeviceMotionEvent as MotionEventCtor) : null;
+  let tiltBtn: HTMLButtonElement | null = null;
+  let sign = 0;                  // which way this phone reports gravity, learnt from the first upright reading
+  let tiltX = 0, tiltY = 1;      // smoothed direction of gravity on the screen, in g
+  let lastAcc: [number, number, number] | null = null;
+  let lastShake = 0;
+  let tiltSeen = false;          // the phone has sent at least one reading
+
+  const scatter = () => {
+    touched = performance.now();
+    for (const b of bodies) {
+      b.vx += rand(-1, 1) * W * 1.3;
+      b.vy += rand(-1.5, 0.3) * H; // a shake mostly tosses them up
+      b.w += rand(-9, 9);
+    }
+  };
+  const onMotion = (e: DeviceMotionEvent) => {
+    const a = e.accelerationIncludingGravity;
+    if (!a || a.x == null || a.y == null) return;
+    const ax = a.x, ay = a.y, az = a.z ?? 0;
+    if (!tiltSeen) {
+      // A real sensor is talking: now the hint can promise it
+      tiltSeen = true;
+      hint.textContent = "Tilt or shake your phone · tap anywhere to put it back";
+    }
+    // The sign convention differs between phones (iPhones report it upside down), so it is
+    // read from the first reading taken while the phone is held up: gravity then points
+    // down the screen. Until then the letters just fall.
+    if (!sign) {
+      if (Math.abs(ay) < 3) return;
+      sign = ay > 0 ? 1 : -1;
+    }
+    let tx = (-sign * ax) / 9.81;
+    let ty = (sign * ay) / 9.81;
+    const len = Math.hypot(tx, ty);
+    if (len > 1) { tx /= len; ty /= len; }
+    const moved = Math.hypot(tx - tiltX, ty - tiltY);
+    tiltX += (tx - tiltX) * 0.25;
+    tiltY += (ty - tiltY) * 0.25;
+    gravX = tiltX * g;
+    gravY = tiltY * g;
+    const now = performance.now();
+    if (moved > 0.02) touched = now;
+    // A sharp jolt between two readings is a shake
+    if (lastAcc && Math.hypot(ax - lastAcc[0], ay - lastAcc[1], az - lastAcc[2]) > 16 && now - lastShake > 700) {
+      lastShake = now;
+      scatter();
+    }
+    lastAcc = [ax, ay, az];
+  };
+  const enableTilt = () => {
+    if (tilt || finished) return;
+    tilt = true;
+    ceiling = true;
+    tiltBtn?.remove();
+    tiltBtn = null;
+    window.addEventListener("devicemotion", onMotion);
+  };
+  if (!calm && touch && motion) {
+    if (typeof motion.requestPermission === "function") {
+      const ask = motion.requestPermission.bind(motion);
+      tiltBtn = document.createElement("button");
+      tiltBtn.type = "button";
+      tiltBtn.className = "egg-tilt";
+      tiltBtn.textContent = "Tilt your phone";
+      tiltBtn.addEventListener("click", () => {
+        // Called straight from the tap: iPhones only show their permission prompt then
+        ask().then(
+          (answer) => { if (answer === "granted") enableTilt(); else { tiltBtn?.remove(); tiltBtn = null; } },
+          () => { tiltBtn?.remove(); tiltBtn = null; },
+        );
+      });
+      document.body.appendChild(tiltBtn);
+    } else {
+      enableTilt();
+    }
+  }
+
   function finish() {
     if (finished) return;
     finished = true;
@@ -479,10 +595,14 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     window.removeEventListener("pointercancel", onUp);
     document.removeEventListener("pointerdown", onDocDown, true);
     window.removeEventListener("keydown", onKey);
+    window.removeEventListener("keyup", onKeyUp);
+    window.removeEventListener("blur", onBlur);
+    window.removeEventListener("devicemotion", onMotion);
     document.removeEventListener("visibilitychange", onHide);
     window.removeEventListener("resize", onResize);
     layer.remove();
     hint.remove();
+    tiltBtn?.remove();
     source.removeAttribute("data-egg");
     if (active === controller) active = null;
   }
@@ -496,6 +616,8 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   window.addEventListener("pointercancel", onUp);
   document.addEventListener("pointerdown", onDocDown, true);
   window.addEventListener("keydown", onKey);
+  window.addEventListener("keyup", onKeyUp);
+  window.addEventListener("blur", onBlur);
   document.addEventListener("visibilitychange", onHide);
   window.addEventListener("resize", onResize);
 

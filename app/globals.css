@@ -943,6 +943,34 @@ html.zk-skip #zk-loader { display: none !important; }
 }
 .egg-hint.is-on { opacity: 1; }
 
+/* iPhones only show their motion permission prompt from a tap, so tilt starts from this button */
+.egg-tilt {
+  position: fixed;
+  left: 50%;
+  top: 21dvh; /* the empty band under the top row, where the title was: clear of the cards below */
+  z-index: 9001;
+  transform: translateX(-50%);
+  padding: 0.8rem 1.3rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, background 0.2s, color 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.egg-tilt.is-on { opacity: 1; pointer-events: auto; }
+.egg-tilt:active { background: var(--ink); color: var(--paper); }
+
 /* Keyboard route to the same click: hidden until it has focus */
 .egg-key {
   position: absolute;
