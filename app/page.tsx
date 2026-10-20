@@ -120,10 +120,18 @@ export default function Home() {
   const knock = () => {
     const el = titleRef.current;
     if (!el) return;
-    knockOver(el, {
-      say: (text, ms) => window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } })),
-      nod: () => window.dispatchEvent(new Event("zk-nod")),
-    });
+    const say = (text: string, ms?: number) =>
+      window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } }));
+    try {
+      knockOver(el, { say, nod: () => window.dispatchEvent(new Event("zk-nod")) });
+    } catch (err) {
+      // Whatever a browser refuses: leave the page exactly as it was and let the avatar answer
+      stopKnockOver();
+      el.removeAttribute("data-egg");
+      document.querySelectorAll(".egg-layer, .egg-hint").forEach((n) => n.remove());
+      window.dispatchEvent(new CustomEvent("zk-egg", { detail: { stage: "failed", info: String(err) } }));
+      say("WHATEVER.");
+    }
   };
 
   // Mouse parallax for the giant outlined word behind the face
@@ -161,7 +169,11 @@ export default function Home() {
       <AvatarScene />
 
       {/* TOP LEFT — name */}
-      <div ref={titleRef} className="block-tl" data-hot onClick={knock}>
+      {/* A touch starts it when the finger lifts (onPointerUp), without waiting for the
+          browser's own click, which some phones do not send for a plain div. The click
+          that may follow is ignored: the effect is already running. */}
+      <div ref={titleRef} className="block-tl" data-hot onClick={knock}
+        onPointerUp={(e) => { if (e.pointerType === "touch") knock(); }}>
         <div className="home-enter home-enter-0">
           <p className="label">YOU CAN CALL ME</p>
           <div className="nav-text">

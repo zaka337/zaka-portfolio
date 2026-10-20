@@ -894,6 +894,11 @@ html.zk-skip #zk-loader { display: none !important; }
 
 [data-hot] { -webkit-tap-highlight-color: transparent; }
 
+/* Phones treat an element as tappable when it says so; no cursor is drawn on touch screens */
+@media (hover: none), (pointer: coarse) {
+  [data-hot] { cursor: pointer; touch-action: manipulation; }
+}
+
 /* The real title is only hidden, never removed, while its letters are loose */
 [data-egg] .home-enter { visibility: hidden; }
 

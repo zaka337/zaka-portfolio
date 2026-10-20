@@ -69,7 +69,7 @@ function gather(source: HTMLElement) {
     cx: number; cy: number; r: number; hw: number; hh: number; size: number;
     family: string; weight: string; spacing: string; shadow: string; tone: string;
   }[] = [];
-  if (!ctx) return glyphs;
+  // Without a canvas (a phone can refuse one) the letters are measured from their boxes alone.
 
   const range = document.createRange();
   const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
@@ -82,7 +82,7 @@ function gather(source: HTMLElement) {
     if (cs.display === "none" || cs.visibility === "hidden") continue;
 
     const size = parseFloat(cs.fontSize);
-    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+    if (ctx) ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
     // The label is dim; the title uses the full ink (not the hover-dimmed colour it may have right now).
     const tone = parent.classList.contains("label") ? "var(--ink-50)" : "var(--ink)";
 
@@ -95,16 +95,18 @@ function gather(source: HTMLElement) {
       const rc = range.getClientRects()[0];
       if (!rc || rc.width < 1 || rc.height < 1) continue;
 
-      const m = ctx.measureText(ch);
-      const fontAscent = m.fontBoundingBoxAscent ?? size * 0.93;
-      const asc = m.actualBoundingBoxAscent;
-      const desc = m.actualBoundingBoxDescent;
+      const m = ctx ? ctx.measureText(ch) : null;
+      const fontAscent = m && m.fontBoundingBoxAscent > 0 ? m.fontBoundingBoxAscent : size * 0.93;
+      const asc = m && m.actualBoundingBoxAscent > 0 ? m.actualBoundingBoxAscent : size * 0.72;
+      const desc = m ? m.actualBoundingBoxDescent || 0 : 0;
+      const bl = m ? m.actualBoundingBoxLeft || 0 : 0;
+      const br = m && m.actualBoundingBoxRight > 0 ? m.actualBoundingBoxRight : rc.width * 0.9;
       // The rectangle is the font's content area: its top is the ascent above the baseline.
       const baseline = rc.top + fontAscent;
-      const cx = rc.left + (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
+      const cx = rc.left + (br - bl) / 2;
       const cy = baseline + (desc - asc) / 2;
       const glyphH = asc + desc;
-      const glyphW = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+      const glyphW = bl + br;
       // Letters push each other as circles of the same area; the floor and walls use the
       // real (rotating) box, so letters can lie flat instead of sinking in.
       const hw = Math.max(glyphW / 2, 0.05 * size);
@@ -141,6 +143,7 @@ export function stopKnockOver() {
 
 /** Returns false if nothing happened (already running, reduced motion, no text found). */
 export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
+  report("called");
   if (active) { report("refused", "already running"); return false; }
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -150,7 +153,12 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   }
 
   const glyphs = gather(source);
-  if (!glyphs.length) { report("refused", `no letters found (canvas2d ${measureCtx ? "ok" : "missing"})`); return false; }
+  if (!glyphs.length) {
+    // Never fail silently: the avatar still answers
+    report("refused", `no letters found (canvas2d ${measureCtx ? "ok" : "missing"})`);
+    hooks.say("WHATEVER.");
+    return false;
+  }
 
   const W = window.innerWidth;
   let H = window.innerHeight;
