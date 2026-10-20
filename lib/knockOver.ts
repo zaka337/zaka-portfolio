@@ -141,16 +141,16 @@ export function stopKnockOver() {
   active?.stop();
 }
 
-/** Returns false if nothing happened (already running, reduced motion, no text found). */
+/** Returns false if nothing happened (already running, no text found). */
 export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   report("called");
   if (active) { report("refused", "already running"); return false; }
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    report("refused", "reduced motion is on");
-    hooks.say("WHATEVER.");
-    return true;
-  }
+  /* Reduced motion (a device setting) gets a calm version instead of none: the letters
+     do not shake, spin, leap or bounce, they simply let go and settle, they can still be
+     dragged, and they fade out instead of flying home. */
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (calm) report("calm", "reduced motion is on");
 
   const glyphs = gather(source);
   if (!glyphs.length) {
@@ -162,7 +162,9 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
   const W = window.innerWidth;
   let H = window.innerHeight;
-  const g = 2.6 * H;           // gravity, px/s^2 (scales with the screen)
+  const g = (calm ? 1.2 : 2.6) * H; // gravity, px/s^2 (scales with the screen; softer when calm)
+  const shakeMs = calm ? 0 : SHAKE_MS;
+  const bounce = calm ? 0 : 1;      // scales every rebound
   let floor = H - 1;
   const head = headCollider(W);
   let firstHit = false;
@@ -194,7 +196,10 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   const hint = document.createElement("p");
   hint.className = "egg-hint";
   hint.setAttribute("role", "status");
-  hint.textContent = "Click anywhere to put it back, or throw the letters around";
+  const touch = window.matchMedia("(hover: none)").matches;
+  hint.textContent = touch
+    ? `Tap anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around`
+    : `Click anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around`;
 
   document.body.appendChild(layer);
   document.body.appendChild(hint);
@@ -222,9 +227,16 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
   const release = () => {
     for (const b of bodies) {
-      b.vx = W * rand(0.04, 0.5) * (Math.random() < 0.2 ? -1 : 1);
-      b.vy = -H * rand(0.3, 0.9);
-      b.w = rand(-8, 8);
+      if (calm) {
+        // Let go and drop straight down: no leap, no sideways burst, no spin
+        b.vx = W * rand(-0.01, 0.01);
+        b.vy = 0;
+        b.w = 0;
+      } else {
+        b.vx = W * rand(0.04, 0.5) * (Math.random() < 0.2 ? -1 : 1);
+        b.vy = -H * rand(0.3, 0.9);
+        b.w = rand(-8, 8);
+      }
     }
     hooks.say("WHATEVER.", 2200);
   };
@@ -272,6 +284,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   const step = (dt: number) => {
     for (const b of bodies) {
       if (b.tw) continue;
+      if (calm) { b.w = 0; b.a = 0; } // calm: letters never spin, they stay upright
       if (b.held) {
         // Kinematic: chase the pointer. The chasing speed becomes the throw when released.
         b.vx = Math.max(-5000, Math.min(5000, (b.gx - b.x) * 22));
@@ -289,9 +302,9 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
       // Screen edges: the glyph's box, so letters tumble onto their sides and lie flat
       b.w *= 1 - 0.25 * dt;
-      boxContact(b, 0, -1, floor, 0.32, true);
-      boxContact(b, 1, 0, 0, 0.45, false);
-      boxContact(b, -1, 0, W, 0.45, false);
+      boxContact(b, 0, -1, floor, 0.32 * bounce, true);
+      boxContact(b, 1, 0, 0, 0.45 * bounce, false);
+      boxContact(b, -1, 0, W, 0.45 * bounce, false);
       // Come to rest instead of jittering
       if (b.y + Math.max(b.hw, b.hh) * 1.5 > floor && Math.abs(b.vx) < 9 && Math.abs(b.vy) < 14 && Math.abs(b.w) < 0.5) {
         b.vx = 0; b.vy = 0; b.w = 0;
@@ -310,13 +323,14 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
           b.y = py + ny * min;
           const vn = b.vx * nx + b.vy * ny;
           if (vn < 0) {
-            b.vx -= (1 + 0.55) * vn * nx;
-            b.vy -= (1 + 0.55) * vn * ny;
+            const rebound = calm ? 0.1 : 0.55;
+            b.vx -= (1 + rebound) * vn * nx;
+            b.vy -= (1 + rebound) * vn * ny;
             b.w += (b.vx * ny - b.vy * nx) / b.r * 0.15 + rand(-3, 3);
             if (!firstHit && -vn > H * 0.3) {
               firstHit = true;
               hooks.say("OW!", 1400);
-              hooks.nod();
+              if (!calm) hooks.nod();
             }
           }
         }
@@ -346,7 +360,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
         q.y += ny * overlap * (iq / sum);
         const vn = (q.vx - p.vx) * nx + (q.vy - p.vy) * ny;
         if (vn < 0) {
-          const jn = (-(1 + 0.22) * vn) / sum;
+          const jn = (-(1 + 0.22 * bounce) * vn) / sum;
           p.vx -= jn * nx * ip; p.vy -= jn * ny * ip;
           q.vx += jn * nx * iq; q.vy += jn * ny * iq;
           p.w += rand(-1, 1) * Math.min(6, -vn / 400);
@@ -363,6 +377,20 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     report("return", why);
     returnAt = now;
     hint.classList.remove("is-on");
+    if (calm) {
+      // No flight home: the letters fade out where they lie and the title is simply there
+      // again. The Web Animations API is not affected by the page's reduced-motion CSS,
+      // which would make a CSS fade instant; this is an opacity change only, nothing moves.
+      bodies.forEach((b) => { b.held = false; });
+      source.removeAttribute("data-egg");
+      if (typeof layer.animate === "function") {
+        layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: "ease-out", fill: "forwards" })
+          .onfinish = () => finish("faded away");
+      } else {
+        finish("put back");
+      }
+      return;
+    }
     bodies.forEach((b, i) => {
       b.held = false;
       const turns = Math.round(b.a / (Math.PI * 2));
@@ -381,14 +409,13 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     last = now;
 
     if (phase === "shake") {
-      const k = Math.min(1, (now - t0) / SHAKE_MS);
-      render(1 + 3.5 * k);
-      if (now - t0 >= SHAKE_MS) { phase = "fall"; release(); acc = 0; report("fall"); }
+      if (shakeMs) render(1 + 3.5 * Math.min(1, (now - t0) / shakeMs));
+      if (now - t0 >= shakeMs) { phase = "fall"; release(); acc = 0; report("fall"); }
     } else if (phase === "fall") {
       acc += dtReal;
       while (acc >= STEP) { step(STEP); acc -= STEP; }
       render(0);
-      if (now - t0 > SHAKE_MS + 1100) hint.classList.add("is-on");
+      if (now - t0 > shakeMs + 1100) hint.classList.add("is-on");
       if (now - touched > IDLE_MS && !bodies.some((b) => b.held)) startReturn(now, "quiet for a while");
     } else {
       let done = true;

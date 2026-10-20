@@ -116,7 +116,12 @@ type Prepared = {
    Preparing it (which removes meshes) must happen exactly once. */
 const prepared = new WeakMap<THREE.Object3D, Prepared>();
 
-function AvatarModel() {
+/* calm: for visitors who ask their device for reduced motion. The head still turns to
+   follow a finger or cursor (they are moving it), but nothing moves on its own: no idle
+   sway, breathing or nodding, and the following is gentler. */
+function AvatarModel({ calm }: { calm: boolean }) {
+  const calmRef = useRef(calm);
+  useEffect(() => { calmRef.current = calm; }, [calm]);
   const { scene } = useGLTF("/Avatar.glb");
   const stage = useThree((s) => s.scene);
   const groupRef = useRef<THREE.Group>(null);
@@ -286,20 +291,21 @@ function AvatarModel() {
 
   useFrame((state, delta) => {
     if (paused.current) return;
+    const calm = calmRef.current;
     const t = state.clock.elapsedTime;
-    const k = 1 - Math.exp(-delta * 3.4);
+    const k = 1 - Math.exp(-delta * (calm ? 2.4 : 3.4));
     target.current.x += (mouse.current.x - target.current.x) * k;
     target.current.y += (mouse.current.y - target.current.y) * k;
 
     const bone = headBone.current ?? groupRef.current;
     if (!bone) return;
-    // Cursor follow + a slow idle drift so the head never looks frozen
-    const sway = Math.sin(t * 0.55) * 0.045;
-    const nod  = Math.sin(t * 0.4 + 1.3) * 0.018;
-    bone.rotation.y = headRestRot.current.y + target.current.x * 0.55 + sway; // fuller neck turn left/right
+    // Cursor follow + a slow idle drift so the head never looks frozen (not when calm)
+    const sway = calm ? 0 : Math.sin(t * 0.55) * 0.045;
+    const nod  = calm ? 0 : Math.sin(t * 0.4 + 1.3) * 0.018;
+    bone.rotation.y = headRestRot.current.y + target.current.x * (calm ? 0.4 : 0.55) + sway; // fuller neck turn left/right
     // Click-to-say-hi: a damped double nod
     let hi = 0;
-    if (nodAt.current > 0) {
+    if (!calm && nodAt.current > 0) {
       const since = (performance.now() - nodAt.current) / 1000;
       if (since < 1.8) hi = Math.sin(since * 12) * Math.exp(-since * 3) * 0.24;
     }
@@ -308,9 +314,9 @@ function AvatarModel() {
     // Breathing, depth parallax and a small lean into the turn
     const g = groupRef.current;
     if (g) {
-      g.position.y = baseY.current + Math.sin(t * 1.5) * 0.005;
-      g.position.x = -target.current.x * 0.035;
-      g.rotation.z = -target.current.x * 0.02 + Math.sin(t * 0.45) * 0.008;
+      g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005);
+      g.position.x = -target.current.x * (calm ? 0.02 : 0.035);
+      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) + (calm ? 0 : Math.sin(t * 0.45) * 0.008);
     }
   });
 
@@ -377,10 +383,20 @@ export default function AvatarScene() {
     return () => window.removeEventListener("zk-say", onSay);
   }, []);
 
-  // Decide once: real 3D, or a still photo for visitors who prefer reduced motion
-  // or whose device cannot run WebGL (older phones, blocked GPU, privacy modes).
+  // Reduced motion keeps the 3D head but makes it calm (see AvatarModel). Follows the
+  // device setting if it is changed while the page is open.
+  const [calm, setCalm] = useState(false);
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setCalm(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  // Decide once: real 3D, or a still photo for devices that cannot run WebGL
+  // (older phones, blocked GPU, privacy modes).
+  useEffect(() => {
     let webgl = false;
     try {
       const c = document.createElement("canvas");
@@ -390,7 +406,7 @@ export default function AvatarScene() {
     } catch {
       webgl = false;
     }
-    if (!reduce && webgl) {
+    if (webgl) {
       useGLTF.preload("/Avatar.glb");
       preloadBakedEnv(); // fetched in parallel with the model
       setMode("3d");
@@ -477,7 +493,7 @@ export default function AvatarScene() {
           <directionalLight position={[3, 2, -2.6]} intensity={0.9} color="#d2e2ff" />
           <Suspense fallback={null}>
             <Studio />
-            <AvatarModel />
+            <AvatarModel calm={calm} />
           </Suspense>
         </Canvas>
       )}
