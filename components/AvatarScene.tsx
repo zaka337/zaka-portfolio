@@ -116,10 +116,27 @@ type Prepared = {
    Preparing it (which removes meshes) must happen exactly once. */
 const prepared = new WeakMap<THREE.Object3D, Prepared>();
 
+/* Head tricks: the visitor can grab the head, turn it, and flick it into a spin. The pointer
+   handlers on the face button (outside the canvas) write this; the model reads it every frame. */
+interface Rig {
+  dragging: boolean;
+  moved: number;                   // pixels dragged since the press: tells a drag from a tap
+  yaw: number; yawV: number;       // extra turn left/right (rad) and how fast it is turning
+  pitch: number; pitchV: number;   // extra nod up/down
+  lastX: number; lastY: number; lastT: number; // previous pointer sample
+  spinning: boolean; travel: number; // flicked into a spin; how far it has turned since
+  dizzyT: number;                  // seconds since it got dizzy (-1 when it is not)
+}
+const newRig = (): Rig => ({
+  dragging: false, moved: 0, yaw: 0, yawV: 0, pitch: 0, pitchV: 0,
+  lastX: 0, lastY: 0, lastT: 0, spinning: false, travel: 0, dizzyT: -1,
+});
+const TAU = Math.PI * 2;
+
 /* calm: for visitors who ask their device for reduced motion. The head still turns to
    follow a finger or cursor (they are moving it), but nothing moves on its own: no idle
    sway, breathing or nodding, and the following is gentler. */
-function AvatarModel({ calm }: { calm: boolean }) {
+function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }) {
   const calmRef = useRef(calm);
   useEffect(() => { calmRef.current = calm; }, [calm]);
   const { scene } = useGLTF("/Avatar.glb");
@@ -309,14 +326,50 @@ function AvatarModel({ calm }: { calm: boolean }) {
       const since = (performance.now() - nodAt.current) / 1000;
       if (since < 1.8) hi = Math.sin(since * 12) * Math.exp(-since * 3) * 0.24;
     }
-    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod + hi;  // gentle up/down, chin safe
+    // Head tricks. While it is held the pointer sets the turn; once let go it spins freely
+    // (a flick) and then a spring brings it back to the nearest "facing front".
+    const rg = rig.current;
+    const dt = Math.min(delta, 0.05);
+    const stiff = calm ? 40 : 60;  // spring stiffness
+    const damp = calm ? 12.6 : 5;  // damping: calm is critical (no overshoot), otherwise it wobbles
+    if (!rg.dragging) {
+      if (!calm && Math.abs(rg.yawV) > 5) {
+        rg.yawV *= Math.exp(-1.15 * dt);
+        rg.yaw += rg.yawV * dt;
+        rg.travel += Math.abs(rg.yawV) * dt;
+      } else {
+        const home = Math.round(rg.yaw / TAU) * TAU;
+        rg.yawV += (-stiff * (rg.yaw - home) - damp * rg.yawV) * dt;
+        rg.yaw += rg.yawV * dt;
+        if (rg.spinning) {
+          rg.spinning = false;
+          if (rg.travel > TAU) { // it turned at least a full circle: now it is dizzy
+            rg.dizzyT = 0;
+            window.dispatchEvent(new CustomEvent("zk-say", { detail: { text: "WHOA...", ms: 2200 } }));
+          }
+          rg.travel = 0;
+        }
+      }
+      rg.pitchV += (-stiff * rg.pitch - damp * rg.pitchV) * dt;
+      rg.pitch += rg.pitchV * dt;
+    }
+    let dizzyPitch = 0, dizzyRoll = 0;
+    if (rg.dizzyT >= 0) {
+      rg.dizzyT += dt;
+      const fade = Math.exp(-rg.dizzyT / 1.1);
+      dizzyPitch = Math.sin(rg.dizzyT * 9) * 0.14 * fade;
+      dizzyRoll = Math.sin(rg.dizzyT * 6.5 + 1) * 0.1 * fade;
+      if (rg.dizzyT > 3) rg.dizzyT = -1;
+    }
+    bone.rotation.y += rg.yaw;
+    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod + hi + rg.pitch + dizzyPitch;  // gentle up/down, chin safe
 
     // Breathing, depth parallax and a small lean into the turn
     const g = groupRef.current;
     if (g) {
       g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005);
       g.position.x = -target.current.x * (calm ? 0.02 : 0.035);
-      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) + (calm ? 0 : Math.sin(t * 0.45) * 0.008);
+      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll;
     }
   });
 
@@ -439,6 +492,42 @@ export default function AvatarScene() {
     timer.current = setTimeout(() => setShown(false), 2400);
   };
 
+  /* Head tricks: press and drag the face to turn the head, let go to watch it spring back,
+     flick it hard to send it spinning. A press that barely moves is still "say hi". */
+  const rig = useRef<Rig>(newRig());
+  const onGrab = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const r = rig.current;
+    r.dragging = true;
+    r.moved = 0;
+    r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = performance.now();
+    r.yawV = 0; r.pitchV = 0; r.spinning = false; r.dizzyT = -1; // grabbing it stops everything
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* the window still gets the moves */ }
+  };
+  const onDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const r = rig.current;
+    if (!r.dragging) return;
+    const now = performance.now();
+    const dx = e.clientX - r.lastX;
+    const dy = e.clientY - r.lastY;
+    const ms = Math.max(4, now - r.lastT);
+    r.yaw += dx * 0.011;
+    r.pitch = Math.max(-0.5, Math.min(0.5, r.pitch + dy * 0.006));
+    r.yawV = r.yawV * 0.55 + ((dx * 0.011) / (ms / 1000)) * 0.45; // how fast the hand is turning it
+    r.moved += Math.abs(dx) + Math.abs(dy);
+    r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = now;
+  };
+  const onLetGo = () => {
+    const r = rig.current;
+    if (!r.dragging) return;
+    r.dragging = false;
+    if (performance.now() - r.lastT > 90) r.yawV = 0;            // held still before letting go: no throw
+    r.yawV = Math.max(-45, Math.min(45, r.yawV));
+    r.travel = 0;
+    if (calm) r.yawV = 0;                                        // calm: it just eases back
+    else if (Math.abs(r.yawV) > 8) r.spinning = true;
+  };
+
   return (
     <div
       ref={wrapRef}
@@ -493,7 +582,7 @@ export default function AvatarScene() {
           <directionalLight position={[3, 2, -2.6]} intensity={0.9} color="#d2e2ff" />
           <Suspense fallback={null}>
             <Studio />
-            <AvatarModel calm={calm} />
+            <AvatarModel calm={calm} rig={rig} />
           </Suspense>
         </Canvas>
       )}
@@ -511,7 +600,19 @@ export default function AvatarScene() {
         />
       )}
 
-      <button type="button" className="face-hit" aria-label="Say hi to Zaka's avatar" onClick={sayHi}>
+      <button
+        type="button"
+        className="face-hit"
+        aria-label="Say hi to Zaka's avatar"
+        onClick={() => {
+          if (rig.current.moved > 8) { rig.current.moved = 0; return; } // that was a drag, not a tap
+          sayHi();
+        }}
+        onPointerDown={onGrab}
+        onPointerMove={onDrag}
+        onPointerUp={onLetGo}
+        onPointerCancel={onLetGo}
+      >
         <span className="face-hint" aria-hidden="true">SAY HI</span>
       </button>
       <div className={`face-bubble${shown ? " is-on" : ""}`} role="status" aria-live="polite">{shown ? bubble : ""}</div>

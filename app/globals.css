@@ -559,7 +559,9 @@ canvas {
   background: transparent;
   pointer-events: auto;
   cursor: pointer;
-  touch-action: manipulation;
+  touch-action: none; /* a finger drags the head instead of the page */
+  user-select: none;
+  -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 .face-hit:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
