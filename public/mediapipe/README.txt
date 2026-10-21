@@ -11,3 +11,8 @@ wasm/
   2.0) by scripts/copy-mediapipe.mjs when the site is built. Not committed.
 
 Both are loaded only when a visitor turns the camera feature on.
+
+Privacy note: the MediaPipe library tries to send anonymous usage logs to Google
+(odml.pa.googleapis.com) while it runs. This site's Content-Security-Policy (connect-src 'self',
+set in next.config.ts) blocks that request, and the face tracking works without it. Do not loosen
+connect-src without knowing that.

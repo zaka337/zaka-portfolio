@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PROJECTS, getProject } from "@/lib/projects";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import ScrollUnlock from "@/components/ScrollUnlock";
+import LiveProof from "@/components/LiveProof";
 import "./case.css";
 
 export const dynamicParams = false;
@@ -192,6 +193,14 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
           {p.note && <p className="cs-note">{p.note}</p>}
         </div>
       </section>
+
+      {/* Proof: the project checked for real, while the visitor watches */}
+      {(p.live || p.repo) && (
+        <section className="cs-sec">
+          <h2 className="cs-h2">Don&apos;t take my word</h2>
+          <LiveProof slug={p.slug} hasSite={!!p.live} hasRepo={!!p.repo} />
+        </section>
+      )}
 
       {/* Next / previous */}
       <nav className="cs-more" aria-label="More case studies">

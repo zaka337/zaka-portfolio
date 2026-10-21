@@ -1,0 +1,62 @@
+/* The "Check it live" block on a case-study page (components/LiveProof.tsx). A bordered box of
+   monospace rows in the same drawing style as the terminal and the blueprint. */
+
+.lp { max-width: 46rem; }
+.lp-lead {
+  margin-bottom: 1.2rem;
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  line-height: 1.5;
+  font-weight: 500;
+}
+.lp-run:disabled { opacity: 0.55; cursor: progress; }
+button.lp-run { cursor: pointer; }
+
+.lp-box {
+  margin-top: 1.4rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background: var(--paper);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.lp-wait { padding: 1rem 1.1rem; color: var(--ink-50); }
+
+.lp-group + .lp-group { border-top: 1px solid var(--ink); }
+.lp-title {
+  padding: 0.55rem 1.1rem;
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.25);
+  font: 800 0.62rem/1 "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.lp-row {
+  display: grid;
+  grid-template-columns: 1.4rem 10.5rem minmax(0, 1fr);
+  gap: 0 0.5rem;
+  padding: 0.5rem 1.1rem;
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
+  animation: lpIn 0.4s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.lp-row:last-child { border-bottom: 0; }
+@keyframes lpIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.lp-mark { font-weight: 800; }
+.lp-mark.is-bad { text-decoration: underline; text-decoration-thickness: 2px; }
+.lp-key { color: var(--ink-50); }
+.lp-val { overflow-wrap: anywhere; }
+
+.lp-foot {
+  padding: 0.6rem 1.1rem;
+  border-top: 1px solid var(--ink);
+  font-size: 0.7rem;
+  color: var(--ink-50);
+}
+
+@media (max-width: 640px) {
+  .lp-row { grid-template-columns: 1.4rem minmax(0, 1fr); }
+  .lp-key { grid-column: 2; }
+  .lp-val { grid-column: 2; }
+}
