@@ -49,6 +49,18 @@ const RATES = [0.8, 1, 1.25, 1.5];
 
 type Phase = "idle" | "reading" | "paused";
 
+/* What to say for a block. The page's CSS shouts many headings in capitals, and some voices spell
+   capital words out letter by letter, so a block that is all capitals on screen is read the way it
+   is written in the page. */
+function spoken(el: HTMLElement): string {
+  const shown = el.innerText.replace(/\s+/g, " ").trim();
+  if (shown.length > 3 && shown === shown.toUpperCase() && shown !== shown.toLowerCase()) {
+    const written = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+    if (written && written !== written.toUpperCase()) return written;
+  }
+  return shown;
+}
+
 /* The blocks of the page worth reading, in order: headings, paragraphs, list items. Only the
    innermost ones (an item that holds a paragraph would be read twice), only the ones a person can
    see, and never this panel, the terminal or the navigation. */
@@ -125,7 +137,7 @@ export default function Access() {
       lit.current = el;
       el.scrollIntoView({ block: "center", behavior: calm ? "auto" : "smooth" });
 
-      const text = el.innerText.replace(/\s+/g, " ").trim();
+      const text = spoken(el);
       let done = false;
       const next = () => { if (done || token !== run.current) return; done = true; window.clearTimeout(safety.current); step(i + 1); };
       try {
