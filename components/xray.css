@@ -1,0 +1,134 @@
+/* Paper X-ray (components/XRay.tsx): the page redrawn as a blueprint. Ink on paper only,
+   thin lines and monospace type, like a drawing. Nothing moves except the outlines fading in. */
+
+.xr-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  overflow: hidden;
+  background: rgba(var(--paper-rgb), 0.82);
+  color: var(--ink);
+  cursor: crosshair;
+  touch-action: pan-y; /* the page can still be scrolled with a finger */
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.xr-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(var(--ink-rgb), 0.22) 1px, transparent 1.7px);
+  background-size: 16px 16px;
+}
+
+.xr-boxes { position: absolute; inset: 0; pointer-events: none; }
+
+.xr-box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(var(--ink-rgb), 0.5);
+  pointer-events: none;
+  will-change: transform;
+  animation: xrIn 0.4s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 6ms);
+}
+.xr-box.is-link { border-style: dashed; border-color: rgba(var(--ink-rgb), 0.7); }
+.xr-box.is-media { border-width: 1.5px; background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(var(--ink-rgb), 0.08) 6px 7px); }
+.xr-box.is-sel {
+  z-index: 2;
+  border: 1.5px solid var(--ink);
+  background: rgba(var(--ink-rgb), 0.08);
+}
+@keyframes xrIn { from { opacity: 0; } to { opacity: 1; } }
+
+.xr-tag {
+  position: absolute;
+  left: -1px;
+  top: -14px;
+  max-width: 240px;
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  line-height: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid rgba(var(--ink-rgb), 0.5);
+}
+.xr-box.is-small:not(.is-sel) .xr-tag { display: none; }
+.xr-box.is-sel .xr-tag { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Measure lines from the picked part to the screen edges */
+.xr-guide { position: absolute; z-index: 3; pointer-events: none; border: 0 dashed var(--ink); }
+.xr-guide[hidden] { display: none; }
+.xr-guide-t, .xr-guide-b { border-left-width: 1px; }
+.xr-guide-l, .xr-guide-r { border-top-width: 1px; }
+.xr-dist {
+  position: absolute;
+  padding: 0 4px;
+  font-size: 9px;
+  line-height: 13px;
+  white-space: nowrap;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  transform: translate(-50%, -50%);
+}
+.xr-guide-t .xr-dist, .xr-guide-b .xr-dist { left: 0; top: 50%; }
+.xr-guide-l .xr-dist, .xr-guide-r .xr-dist { left: 50%; top: 0; }
+
+/* The title block of the drawing */
+.xr-title {
+  position: absolute;
+  z-index: 4;
+  left: 12px;
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  max-width: 440px;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  pointer-events: none;
+}
+.xr-title-head {
+  display: flex;
+  gap: 12px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--ink);
+  font-size: 10px;
+  color: var(--ink-50);
+}
+.xr-title-head b { color: var(--ink); letter-spacing: 0.18em; font-family: "Helvetica Neue", Arial, sans-serif; }
+.xr-sel-title { padding: 6px 10px 0; font-weight: 700; overflow-wrap: anywhere; }
+.xr-sel-body { padding: 0 10px 4px; color: var(--ink-70); }
+.xr-line { overflow-wrap: anywhere; }
+.xr-foot { padding: 4px 10px 6px; border-top: 1px solid rgba(var(--ink-rgb), 0.25); font-size: 10px; color: var(--ink-50); }
+@media (min-width: 769px) { .xr-title { left: auto; right: 20px; bottom: 20px; } }
+.xr-title.is-top { top: max(58px, calc(env(safe-area-inset-top) + 58px)); bottom: auto; }
+@media (min-width: 769px) { .xr-title.is-top { top: 20px; right: 70px; } }
+
+.xr-close {
+  position: absolute;
+  z-index: 5;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 20px/1 "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.xr-close:hover { background: var(--ink); color: var(--paper); }

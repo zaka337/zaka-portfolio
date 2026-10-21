@@ -17,7 +17,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -134,7 +134,7 @@ export default function Terminal() {
     w.__zkHello = true;
     console.log(
       "%cZAKA.%c\nOh, you opened the console. Good instincts: I test what I build.\n\n" +
-        "  press ` (backtick) for a secret terminal\n  long-press my face on a phone for the same\n  or just say hi: /contact-me\n",
+        "  press ` (backtick) for a secret terminal\n  long-press my face on a phone for the same\n  press Shift+X to see this page as a blueprint\n  or just say hi: /contact-me\n",
       "font: 900 30px/1.1 'Helvetica Neue', Arial, sans-serif; letter-spacing: -0.03em;",
       "font: 13px/1.7 ui-monospace, Menlo, Consolas, monospace;",
     );
@@ -284,6 +284,9 @@ export default function Terminal() {
       }
     } else if (c === "snake") {
       out("snake lives on the Nokia. opening it..."); setTimeout(() => go("/contact"), 300);
+    } else if (c === "xray" || c === "blueprint") {
+      out("drawing the blueprint... (Esc to leave)");
+      setTimeout(() => { close(); window.dispatchEvent(new Event("zk-xray")); }, 350);
     } else if (c === "neofetch") {
       const { os, browser } = machine();
       const up = Math.round(performance.now() / 1000);
