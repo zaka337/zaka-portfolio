@@ -145,7 +145,7 @@
 
 @media print {
   html, body { background: #fff !important; overflow: visible !important; height: auto !important; }
-  .custom-cursor-ring, .custom-cursor-dot, #zk-loader { display: none !important; }
+  .zk-cur, #zk-loader { display: none !important; }
   .rs-toolbar { display: none !important; }
   .rs-page { padding: 0; background: #fff; min-height: 0; }
   .rs-sheet {

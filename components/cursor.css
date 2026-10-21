@@ -1,0 +1,158 @@
+/* The cursor (components/CustomCursor.tsx): a full stop that punctuates what you do.
+   The root is moved to the pointer by script (transform only). Everything inside is the
+   dot's costume for the moment, chosen by data-g on the root. Colours are the site's own
+   ink and paper, so dark mode and high contrast work without extra rules. */
+
+.zk-cur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 9999;
+  pointer-events: none;
+  contain: layout style;
+  will-change: transform;
+  transition: opacity 0.16s ease;
+}
+.zk-cur > * { position: absolute; left: 0; top: 0; pointer-events: none; }
+
+/* Hidden until the pointer first moves, when it leaves the window, and over text fields
+   (where the browser's own text cursor does the job) */
+.zk-cur[data-g="away"], .zk-cur[data-g="text"] { opacity: 0; }
+
+/* On a computer with a mouse, the real cursor is hidden everywhere except in text fields
+   (CustomCursor sets data-zcur on <html> once it is running, so nothing is lost if it fails to load) */
+@media (hover: hover) and (pointer: fine) {
+  html[data-zcur] *:not(textarea, select, [contenteditable="true"], input:is([type="text"], [type="search"], [type="email"], [type="tel"], [type="url"], [type="password"], [type="number"], :not([type]))) {
+    cursor: none !important;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .zk-cur { display: none !important; }
+}
+
+/* ── the full stop ── */
+.zk-head {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: scale 0.3s cubic-bezier(0.3, 1.6, 0.5, 1), transform 0.3s var(--ease-out);
+}
+.zk-cur.is-down .zk-head { transform: scale(0.6); }
+/* Hidden whenever a glyph or the waiting dots take its place */
+.zk-cur.has-g .zk-head,
+.zk-cur[data-g="idle"] .zk-head { scale: 0; }
+.zk-cur[data-g="ring"] .zk-head { scale: 0.55; }
+/* Asleep: squashed flat, like something lying down */
+.zk-cur[data-g="sleep"] .zk-head { transform: scale(1.35, 0.7) translateY(2px); }
+
+/* ── the comma tail, longer the faster it moves (rotated and scaled by script) ── */
+.zk-tail {
+  width: 9px;
+  height: 58px;
+  margin-left: -4.5px;
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+  opacity: 0;
+  background: linear-gradient(to bottom, var(--ink) 0%, rgba(var(--ink-rgb), 0) 100%);
+  clip-path: polygon(0 0, 100% 0, 60% 100%, 40% 100%);
+}
+
+/* ── over a button: the dot sits inside a ring ── */
+.zk-hold {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  scale: 0;
+  transition: scale 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.zk-cur[data-g="ring"] .zk-hold { scale: 1; }
+
+/* ── a press ripples outward ── */
+.zk-ripple {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  opacity: 0;
+}
+.zk-ripple.is-go { animation: zkRipple 0.55s cubic-bezier(0.1, 0.7, 0.3, 1) both; }
+@keyframes zkRipple {
+  from { transform: scale(0.3); opacity: 0.9; }
+  to   { transform: scale(2.8); opacity: 0; }
+}
+
+/* ── glyphs: the dot becomes a character ── */
+.zk-glyph {
+  display: none;
+  margin: 0;
+  font: 800 21px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--ink);
+  /* a halo of paper keeps it legible over the photo and the 3D head */
+  text-shadow: 0 0 8px var(--paper), 0 0 4px var(--paper), 0 0 2px var(--paper);
+  transform: translate(-50%, -50%);
+}
+.zk-glyph.is-on {
+  display: block;
+  animation: zkPop 0.42s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes zkPop {
+  from { transform: translate(-50%, -50%) scale(0.15) rotate(-28deg); opacity: 0; }
+  35%  { opacity: 1; }
+  to   { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; }
+}
+.zk-cur.is-down .zk-glyph { scale: 0.8; }
+/* The smiley is a colon and a bracket on their side: eyes above, mouth below */
+.zk-cur[data-g="smile"] .zk-glyph { rotate: 90deg; font-size: 24px; letter-spacing: 0.04em; }
+.zk-cur[data-g="shake"] .zk-glyph { font-size: 23px; }
+
+/* ── waiting: three dots that bounce one after another, like someone typing ── */
+.zk-idle { display: none; }
+.zk-cur[data-g="idle"] .zk-idle { display: block; }
+.zk-idle i {
+  position: absolute;
+  left: calc((var(--n) - 1) * 10px);
+  top: 0;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation:
+    zkSpread 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both,
+    zkWait 1.15s ease-in-out 0.4s infinite;
+  animation-delay: 0s, calc(0.4s + var(--n) * 0.16s);
+}
+@keyframes zkSpread { from { scale: 0; } to { scale: 1; } }
+@keyframes zkWait {
+  0%, 55%, 100% { translate: 0 0; opacity: 0.5; }
+  28%           { translate: 0 -7px; opacity: 1; }
+}
+
+/* ── asleep: z's float up and away ── */
+.zk-zz { display: none; }
+.zk-cur[data-g="sleep"] .zk-zz { display: block; }
+.zk-zz b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font: 800 12px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  text-shadow: 0 0 5px var(--paper);
+  opacity: 0;
+  animation: zkZ 2.7s ease-in-out infinite;
+  animation-delay: calc(var(--n) * 0.9s);
+}
+@keyframes zkZ {
+  0%   { transform: translate(7px, -6px) scale(0.5); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(19px, -30px) scale(1.2); opacity: 0; }
+}

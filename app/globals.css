@@ -104,11 +104,6 @@ body {
   .nav-text  { cursor: none; }
 }
 
-@media (hover: none), (pointer: coarse) {
-  .custom-cursor-ring,
-  .custom-cursor-dot { display: none !important; }
-}
-
 canvas {
   display: block;
   pointer-events: none;
@@ -683,51 +678,7 @@ canvas {
   animation: contactWindow 450ms var(--ease-out) both;
 }
 
-/* ─── Custom cursor styles ───────────────────────────────────────── */
-
-/* The wrapper is only moved (transform, compositor); the visible circle is its
-   ::before, which grows with a transform too, so hovering never triggers layout. */
-.custom-cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-  z-index: 9999;
-  will-change: transform;
-  contain: layout style;
-}
-.custom-cursor-ring::before {
-  content: "";
-  position: absolute;
-  left: -19px;
-  top: -19px;
-  width: 38px;
-  height: 38px;
-  border: 1.5px solid var(--ink);
-  border-radius: 50%;
-  transition: transform var(--duration-fast) var(--ease-out);
-}
-
-.custom-cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 7px;
-  height: 7px;
-  margin-left: -3.5px;
-  margin-top: -3.5px;
-  background-color: var(--ink);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  will-change: transform;
-  contain: layout style;
-}
-
-/* Ring expands when the pointer is over a link or button (class set by CustomCursor) */
-.custom-cursor-ring.is-active::before { transform: scale(1.368); } /* 38px -> 52px */
+/* The cursor lives in components/cursor.css (a full stop that punctuates what you do) */
 
 /* ─── Home page nav block hover transforms ──────────────────────── */
 
