@@ -8,6 +8,8 @@ const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: f
 const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
 // Shift+X: the page redrawn as a blueprint. Also loaded after the page.
 const XRay = dynamic(() => import("@/components/XRay"), { ssr: false });
+// Talk to the avatar out loud (`talk` in the terminal, or Shift+V). Also loaded after the page.
+const Voice = dynamic(() => import("@/components/Voice"), { ssr: false });
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +18,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <CustomCursor />
       <Terminal />
       <XRay />
+      <Voice />
       {children}
     </>
   );

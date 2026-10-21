@@ -126,10 +126,11 @@ interface Rig {
   lastX: number; lastY: number; lastT: number; // previous pointer sample
   spinning: boolean; travel: number; // flicked into a spin; how far it has turned since
   dizzyT: number;                  // seconds since it got dizzy (-1 when it is not)
+  talking: boolean;                // the avatar is speaking out loud (components/Voice.tsx)
 }
 const newRig = (): Rig => ({
   dragging: false, moved: 0, yaw: 0, yawV: 0, pitch: 0, pitchV: 0,
-  lastX: 0, lastY: 0, lastT: 0, spinning: false, travel: 0, dizzyT: -1,
+  lastX: 0, lastY: 0, lastT: 0, spinning: false, travel: 0, dizzyT: -1, talking: false,
 });
 const TAU = Math.PI * 2;
 
@@ -361,8 +362,11 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       dizzyRoll = Math.sin(rg.dizzyT * 6.5 + 1) * 0.1 * fade;
       if (rg.dizzyT > 3) rg.dizzyT = -1;
     }
-    bone.rotation.y += rg.yaw;
-    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod + hi + rg.pitch + dizzyPitch;  // gentle up/down, chin safe
+    // Speaking out loud: the head bobs and sways a little as people do when they talk (not when calm)
+    const talkSway = rg.talking && !calm ? Math.sin(t * 3.1) * 0.05 : 0;
+    const talkBob = rg.talking && !calm ? Math.sin(t * 11) * 0.028 + Math.sin(t * 5.3) * 0.02 : 0;
+    bone.rotation.y += rg.yaw + talkSway;
+    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod + hi + rg.pitch + dizzyPitch + talkBob;  // gentle up/down, chin safe
 
     // Breathing, depth parallax and a small lean into the turn
     const g = groupRef.current;
@@ -497,6 +501,12 @@ export default function AvatarScene() {
   const rig = useRef<Rig>(newRig());
   const press = useRef(0); // the long-press timer
   useEffect(() => () => window.clearTimeout(press.current), []);
+  // components/Voice.tsx tells the avatar when it starts and stops speaking
+  useEffect(() => {
+    const onTalking = (e: Event) => { rig.current.talking = !!(e as CustomEvent<boolean>).detail; };
+    window.addEventListener("zk-talking", onTalking);
+    return () => window.removeEventListener("zk-talking", onTalking);
+  }, []);
   const onGrab = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const r = rig.current;

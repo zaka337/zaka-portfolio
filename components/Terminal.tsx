@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PROJECTS } from "@/lib/projects";
 import { SOCIAL } from "@/lib/site";
+import { crumblePage } from "@/lib/crumble";
 import "./terminal.css";
 
 /* A secret command line, in the site's own ink-and-paper language (the same window as the
@@ -17,7 +18,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -32,11 +33,6 @@ const WHERE: Record<string, { label: string; to: string; external?: boolean }> =
   contact: { label: "the Nokia", to: "/contact" },
   brief: { label: "the project brief", to: "/contact-me" },
   home: { label: "home", to: "/" },
-};
-
-const hooks = {
-  say: (text: string, ms?: number) => window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } })),
-  nod: () => window.dispatchEvent(new Event("zk-nod")),
 };
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -189,15 +185,7 @@ export default function Terminal() {
     if (run.current !== id) return;
     close();
     await sleep(220);
-    try {
-      const { knockOver, stopKnockOver } = await import("@/lib/knockOver");
-      stopKnockOver();
-      knockOver(document.body, hooks, { page: true });
-    } catch {
-      // Never leave a half-built page behind
-      document.documentElement.removeAttribute("data-crumble");
-      document.querySelectorAll(".egg-layer, .egg-hint, .egg-tilt").forEach((n) => n.remove());
-    }
+    await crumblePage();
   }, [push, close]);
 
   const hire = useCallback(async (id: number) => {
@@ -284,6 +272,15 @@ export default function Terminal() {
       }
     } else if (c === "snake") {
       out("snake lives on the Nokia. opening it..."); setTimeout(() => go("/contact"), 300);
+    } else if (c === "talk" || c === "listen" || c === "voice") {
+      // Dispatched right here, inside the Enter key press: browsers only allow the microphone
+      // and speech from a gesture
+      out("listening... say: show me your projects");
+      window.dispatchEvent(new Event("zk-voice"));
+      close();
+    } else if (c === "say") {
+      if (rest) window.dispatchEvent(new CustomEvent("zk-voice-say", { detail: rest }));
+      else dim("say what? try: say hello there");
     } else if (c === "xray" || c === "blueprint") {
       out("drawing the blueprint... (Esc to leave)");
       setTimeout(() => { close(); window.dispatchEvent(new Event("zk-xray")); }, 350);
