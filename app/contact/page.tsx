@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
-import NokiaPhone from "@/components/NokiaPhone";
+import PhonePicker from "@/components/phones/PhonePicker";
 import { BrandIcon, type BrandName } from "@/components/BrandIcons";
 
 /* ─── Contact row ─────────────────────────────────────────────── */
@@ -185,11 +185,7 @@ export default function Contact() {
           <div className="contact-nokia" style={{ flex: "0 0 46%", borderRight: "1px solid var(--ink)",
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             padding: "1.5rem 1.5rem 1rem", minHeight: 0 }}>
-            <div className="contact-nokia-stage" style={{ flex: "1 1 0", minHeight: 0, width: "100%",
-              display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <NokiaPhone />
-            </div>
-            <p className="nk-caption">PRESS A KEY {'·'} 2 / 8 SCROLL {'·'} RED KEY BACK</p>
+            <PhonePicker />
           </div>
 
           {/* Right — contact details */}
