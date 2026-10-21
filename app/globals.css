@@ -357,7 +357,7 @@ canvas {
     transition: background 0.15s;
   }
 
-  /* Arrow badge on navigable cards (not role scrambler) */
+  /* Arrow badge on navigable cards (not the role block, which is a button) */
   .block-tr::after,
   .block-ml::after,
   .block-bl::after,

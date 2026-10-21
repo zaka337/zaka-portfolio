@@ -1,0 +1,156 @@
+/* The role block on the home page (components/RoleType.tsx).
+   Only transform and opacity are animated. Every letter is two nested spans: .rt-ch is moved by the
+   change effects below, .rt-mag by the cursor (set from script), so the two never fight. */
+
+.rt {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+.rt:focus-visible { outline: 2px solid var(--ink); outline-offset: 8px; border-radius: 2px; }
+
+/* One line of the role. The old word is laid over the new one, flush with the right edge. */
+.rt-line {
+  position: relative;
+  display: block;
+}
+.rt-out {
+  position: absolute;
+  top: 0;
+  right: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.rt-in, .rt-out { display: inline-block; }
+
+.rt-ch { display: inline-block; position: relative; }
+.rt-mag { display: inline-block; transform-origin: 50% 85%; }
+
+/* The hover dimming of .nav-text would grey the whole block; here the cursor decides instead:
+   letters far from it dim, near ones stay full (script sets --f from 0 to 1 on each letter). */
+.rt-block .rt-line.nav-item,
+.rt-block:hover .rt-line.nav-item { color: var(--ink); transition: none; }
+.rt.is-hover .rt-in .rt-mag { opacity: calc(0.42 + var(--f, 0) * 0.58); }
+
+/* Hint under the block, like the other corners (desktop hover only, see globals.css .nav-hint) */
+.rt-block .nav-hint { right: 0; }
+
+/* ── the five ways the role changes ───────────────────────────────── */
+
+/* flip: a split-flap board. Each letter folds away, the next folds in, left to right. */
+.rt[data-fx="flip"] .rt-out .rt-ch { animation: rtFlipOut 0.26s cubic-bezier(0.55, 0, 1, 0.6) both; animation-delay: calc(var(--i) * 34ms); transform-origin: 50% 50%; }
+.rt[data-fx="flip"] .rt-in  .rt-ch { animation: rtFlipIn 0.34s cubic-bezier(0.2, 0.9, 0.3, 1.25) both; animation-delay: calc(0.3s + var(--i) * 34ms); transform-origin: 50% 50%; }
+@keyframes rtFlipOut { from { transform: perspective(420px) rotateX(0); opacity: 1; } to { transform: perspective(420px) rotateX(-92deg); opacity: 0; } }
+@keyframes rtFlipIn  { from { transform: perspective(420px) rotateX(92deg); opacity: 0; } to { transform: perspective(420px) rotateX(0); opacity: 1; } }
+
+/* drop: the letters fall off with gravity, new ones land with a bounce */
+.rt[data-fx="drop"] .rt-out .rt-ch { animation: rtFall 0.55s cubic-bezier(0.5, 0, 1, 0.55) both; animation-delay: calc(var(--i) * 18ms); }
+.rt[data-fx="drop"] .rt-in  .rt-ch { animation: rtLand 0.72s linear both; animation-delay: calc(0.5s + var(--i) * 22ms); }
+@keyframes rtFall {
+  from { transform: translateY(0) rotate(0); opacity: 1; }
+  to   { transform: translateY(2.6em) rotate(calc(var(--rr) * 0.3deg)); opacity: 0; }
+}
+@keyframes rtLand {
+  0%   { transform: translateY(-3em) rotate(calc(var(--rr) * -0.12deg)); opacity: 0; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.6); }
+  8%   { opacity: 1; }
+  52%  { transform: translateY(0) rotate(0); animation-timing-function: cubic-bezier(0, 0.5, 0.5, 1); }
+  68%  { transform: translateY(-0.2em); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
+  82%  { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0.5, 0.5, 1); }
+  91%  { transform: translateY(-0.05em); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* scatter: blown apart from where it was pressed, then pulled back together as the next role */
+.rt[data-fx="scatter"] .rt-out .rt-ch {
+  animation: rtBurst 0.6s cubic-bezier(0.1, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 8ms);
+}
+.rt[data-fx="scatter"] .rt-in .rt-ch {
+  animation: rtGather 0.78s cubic-bezier(0.2, 1.35, 0.4, 1) both;
+  animation-delay: calc(0.5s + var(--i) * 14ms);
+}
+@keyframes rtBurst {
+  from { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+  to   { transform: translate(calc(var(--rx) * var(--k) * 1px), calc(var(--ry) * var(--k) * 1px)) rotate(calc(var(--rr) * 1deg)) scale(calc(0.4 + var(--rs) * 1.6)); opacity: 0; }
+}
+@keyframes rtGather {
+  from { transform: translate(calc(var(--ry) * var(--k) * -0.8px), calc(var(--rx) * var(--k) * 0.8px)) rotate(calc(var(--rr) * -1deg)) scale(calc(0.3 + var(--rs))); opacity: 0; }
+  35%  { opacity: 1; }
+  to   { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+}
+
+/* decode: the old word glitches out, the new one starts as noise and locks letter by letter */
+.rt[data-fx="decode"] .rt-out .rt-ch { animation: rtGlitchOut 0.3s steps(3, end) both; animation-delay: calc(var(--i) * 6ms); }
+.rt[data-fx="decode"] .rt-in  .rt-ch { animation: rtDecodeIn 0.01s linear 0.28s both; }
+@keyframes rtGlitchOut {
+  0%   { transform: translateX(0); opacity: 1; }
+  33%  { transform: translateX(-0.06em) skewX(-14deg); opacity: 0.8; }
+  66%  { transform: translateX(0.08em) skewX(10deg); opacity: 0.4; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+@keyframes rtDecodeIn { from { opacity: 0; } to { opacity: 1; } }
+/* the noise letter is laid over the real one so the width never changes while it flickers */
+.rt-ch.rt-scr .rt-mag { visibility: hidden; }
+.rt-ch.rt-scr::after {
+  content: attr(data-s);
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  color: var(--ink-50);
+}
+.rt-ch.rt-locked .rt-mag { animation: rtLock 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4) both; }
+@keyframes rtLock {
+  0%   { transform: scale(1.5, 1.25); opacity: 0.2; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* drum: each line rolls over like a barrel, the second a beat after the first */
+.rt[data-fx="drum"] .rt-out { transform-origin: 50% 50% -0.75em; animation: rtDrumOut 0.5s cubic-bezier(0.55, 0, 0.9, 0.6) both; animation-delay: calc(var(--line) * 0.12s); }
+.rt[data-fx="drum"] .rt-in  { transform-origin: 50% 50% -0.75em; animation: rtDrumIn 0.62s cubic-bezier(0.2, 0.9, 0.3, 1.18) both; animation-delay: calc(0.46s + var(--line) * 0.12s); }
+@keyframes rtDrumOut { from { transform: perspective(520px) rotateX(0); opacity: 1; } to { transform: perspective(520px) rotateX(100deg); opacity: 0; } }
+@keyframes rtDrumIn  { from { transform: perspective(520px) rotateX(-100deg); opacity: 0; } 30% { opacity: 1; } to { transform: perspective(520px) rotateX(0); opacity: 1; } }
+
+/* Phone card: a little room underneath for the hint, and the tap target is the whole card */
+@media (max-width: 768px) {
+  .rt-block { position: relative; }
+  .rt-block .nav-hint {
+    display: block;
+    position: absolute;
+    right: 14px;
+    bottom: 6px;
+    top: auto;
+    margin: 0;
+    font-size: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--ink-50);
+    opacity: 1;
+    transform: none;
+    pointer-events: none;
+  }
+  /* The whole card answers a tap, not just the letters */
+  .rt { position: relative; }
+  .rt::after { content: ""; position: absolute; inset: -10px -14px -22px; }
+}
+@media (max-width: 480px) {
+  .rt::after { inset: -8px -10px -10px; }
+  .rt-block .nav-hint { display: none; }
+}
+
+/* Reduce Motion and calm mode: no motion by themselves. The role simply changes when pressed. */
+@media (prefers-reduced-motion: reduce) {
+  .rt .rt-ch, .rt .rt-in, .rt .rt-out, .rt .rt-mag { animation: none !important; }
+  .rt .rt-out { display: none; }
+}
+html[data-calm] .rt .rt-ch, html[data-calm] .rt .rt-in, html[data-calm] .rt .rt-out, html[data-calm] .rt .rt-mag { animation: none !important; }
+html[data-calm] .rt .rt-out { display: none; }
