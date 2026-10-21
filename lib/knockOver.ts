@@ -622,6 +622,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks, options: { page?: b
     if (tilt || finished) return;
     tilt = true;
     ceiling = true;
+    touched = performance.now(); // allowing tilt is playing: the quiet timer starts again
     tiltBtn?.remove();
     tiltBtn = null;
     window.addEventListener("devicemotion", onMotion);
@@ -634,6 +635,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks, options: { page?: b
       tiltBtn.className = "egg-tilt";
       tiltBtn.textContent = "Tilt your phone";
       tiltBtn.addEventListener("click", () => {
+        touched = performance.now(); // a tap on the button is playing too
         // Called straight from the tap: iPhones only show their permission prompt then
         ask().then(
           (answer) => { if (answer === "granted") enableTilt(); else { tiltBtn?.remove(); tiltBtn = null; } },

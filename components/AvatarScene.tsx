@@ -7,6 +7,7 @@ import Image from "next/image";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ENV_SIZE, ENV_SIGMA, preloadBakedEnv, bakedEnvTexture } from "@/lib/bakedEnv";
+import { mirror } from "@/lib/mirror";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -374,6 +375,18 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005);
       g.position.x = -target.current.x * (calm ? 0.02 : 0.035);
       g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll;
+    }
+
+    // Look back: while the camera is mirroring the visitor, the head glides over to copy their head
+    // (turn, nod, tilt) and glides back when it stops. Copying a person is their own movement, so
+    // it is allowed in calm mode too.
+    mirror.weight += ((mirror.on ? 1 : 0) - mirror.weight) * (1 - Math.exp(-delta * 7));
+    if (mirror.weight > 0.002) {
+      const w = mirror.weight;
+      bone.rotation.y += (headRestRot.current.y + mirror.yaw - bone.rotation.y) * w;
+      bone.rotation.x += (headRestRot.current.x + mirror.pitch - bone.rotation.x) * w;
+      const gz = groupRef.current;
+      if (gz) gz.rotation.z += (mirror.roll - gz.rotation.z) * w;
     }
   });
 

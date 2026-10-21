@@ -10,6 +10,9 @@ const Terminal = dynamic(() => import("@/components/Terminal"), { ssr: false });
 const XRay = dynamic(() => import("@/components/XRay"), { ssr: false });
 // Talk to the avatar out loud (`talk` in the terminal, or Shift+V). Also loaded after the page.
 const Voice = dynamic(() => import("@/components/Voice"), { ssr: false });
+// The avatar copies your head through the camera (`camera` in the terminal, or Shift+C). The face
+// tracker itself is only downloaded when someone turns it on.
+const LookBack = dynamic(() => import("@/components/LookBack"), { ssr: false });
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +22,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <Terminal />
       <XRay />
       <Voice />
+      <LookBack />
       {children}
     </>
   );

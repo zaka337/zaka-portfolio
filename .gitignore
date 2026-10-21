@@ -23,3 +23,6 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Look back: engine files copied from node_modules at build time (scripts/copy-mediapipe.mjs)
+/public/mediapipe/wasm

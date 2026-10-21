@@ -18,7 +18,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -272,6 +272,11 @@ export default function Terminal() {
       }
     } else if (c === "snake") {
       out("snake lives on the Nokia. opening it..."); setTimeout(() => go("/contact"), 300);
+    } else if (c === "camera" || c === "mirror" || c === "lookback") {
+      // Like talk: dispatched right here, inside the Enter key press, so the browser may ask for the camera
+      out("opening the camera... look at the screen, then turn your head. (Esc to turn it off)");
+      window.dispatchEvent(new Event("zk-lookback"));
+      close();
     } else if (c === "talk" || c === "listen" || c === "voice") {
       // Dispatched right here, inside the Enter key press: browsers only allow the microphone
       // and speech from a gesture

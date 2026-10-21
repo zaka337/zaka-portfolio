@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
+      {
+        // The camera feature's face model and engine: large, never change, and only fetched on demand
+        source: "/mediapipe/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=2592000" },
+        ],
+      },
     ];
   },
 };
