@@ -529,8 +529,6 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.6rem;
   font-size: clamp(0.5rem, 0.68vw, 0.62rem);
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -538,6 +536,19 @@ canvas {
   white-space: nowrap;
   pointer-events: none;
 }
+/* The status line is a link to /hire; only the text itself takes clicks */
+.home-status-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.6rem;
+  padding: 8px 10px;
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+}
+.home-status-link:hover span:first-of-type, .home-status-link:focus-visible span:first-of-type { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 /* Night in Islamabad: the second line, under the time */
 .home-status-sub { flex: 0 0 100%; text-align: center; }
 .home-status-dot {
@@ -812,6 +823,37 @@ html.zk-skip #zk-loader { display: none !important; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ─── Reading and access choices (components/Access.tsx) ────────────
+   The toolbar puts these attributes on <html>; a script in the page head sets them before the
+   first paint. Calm mode repeats the reduced-motion rule above for people whose device cannot ask
+   for it. */
+
+html[data-text="1"] { font-size: 112.5%; }
+html[data-text="2"] { font-size: 125%; }
+html[data-text="3"] { font-size: 150%; }
+
+/* Reading text only: the big poster headings keep their own letters so they still fit */
+html[data-easy] :where(p, li, dd, dt, label, input, textarea, figcaption, blockquote, td, th, select) {
+  font-family: Verdana, Tahoma, "Trebuchet MS", sans-serif !important;
+  line-height: 1.7 !important;
+  letter-spacing: 0.02em !important;
+  word-spacing: 0.08em !important;
+}
+html[data-easy] :where(.zt-window *, .rc-paper *, .ax-panel *) { font-family: inherit !important; letter-spacing: inherit !important; word-spacing: inherit !important; }
+
+/* The soft greys become the real ink; links are underlined; focus is unmistakable */
+html:root[data-contrast] { --ink-50: var(--ink); --ink-70: var(--ink); }
+html[data-contrast] :where(main a, p a, li a) { text-decoration: underline; text-underline-offset: 3px; }
+html[data-contrast] :focus-visible { outline: 3px solid var(--ink) !important; outline-offset: 3px; }
+
+html[data-calm] *, html[data-calm] *::before, html[data-calm] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* ─── Extra Small Mobile (≤480px) ───────────────────────────────── */

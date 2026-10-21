@@ -231,6 +231,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Apply the saved (else system) theme before first paint so there is no flash */}
         <script dangerouslySetInnerHTML={{ __html: `var t='light';try{if(localStorage.getItem('zk-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)` }} />
+        {/* The reading and access choices (components/Access.tsx), applied before first paint.
+            Calm mode also makes every "prefers reduced motion" check on the site answer yes. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var a=JSON.parse(localStorage.getItem('zk-a11y')||'{}'),h=document.documentElement;if(a.text>0&&a.text<4)h.setAttribute('data-text',String(a.text));if(a.easy)h.setAttribute('data-easy','');if(a.contrast)h.setAttribute('data-contrast','');if(a.calm){h.setAttribute('data-calm','');var mm=window.matchMedia;window.matchMedia=function(q){var r=mm.call(window,q);if(q.indexOf('prefers-reduced-motion')>-1&&q.indexOf('no-preference')<0){return{matches:true,media:q,onchange:null,addListener:function(){},removeListener:function(){},addEventListener:function(){},removeEventListener:function(){},dispatchEvent:function(){return false}}}return r}}}catch(e){}` }} />
         {/* Hide loader immediately if already shown this session (prevents re-show on back nav) */}
         <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem('zk-shown'))document.documentElement.classList.add('zk-skip');}catch(e){}` }} />
         {/* Preload the 3D avatar so the browser fetches it immediately on HTML parse,

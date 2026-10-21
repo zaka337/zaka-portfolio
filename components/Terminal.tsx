@@ -21,7 +21,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -35,6 +35,11 @@ const WHERE: Record<string, { label: string; to: string; external?: boolean }> =
   projects: { label: "projects", to: "/projects" },
   contact: { label: "the Nokia", to: "/contact" },
   brief: { label: "the project brief", to: "/contact-me" },
+  hire: { label: "the hiring tools", to: "/hire" },
+  fit: { label: "the job-fit check", to: "/hire#fit" },
+  call: { label: "the call helper", to: "/hire#call" },
+  estimate: { label: "the project estimator", to: "/hire#estimate" },
+  qa: { label: "the QA challenge", to: "/qa-challenge" },
   home: { label: "home", to: "/" },
 };
 
@@ -288,6 +293,10 @@ export default function Terminal() {
       out("starting the tour. about a minute. Esc ends it.");
       window.dispatchEvent(new Event("zk-tour"));
       close();
+    } else if (c === "fit" || c === "meet" || c === "call" || c === "estimate" || c === "qa") {
+      const to = c === "fit" ? "/hire#fit" : c === "estimate" ? "/hire#estimate" : c === "qa" ? "/qa-challenge" : "/hire#call";
+      out(c === "fit" ? "opening the job-fit check..." : c === "estimate" ? "opening the project estimator..." : c === "qa" ? "opening the QA challenge. good luck." : "opening the call helper...");
+      setTimeout(() => go(to), 250);
     } else if (c === "sound") {
       // Turning sound on has to happen inside this key press: it is the only time a browser lets audio start
       const want = /^off$/i.test(rest) ? false : /^on$/i.test(rest) ? true : !soundOn();

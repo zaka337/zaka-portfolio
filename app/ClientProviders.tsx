@@ -27,6 +27,8 @@ const Receipt = dynamic(() => import("@/components/Receipt"), { ssr: false });
 const BugHunt = dynamic(() => import("@/components/BugHunt"), { ssr: false });
 // A paper plane flies off when the project brief is sent
 const PaperPlane = dynamic(() => import("@/components/PaperPlane"), { ssr: false });
+// The "Aa" button: bigger text, easy-read font, contrast, calm mode, read the page aloud
+const Access = dynamic(() => import("@/components/Access"), { ssr: false });
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -44,6 +46,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <Receipt />
       <BugHunt />
       <PaperPlane />
+      <Access />
       {children}
     </>
   );

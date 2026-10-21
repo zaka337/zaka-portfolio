@@ -106,9 +106,12 @@ function OpenStatus() {
   }, []);
   return (
     <div className="home-status home-enter home-enter-5">
-      <i className={`home-status-dot${asleep ? " is-asleep" : ""}`} aria-hidden="true" />
-      <span>{asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""}</span>
-      {asleep && <span className="home-status-sub">REPLIES IN THE MORNING</span>}
+      {/* The status is also the way in to the hiring tools: fit check, call times, estimate */}
+      <Link href="/hire" className="home-status-link" aria-label="Open for work. Check the fit, book a call or get an estimate">
+        <i className={`home-status-dot${asleep ? " is-asleep" : ""}`} aria-hidden="true" />
+        <span>{asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""} {'→'}</span>
+        {asleep && <span className="home-status-sub">REPLIES IN THE MORNING</span>}
+      </Link>
     </div>
   );
 }

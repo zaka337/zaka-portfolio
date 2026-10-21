@@ -7,6 +7,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { BrandIcon, type BrandName } from "@/components/BrandIcons";
 import { NEEDS, TIMELINES, MAX_MESSAGE, sendContact } from "@/lib/contactForm";
 import { useAsleep } from "@/lib/sleep";
+import { takeDraft } from "@/lib/draft";
 
 const EMAIL = "zakas2379@gmail.com";
 
@@ -101,11 +102,23 @@ export default function ContactMe() {
   const [hp, setHp] = useState(""); // honeypot: humans never see or fill it
   const openedAt = useRef(Date.now());
   const [copied, setCopied] = useState("");
+  const [prefilled, setPrefilled] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const msgRef = useRef<HTMLTextAreaElement>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => { clearTimeout(copyTimer.current); }, []);
+
+  // A message drafted by the job-fit check, the call helper or the estimator (lib/draft.ts)
+  useEffect(() => {
+    const d = takeDraft();
+    if (!d) return;
+    setMessage(d.message.slice(0, MAX_MESSAGE));
+    if (d.needs) setNeeds(d.needs.filter((n) => NEEDS.includes(n)));
+    if (d.timeline && TIMELINES.includes(d.timeline)) setTimeline(d.timeline);
+    setPrefilled(d.from);
+    window.setTimeout(() => document.querySelector(".cm-brief")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 350);
+  }, []);
 
   const flashCopied = useCallback((what: string) => {
     setCopied(what);
@@ -189,6 +202,14 @@ export default function ContactMe() {
         </div>
       </div>
 
+      {/* ── Hiring tools ─────────────────────────────────────── */}
+      <aside className="cm-hire" aria-label="Hiring tools">
+        <span className="cm-hire-l">THINKING OF WORKING TOGETHER?</span>
+        <Link href="/hire#fit">Check the fit {'→'}</Link>
+        <Link href="/hire#call">Book a call {'→'}</Link>
+        <Link href="/hire#estimate">Get an estimate {'→'}</Link>
+      </aside>
+
       {/* ── Project brief ────────────────────────────────────── */}
       <section className="cm-brief" aria-labelledby="brief-title">
         <div className="cm-brief-head">
@@ -201,6 +222,9 @@ export default function ContactMe() {
         </div>
 
         <form className="cm-form" onSubmit={submit} noValidate>
+          {prefilled && (
+            <p className="cm-prefilled" role="status">Filled in from your {prefilled}. Change anything you like before you send it.</p>
+          )}
           <fieldset className="cm-group">
             <legend className="cm-label">I NEED...</legend>
             <div className="cm-chips">

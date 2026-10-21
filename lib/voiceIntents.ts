@@ -66,6 +66,12 @@ export function understand(raw: string, now: Date = new Date()): Reply {
     }
   }
 
+  // The hiring tools
+  if (has(/ (job fit|fit check|do you fit|am i a fit|match my job|match this job|check the fit) /)) return { say: "Opening the job fit check. Paste a job description and I will compare it with my resume.", go: "/hire#fit" };
+  if (has(/ (book a call|schedule a call|set up a call|a meeting|a call|time zone|timezone) /) && !has(/ (where|based|located) /)) return { say: "Opening the call helper. It shows my hours in your time zone.", go: "/hire#call" };
+  if (has(/ (estimate|how long would|how long will|how much time|timeline|quote) /)) return { say: "Opening the project estimator.", go: "/hire#estimate" };
+  if (has(/ (qa challenge|break the checkout|find the bugs|bug challenge|test challenge) /)) return { say: "Opening the QA challenge. Find the bugs.", go: "/qa-challenge" };
+
   // Working together
   if (has(/ (available|availability|free to|hire|hiring|freelance|open for work|work with you|work together|looking for a developer|for a project) /)) {
     return { say: "Yes, I am open for work. Opening the project brief.", go: "/contact-me" };

@@ -28,6 +28,7 @@ export default function ResumePage() {
       <div className="rs-toolbar">
         <Link href="/">{'←'} Back</Link>
         <div className="rs-tools">
+          <Link className="rs-btn rs-btn-ghost" href="/hire">Check the fit</Link>
           <PrintButton className="rs-btn rs-btn-ghost">Print</PrintButton>
           <a className="rs-btn rs-btn-solid" href={RESUME_PDF} download>Download PDF</a>
         </div>

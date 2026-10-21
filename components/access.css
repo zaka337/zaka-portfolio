@@ -1,0 +1,235 @@
+/* The reading and access toolbar (components/Access.tsx): a small "Aa" button beside the theme
+   button, and a paper panel that springs open from it. The page-wide effects of the choices
+   (text size, easy-read, contrast, calm) are in app/globals.css, so they apply before this loads. */
+
+.ax-btn {
+  position: fixed;
+  right: 14px;
+  bottom: 56px;
+  z-index: 9000;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 50%;
+  background: rgba(var(--paper-rgb), 0.92);
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, border-color 0.2s, transform 0.25s var(--ease-out), color 0.2s;
+}
+.ax-btn:hover, .ax-btn.is-open { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ax-btn:active { transform: scale(0.92); }
+.ax-glyph { font: 800 14px/1 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: -0.03em; }
+.ax-glyph small { font-size: 10px; font-weight: 700; }
+/* A dot when any choice is on, so it is clear the page has been changed */
+.ax-btn.is-set::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--paper);
+}
+.ax-btn.is-open.is-set::after { background: var(--paper); box-shadow: 0 0 0 2px var(--ink); }
+
+/* Home, desktop: beside the theme button; home, phones: under it on the left edge */
+@media (min-width: 769px) {
+  .ax-root[data-route="home"] .ax-btn { right: auto; left: calc(50% + 176px + 36px); bottom: calc(5vh - 9px); width: 30px; height: 30px; }
+}
+@media (max-width: 768px) {
+  .ax-root[data-route="home"] .ax-btn { right: auto; left: 8px; bottom: auto; top: calc(50% + 26px); }
+}
+
+/* ── The panel ─────────────────────────────────────────────────── */
+
+.ax-panel {
+  position: fixed;
+  right: 14px;
+  bottom: 98px;
+  z-index: 9100;
+  width: min(320px, calc(100vw - 28px));
+  max-height: calc(100dvh - 130px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 0 18px 50px rgba(var(--ink-rgb), 0.28);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  transform-origin: bottom right;
+  animation: axOpen 0.34s var(--ease-out) both;
+}
+@keyframes axOpen {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
+  to   { opacity: 1; transform: none; }
+}
+@media (min-width: 769px) {
+  .ax-root[data-route="home"] .ax-panel { right: auto; left: min(calc(50% + 67px), calc(100vw - 334px)); bottom: calc(5vh + 36px); transform-origin: bottom center; }
+}
+@media (max-width: 768px) {
+  .ax-root[data-route="home"] .ax-panel { right: auto; left: 50px; bottom: auto; top: 50%; width: min(300px, calc(100vw - 62px)); transform-origin: left center; animation-name: axOpenHome; }
+  @keyframes axOpenHome { from { opacity: 0; transform: translateY(-50%) scale(0.9); } to { opacity: 1; transform: translateY(-50%); } }
+}
+
+.ax-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 10px; }
+.ax-title { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; }
+.ax-x {
+  width: 30px; height: 30px; border: 0; background: transparent; color: var(--ink);
+  font-size: 1.3rem; line-height: 1; cursor: pointer; border-radius: 2px;
+}
+.ax-x:hover, .ax-x:focus-visible { background: var(--ink); color: var(--paper); }
+
+.ax-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.18);
+  /* each row slides in a beat after the one above it */
+  animation: axRow 0.4s var(--ease-out) both;
+}
+.ax-panel > .ax-row:nth-of-type(1) { animation-delay: 0.04s; }
+.ax-panel > .ax-row:nth-of-type(2) { animation-delay: 0.08s; }
+.ax-panel > .ax-row:nth-of-type(3) { animation-delay: 0.12s; }
+.ax-panel > .ax-row:nth-of-type(4) { animation-delay: 0.16s; }
+.ax-panel > .ax-row:nth-of-type(5) { animation-delay: 0.2s; }
+@keyframes axRow { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+
+.ax-label { font-size: 0.86rem; font-weight: 700; }
+.ax-hint { font-size: 0.7rem; color: var(--ink-50); }
+.ax-note { font-size: 0.78rem; color: var(--ink-50); }
+
+/* Text size: four letters that grow */
+.ax-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.ax-size {
+  height: 40px;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.25s var(--ease-out);
+}
+.ax-size[data-size="0"] { font-size: 13px; }
+.ax-size[data-size="1"] { font-size: 16px; }
+.ax-size[data-size="2"] { font-size: 19px; }
+.ax-size[data-size="3"] { font-size: 23px; }
+.ax-size[aria-pressed="true"] { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
+.ax-size:hover:not([aria-pressed="true"]) { transform: translateY(-2px); }
+
+/* Switches */
+.ax-switch {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-left: 0; border-right: 0; border-bottom: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ax-switch:hover { background: rgba(var(--ink-rgb), 0.05); }
+.ax-switch-text { display: flex; flex-direction: column; gap: 2px; }
+.ax-track {
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 24px;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  transition: background 0.25s;
+}
+.ax-track i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 0.3s var(--ease-out), background 0.25s;
+}
+.ax-switch[aria-checked="true"] .ax-track { background: var(--ink); }
+.ax-switch[aria-checked="true"] .ax-track i { background: var(--paper); transform: translateX(18px); }
+
+/* Reading aloud */
+.ax-controls { display: flex; align-items: center; gap: 8px; }
+.ax-ctl {
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--ink); border-radius: 2px;
+  background: transparent; color: var(--ink); cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s var(--ease-out);
+}
+.ax-ctl.is-main { background: var(--ink); color: var(--paper); }
+.ax-ctl:hover:not(:disabled), .ax-ctl:focus-visible { transform: translateY(-2px); }
+.ax-ctl:disabled { opacity: 0.35; cursor: default; }
+.ax-pos { margin-left: auto; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.16em; color: var(--ink-50); font-variant-numeric: tabular-nums; }
+
+/* A little equaliser that dances while it reads */
+.ax-eq { display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; margin-left: 6px; }
+.ax-eq i { width: 3px; height: 4px; background: var(--ink); border-radius: 1px; transition: height 0.3s; }
+.ax-eq.is-on i { animation: axEq 0.9s ease-in-out infinite; }
+.ax-eq.is-on i:nth-child(2) { animation-delay: -0.3s; }
+.ax-eq.is-on i:nth-child(3) { animation-delay: -0.6s; }
+.ax-eq.is-on i:nth-child(4) { animation-delay: -0.15s; }
+@keyframes axEq { 0%, 100% { height: 4px; } 50% { height: 18px; } }
+
+.ax-rates { display: flex; gap: 6px; }
+.ax-rate {
+  flex: 1;
+  height: 30px;
+  border: 1.5px solid rgba(var(--ink-rgb), 0.45);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font: 800 0.68rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.ax-rate[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.ax-reset {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.18);
+  background: transparent;
+  color: var(--ink);
+  font: 800 0.6rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ax-reset:hover:not(:disabled), .ax-reset:focus-visible { background: var(--ink); color: var(--paper); }
+.ax-reset:disabled { opacity: 0.35; cursor: default; }
+
+/* The paragraph being read: ringed, with a soft band of ink that sweeps across it */
+.ax-reading {
+  outline: 2px solid var(--ink);
+  outline-offset: 6px;
+  border-radius: 2px;
+  background-image: linear-gradient(90deg, rgba(var(--ink-rgb), 0.14), rgba(var(--ink-rgb), 0.04));
+  background-repeat: no-repeat;
+  animation: axSweep 0.8s var(--ease-out) both;
+}
+@keyframes axSweep { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ax-panel, .ax-row, .ax-reading { animation: none; }
+  .ax-reading { background-size: 100% 100%; }
+}
+@media print { .ax-root { display: none !important; } }
