@@ -479,7 +479,7 @@ canvas {
 .home-ghost {
   position: absolute;
   left: 50%;
-  top: 41%;
+  top: 44.5%;
   z-index: 0;
   transform: translate(-50%, -50%) translate(calc(var(--mx, 0) * -22px), calc(var(--my, 0) * -14px));
   transition: transform 0.6s var(--ease-out);
@@ -632,7 +632,7 @@ canvas {
 
 @media (max-width: 768px) {
   .home-status { display: none; }
-  .home-ghost { top: 48dvh; font-size: 30vw; }
+  .home-ghost { top: 51dvh; font-size: 30vw; }
   .face-bubble { left: 50%; transform-origin: 50% 100%; transform: translate(-50%, -100%) scale(0.6); }
   .face-bubble.is-on { transform: translate(-50%, -100%) scale(1); }
 }
@@ -642,8 +642,8 @@ canvas {
 .face-still {
   position: absolute;
   left: 50%;
-  top: 43.24%;
-  height: 49.22%;
+  top: 48.91%;
+  height: 63.09%;
   width: auto;
   aspect-ratio: 760 / 800;
   translate: -50% -50%; /* not transform: the entrance animation owns transform */

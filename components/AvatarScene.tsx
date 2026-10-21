@@ -105,8 +105,8 @@ function upgradeMaterial(m: THREE.Material): THREE.Material {
   return p;
 }
 
-const SCALE = 3.5;
-const VERTICAL_OFFSET = 0.1; // positive = face moves UP on screen
+const SCALE = 4.5;
+const VERTICAL_OFFSET = -0.06; // positive = face moves UP on screen
 
 type Prepared = {
   baseY: number;
@@ -212,7 +212,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
 
       const worldChin = chinY - faceMidY + VERTICAL_OFFSET;
       const worldTop  = box.max.y - faceMidY + VERTICAL_OFFSET;
-      const cutY      = worldChin - 0.18; // neck fades out between chin and here
+      const cutY      = worldChin - 0.18 * (SCALE / 3.5); // neck fades out between chin and here (in proportion to the head)
 
       let bone: THREE.Object3D | null = null;
       let rest = { x: 0, y: 0 };
@@ -375,7 +375,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const talkSway = rg.talking && !calm ? Math.sin(t * 3.1) * 0.05 : 0;
     const talkBob = rg.talking && !calm ? Math.sin(t * 11) * 0.028 + Math.sin(t * 5.3) * 0.02 : 0;
     bone.rotation.y += rg.yaw + talkSway;
-    const slump = sw * (0.44 + (calm ? 0 : Math.sin(t * 0.9) * 0.022)); // chin to chest, breathing slowly
+    const slump = sw * (0.34 + (calm ? 0 : Math.sin(t * 0.9) * 0.02)); // chin to chest, breathing slowly
     bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 * awake + nod + hi + rg.pitch + dizzyPitch + talkBob + slump;  // gentle up/down, chin safe
 
     // Breathing, depth parallax and a small lean into the turn
@@ -412,7 +412,7 @@ type Mode = "pending" | "3d" | "still";
 
 /* Where the head sits on screen in the standard framing (same numbers the 3D scene
    publishes), so the glow, hit area and neck line up with the still image too. */
-const STILL_LAYOUT = { cy: 41.32, h: 38.58, chin: 60.61, cut: 67.85 };
+const STILL_LAYOUT = { cy: 46.45, h: 49.45, chin: 71.17, cut: 80.48 };
 
 /* Pixel budget for the canvas. A full-viewport canvas on a 4K or retina screen has
    millions of pixels to fill every frame, which is what makes 120Hz hard to hold.
