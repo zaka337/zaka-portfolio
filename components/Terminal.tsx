@@ -21,7 +21,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -40,6 +40,7 @@ const WHERE: Record<string, { label: string; to: string; external?: boolean }> =
   call: { label: "the call helper", to: "/hire#call" },
   estimate: { label: "the project estimator", to: "/hire#estimate" },
   qa: { label: "the QA challenge", to: "/qa-challenge" },
+  tldr: { label: "the one-screen summary", to: "/tldr" },
   home: { label: "home", to: "/" },
 };
 
@@ -297,6 +298,9 @@ export default function Terminal() {
       const to = c === "fit" ? "/hire#fit" : c === "estimate" ? "/hire#estimate" : c === "qa" ? "/qa-challenge" : "/hire#call";
       out(c === "fit" ? "opening the job-fit check..." : c === "estimate" ? "opening the project estimator..." : c === "qa" ? "opening the QA challenge. good luck." : "opening the call helper...");
       setTimeout(() => go(to), 250);
+    } else if (c === "tldr") {
+      out("the short version, on one screen...");
+      setTimeout(() => go("/tldr"), 250);
     } else if (c === "sound") {
       // Turning sound on has to happen inside this key press: it is the only time a browser lets audio start
       const want = /^off$/i.test(rest) ? false : /^on$/i.test(rest) ? true : !soundOn();
