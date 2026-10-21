@@ -1,0 +1,85 @@
+/* The home page doors as kinetic type (components/KineticText.tsx). Every letter is two nested
+   spans: .kt-ch plays the arrival once, and the <i> inside plays the hover effect, so the two never
+   restart each other. Only transform and opacity move, except MORE ABOUT ME, whose letters flash
+   like a highlighted block as they are typed. The global reduced-motion rule and calm mode
+   (app/globals.css) shorten every animation here to nothing. */
+
+.kt { display: inline-block; white-space: nowrap; }
+.kt-ch { display: inline-block; }
+.kt-ch > i { display: inline-block; font-style: normal; }
+
+/* ── arrival: one after another, once the door itself has faded in ── */
+.kt-ch {
+  animation-duration: 0.7s;
+  animation-fill-mode: both;
+  animation-delay: calc(var(--d, 0ms) + 380ms + var(--i, 0) * 30ms);
+}
+.kt-wave .kt-ch { animation-name: ktRise; animation-timing-function: cubic-bezier(0.2, 1.5, 0.4, 1); }
+.kt-type .kt-ch { animation-name: ktTypeIn; animation-duration: 0.08s; animation-timing-function: linear; animation-delay: calc(var(--d, 0ms) + 380ms + var(--i, 0) * 55ms); }
+.kt-flip .kt-ch { animation-name: ktFlipIn; animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+.kt-ring .kt-ch { animation-name: ktPopIn; animation-timing-function: cubic-bezier(0.2, 1.6, 0.4, 1); }
+
+@keyframes ktRise   { from { transform: translateY(0.8em); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes ktTypeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ktFlipIn { from { transform: perspective(600px) rotateY(-90deg); opacity: 0; } to { transform: perspective(600px) rotateY(0); opacity: 1; } }
+@keyframes ktPopIn  { from { transform: scale(0.2) rotate(-24deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ── the effect: when the door is hovered, focused with the keyboard, or pressed ── */
+.nav-text:hover .kt-ch > i,
+.nav-text:focus-visible .kt-ch > i,
+.nav-text:active .kt-ch > i {
+  animation-fill-mode: both;
+  animation-delay: calc(var(--i, 0) * 42ms);
+}
+
+/* SAY HI: a wave runs along the letters, as if the word were waving */
+.nav-text:hover .kt-wave .kt-ch > i,
+.nav-text:focus-visible .kt-wave .kt-ch > i,
+.nav-text:active .kt-wave .kt-ch > i { animation-name: ktWave; animation-duration: 0.8s; animation-timing-function: ease-in-out; }
+@keyframes ktWave {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30%      { transform: translateY(-0.3em) rotate(-8deg); }
+  60%      { transform: translateY(0.06em) rotate(4deg); }
+}
+
+/* MORE ABOUT ME: typed out again, each letter lit like the block a cursor leaves behind */
+.nav-text:hover .kt-type .kt-ch > i,
+.nav-text:focus-visible .kt-type .kt-ch > i,
+.nav-text:active .kt-type .kt-ch > i { animation-name: ktType; animation-duration: 0.5s; animation-timing-function: linear; animation-delay: calc(var(--i, 0) * 48ms); }
+/* Linear on purpose: a stepped animation can finish a hair early and leave a letter stuck lit */
+@keyframes ktType {
+  0%   { opacity: 0; background: var(--ink); color: var(--paper); }
+  3%   { opacity: 1; background: var(--ink); color: var(--paper); }
+  66%  { opacity: 1; background: var(--ink); color: var(--paper); }
+  88%  { opacity: 1; background: rgba(0, 0, 0, 0); color: inherit; }
+  100% { opacity: 1; background: rgba(0, 0, 0, 0); color: inherit; }
+}
+
+/* MY PROJECTS: the letters turn over one by one like cards in the carousel */
+.nav-text:hover .kt-flip .kt-ch > i,
+.nav-text:focus-visible .kt-flip .kt-ch > i,
+.nav-text:active .kt-flip .kt-ch > i { animation-name: ktFlip; animation-duration: 0.85s; animation-timing-function: cubic-bezier(0.5, 0, 0.2, 1); animation-delay: calc(var(--i, 0) * 38ms); }
+@keyframes ktFlip {
+  from { transform: perspective(600px) rotateY(0); }
+  to   { transform: perspective(600px) rotateY(360deg); }
+}
+
+/* CONTACT ME: a phone ringing, the letters shaking in opposite directions and settling */
+.nav-text:hover .kt-ring .kt-ch > i,
+.nav-text:focus-visible .kt-ring .kt-ch > i,
+.nav-text:active .kt-ring .kt-ch > i { animation-name: ktRingA; animation-duration: 0.75s; animation-timing-function: ease-in-out; animation-delay: calc(var(--i, 0) * 12ms); }
+.nav-text:hover .kt-ring .kt-ch:nth-child(even) > i,
+.nav-text:focus-visible .kt-ring .kt-ch:nth-child(even) > i,
+.nav-text:active .kt-ring .kt-ch:nth-child(even) > i { animation-name: ktRingB; }
+@keyframes ktRingA {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  12% { transform: rotate(-9deg) translateY(-0.04em); } 28% { transform: rotate(9deg); }
+  44% { transform: rotate(-6deg) translateY(-0.03em); } 60% { transform: rotate(6deg); }
+  78% { transform: rotate(-2deg); }
+}
+@keyframes ktRingB {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  12% { transform: rotate(9deg); } 28% { transform: rotate(-9deg) translateY(-0.04em); }
+  44% { transform: rotate(6deg); } 60% { transform: rotate(-6deg) translateY(-0.03em); }
+  78% { transform: rotate(2deg); }
+}

@@ -15,7 +15,9 @@ import "./roletype.css";
    - the block is a real button, so the keyboard can do it too (Enter or Space).
 
    With Reduce Motion or calm mode nothing moves by itself: the role changes instantly when pressed.
-   The animated letters are hidden from screen readers; the button says the role in words.
+   The button says the role in words (aria-label replaces its content for screen readers). The
+   letters are not aria-hidden on purpose: the page crumble in the secret terminal skips anything
+   aria-hidden, and the role should fall with the rest of the text.
    Only transforms and opacity are animated, and the timer sits out while the tab is hidden, the title
    egg or the page crumble is running, or the button has keyboard focus (so it never changes under
    someone who is using it). */
@@ -300,7 +302,7 @@ export default function RoleType() {
           onClick={onClick}
         >
           {inWord.map(({ li, row }) => (
-            <span key={li} className="nav-item rt-line" style={{ ["--line" as string]: li } as React.CSSProperties} aria-hidden="true">
+            <span key={li} className="nav-item rt-line" style={{ ["--line" as string]: li } as React.CSSProperties}>
               {outWord && <span className="rt-out">{outWord[li].row}</span>}
               <span className="rt-in">{row}</span>
             </span>

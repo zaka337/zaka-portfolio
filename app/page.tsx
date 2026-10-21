@@ -6,6 +6,7 @@ import { useRef, useEffect, useState } from "react";
 import { knockOver, stopKnockOver } from "@/lib/knockOver";
 import { useAsleep } from "@/lib/sleep";
 import RoleType from "@/components/RoleType";
+import KineticText from "@/components/KineticText";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -110,19 +111,19 @@ export default function Home() {
       </div>
 
       {/* TOP RIGHT — contact */}
-      <Link href="/contact" className="block-tr nav-text" style={{ textDecoration: "none" }}>
+      <Link href="/contact" className="block-tr nav-text" aria-label="Say hi. Pick up the phone" style={{ textDecoration: "none" }}>
         <div className="home-enter home-enter-2">
-          <p className="nav-item">SAY</p>
-          <p className="nav-item">HI</p>
+          <p className="nav-item"><KineticText text="SAY" fx="wave" /></p>
+          <p className="nav-item"><KineticText text="HI" fx="wave" start={3} /></p>
         </div>
         <p className="nav-hint">PICK UP THE PHONE</p>
       </Link>
 
       {/* MID LEFT — about */}
-      <Link href="/about" className="block-ml nav-text" style={{ textDecoration: "none" }}>
+      <Link href="/about" className="block-ml nav-text" aria-label="More about me. Story, toolkit and journey" style={{ textDecoration: "none" }}>
         <div className="home-enter home-enter-3">
-          <p className="nav-item">MORE</p>
-          <p className="nav-item">ABOUT ME</p>
+          <p className="nav-item"><KineticText text="MORE" fx="type" delay={120} /></p>
+          <p className="nav-item"><KineticText text="ABOUT ME" fx="type" start={4} delay={120} /></p>
         </div>
         <p className="nav-hint">STORY {'·'} TOOLKIT {'·'} JOURNEY</p>
       </Link>
@@ -131,19 +132,19 @@ export default function Home() {
       <RoleType />
 
       {/* BOTTOM LEFT — projects */}
-      <Link href="/projects" className="block-bl nav-text" style={{ textDecoration: "none" }}>
+      <Link href="/projects" className="block-bl nav-text" aria-label="My projects. Six featured, all repositories" style={{ textDecoration: "none" }}>
         <div className="home-enter home-enter-4">
-          <p className="nav-item">MY</p>
-          <p className="nav-item">PROJECTS</p>
+          <p className="nav-item"><KineticText text="MY" fx="flip" delay={240} /></p>
+          <p className="nav-item"><KineticText text="PROJECTS" fx="flip" start={2} delay={240} /></p>
         </div>
         <p className="nav-hint">6 FEATURED {'·'} ALL REPOS</p>
       </Link>
 
       {/* BOTTOM RIGHT — contact me page */}
-      <Link href="/contact-me" className="block-br nav-text" style={{ textDecoration: "none" }}>
+      <Link href="/contact-me" className="block-br nav-text" aria-label="Contact me. Start a project brief" style={{ textDecoration: "none" }}>
         <div className="home-enter home-enter-5">
-          <p className="nav-item">CONTACT</p>
-          <p className="nav-item">ME</p>
+          <p className="nav-item"><KineticText text="CONTACT" fx="ring" delay={360} /></p>
+          <p className="nav-item"><KineticText text="ME" fx="ring" start={7} delay={360} /></p>
         </div>
         <p className="nav-hint">START A PROJECT BRIEF</p>
       </Link>
