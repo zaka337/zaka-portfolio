@@ -19,6 +19,14 @@ const SecretToast = dynamic(() => import("@/components/SecretToast"), { ssr: fal
 const Lamp = dynamic(() => import("@/components/Lamp"), { ssr: false });
 // A one minute walk around the site (`tour` in the terminal, or ask the avatar for a tour)
 const Tour = dynamic(() => import("@/components/Tour"), { ssr: false });
+// Tiny made-up sounds, off until asked (`sound` in the terminal)
+const Sound = dynamic(() => import("@/components/Sound"), { ssr: false });
+// `print` in the terminal: the resume as a till receipt
+const Receipt = dynamic(() => import("@/components/Receipt"), { ssr: false });
+// A small ink bug wanders across seven of the pages; squash it
+const BugHunt = dynamic(() => import("@/components/BugHunt"), { ssr: false });
+// A paper plane flies off when the project brief is sent
+const PaperPlane = dynamic(() => import("@/components/PaperPlane"), { ssr: false });
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -32,6 +40,10 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <SecretToast />
       <Lamp />
       <Tour />
+      <Sound />
+      <Receipt />
+      <BugHunt />
+      <PaperPlane />
       {children}
     </>
   );

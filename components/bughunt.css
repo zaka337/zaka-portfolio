@@ -1,0 +1,83 @@
+/* Bug hunt (components/BugHunt.tsx). A small ink bug on paper: it takes the page's ink colour, so
+   it is dark on light and light on dark. Only the bug itself takes taps (with a bigger invisible
+   target around it, for fingers); everything else on the page works as normal. */
+
+.bh-bug {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 8800;
+  width: 34px;
+  height: 34px;
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+/* The tap target is much bigger than the picture */
+.bh-bug::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+}
+.bh-svg { display: block; overflow: visible; filter: drop-shadow(0 1px 1px rgba(var(--ink-rgb), 0.25)); }
+
+/* Legs: two sets that take turns, only while it is walking */
+.bh-legs { transform-origin: 20px 21px; }
+.bh-bug[data-moving="1"] .bh-l1 { animation: bhLegA 0.28s steps(2, jump-none) infinite alternate; }
+.bh-bug[data-moving="1"] .bh-l2 { animation: bhLegB 0.28s steps(2, jump-none) infinite alternate; }
+@keyframes bhLegA { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+@keyframes bhLegB { from { transform: rotate(7deg); } to { transform: rotate(-7deg); } }
+
+.bh-splat {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 8799;
+  color: var(--ink);
+  pointer-events: none;
+  animation: bhSplat 2.2s ease-out both;
+}
+@keyframes bhSplat {
+  0%   { opacity: 0; scale: 0.4; }
+  12%  { opacity: 0.9; scale: 1.08; }
+  30%  { opacity: 0.9; scale: 1; }
+  100% { opacity: 0; scale: 1; }
+}
+
+.bh-toast {
+  position: fixed;
+  z-index: 9590;
+  top: calc(max(12px, env(safe-area-inset-top)) + 56px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px 14px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 16px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 0 14px 40px rgba(var(--ink-rgb), 0.22);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-align: center;
+  animation: bhToast 0.35s var(--ease-out) both;
+}
+@keyframes bhToast { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+.bh-head { font-size: 0.85rem; font-weight: 800; }
+.bh-sub { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-50); }
+.bh-toast.is-all { background: var(--ink); color: var(--paper); }
+.bh-toast.is-all .bh-sub { color: rgba(var(--paper-rgb), 0.7); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bh-splat { animation: bhSplatCalm 2.2s linear both; }
+  .bh-toast { animation: none; }
+}
+@keyframes bhSplatCalm { 0%, 60% { opacity: 0.9; } 100% { opacity: 0; } }
+
+@media print { .bh-bug, .bh-splat, .bh-toast { display: none !important; } }

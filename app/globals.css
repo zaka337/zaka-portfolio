@@ -543,6 +543,8 @@ canvas {
   background: var(--live);
   animation: homePulse 1.4s ease-in-out infinite;
 }
+/* Night in Islamabad: a hollow dot that does not pulse */
+.home-status-dot.is-asleep { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink-50); animation: none; }
 
 /* Click the face to say hi: invisible hit area over the head + hover hint + bubble */
 .face-hit {

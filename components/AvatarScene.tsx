@@ -9,6 +9,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { ENV_SIZE, ENV_SIGMA, preloadBakedEnv, bakedEnvTexture } from "@/lib/bakedEnv";
 import { mirror } from "@/lib/mirror";
 import { found } from "@/lib/secrets";
+import { pkt, useAsleep, wake } from "@/lib/sleep";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -129,10 +130,11 @@ interface Rig {
   spinning: boolean; travel: number; // flicked into a spin; how far it has turned since
   dizzyT: number;                  // seconds since it got dizzy (-1 when it is not)
   talking: boolean;                // the avatar is speaking out loud (components/Voice.tsx)
+  asleep: boolean;                 // it is night in Islamabad and nobody has woken him (lib/sleep.ts)
 }
 const newRig = (): Rig => ({
   dragging: false, moved: 0, yaw: 0, yawV: 0, pitch: 0, pitchV: 0,
-  lastX: 0, lastY: 0, lastT: 0, spinning: false, travel: 0, dizzyT: -1, talking: false,
+  lastX: 0, lastY: 0, lastT: 0, spinning: false, travel: 0, dizzyT: -1, talking: false, asleep: false,
 });
 const TAU = Math.PI * 2;
 
@@ -155,6 +157,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
   const revealed = useRef(false);
   const baseY = useRef(0);
   const nodAt = useRef(-1);
+  const sleepW = useRef(0); // 0 awake .. 1 fast asleep, eased
   const metrics = useRef<{ topY: number; chinY: number; cutY: number } | null>(null);
 
   /* Publish where the head sits on screen so CSS can place the glow, ring and the
@@ -320,9 +323,13 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const bone = headBone.current ?? groupRef.current;
     if (!bone) return;
     // Cursor follow + a slow idle drift so the head never looks frozen (not when calm)
-    const sway = calm ? 0 : Math.sin(t * 0.55) * 0.045;
-    const nod  = calm ? 0 : Math.sin(t * 0.4 + 1.3) * 0.018;
-    bone.rotation.y = headRestRot.current.y + target.current.x * (calm ? 0.4 : 0.55) + sway; // fuller neck turn left/right
+    // Night in Islamabad: the head drops, and it stops following the cursor (lib/sleep.ts)
+    sleepW.current += ((rig.current.asleep ? 1 : 0) - sleepW.current) * (1 - Math.exp(-Math.min(delta, 0.05) * (calm ? 3 : 1.6)));
+    const sw = sleepW.current;
+    const awake = 1 - sw * 0.92;
+    const sway = calm ? 0 : Math.sin(t * 0.55) * 0.045 * awake;
+    const nod  = calm ? 0 : Math.sin(t * 0.4 + 1.3) * 0.018 * awake;
+    bone.rotation.y = headRestRot.current.y + target.current.x * (calm ? 0.4 : 0.55) * awake + sway; // fuller neck turn left/right
     // Click-to-say-hi: a damped double nod
     let hi = 0;
     if (!calm && nodAt.current > 0) {
@@ -368,14 +375,15 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const talkSway = rg.talking && !calm ? Math.sin(t * 3.1) * 0.05 : 0;
     const talkBob = rg.talking && !calm ? Math.sin(t * 11) * 0.028 + Math.sin(t * 5.3) * 0.02 : 0;
     bone.rotation.y += rg.yaw + talkSway;
-    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 + nod + hi + rg.pitch + dizzyPitch + talkBob;  // gentle up/down, chin safe
+    const slump = sw * (0.5 + (calm ? 0 : Math.sin(t * 0.9) * 0.022)); // chin to chest, breathing slowly
+    bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 * awake + nod + hi + rg.pitch + dizzyPitch + talkBob + slump;  // gentle up/down, chin safe
 
     // Breathing, depth parallax and a small lean into the turn
     const g = groupRef.current;
     if (g) {
-      g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005);
-      g.position.x = -target.current.x * (calm ? 0.02 : 0.035);
-      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll;
+      g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005) - sw * 0.012;
+      g.position.x = -target.current.x * (calm ? 0.02 : 0.035) * awake;
+      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) * awake + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll + sw * 0.07;
     }
 
     // Look back: while the camera is mirroring the visitor, the head glides over to copy their head
@@ -501,7 +509,17 @@ export default function AvatarScene() {
     window.dispatchEvent(new Event("zk-ready"));
   }, [mode]);
 
+  const asleep = useAsleep(); // night in Islamabad: the head drops (lib/sleep.ts)
   const sayHi = () => {
+    if (asleep) {
+      // Poking a sleeper: he wakes, grumpy, and stays awake for the rest of the visit
+      wake();
+      setBubble("...5 MORE MINUTES.");
+      setShown(true);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setShown(false), 2800);
+      return;
+    }
     window.dispatchEvent(new Event("zk-nod"));
     setBubble(GREETINGS[idx.current % GREETINGS.length]);
     idx.current += 1;
@@ -515,6 +533,19 @@ export default function AvatarScene() {
   const rig = useRef<Rig>(newRig());
   const press = useRef(0); // the long-press timer
   useEffect(() => () => window.clearTimeout(press.current), []);
+  useEffect(() => { rig.current.asleep = asleep; }, [asleep]);
+  // While he sleeps: a little ZZZ now and then, and the time it is there (the phone has no status line)
+  useEffect(() => {
+    if (!asleep) return;
+    let n = 0;
+    const say = () => {
+      const lines = ["ZZZ...", `SHH. IT IS ${pkt().text} HERE.`, "ZZZ..."];
+      window.dispatchEvent(new CustomEvent("zk-say", { detail: { text: lines[n++ % lines.length], ms: 2600 } }));
+    };
+    const first = window.setTimeout(say, 1800);
+    const id = window.setInterval(say, 7000);
+    return () => { window.clearTimeout(first); window.clearInterval(id); };
+  }, [asleep]);
   // components/Voice.tsx tells the avatar when it starts and stops speaking
   useEffect(() => {
     const onTalking = (e: Event) => { rig.current.talking = !!(e as CustomEvent<boolean>).detail; };
@@ -549,7 +580,7 @@ export default function AvatarScene() {
     r.pitch = Math.max(-0.5, Math.min(0.5, r.pitch + dy * 0.006));
     r.yawV = r.yawV * 0.55 + ((dx * 0.011) / (ms / 1000)) * 0.45; // how fast the hand is turning it
     r.moved += Math.abs(dx) + Math.abs(dy);
-    if (r.moved > 8) found("head"); // really dragged it, not just tapped
+    if (r.moved > 8) { found("head"); if (r.asleep) wake(); } // really dragged it, not just tapped
     r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = now;
   };
   const onLetGo = () => {

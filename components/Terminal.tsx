@@ -6,6 +6,8 @@ import { PROJECTS } from "@/lib/projects";
 import { SOCIAL } from "@/lib/site";
 import { crumblePage } from "@/lib/crumble";
 import { SECRETS, found, foundList } from "@/lib/secrets";
+import { BUGS, squashedList } from "@/lib/bugs";
+import { play, setSound, soundOn } from "@/lib/sound";
 import "./terminal.css";
 
 /* A secret command line, in the site's own ink-and-paper language (the same window as the
@@ -19,7 +21,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -286,6 +288,23 @@ export default function Terminal() {
       out("starting the tour. about a minute. Esc ends it.");
       window.dispatchEvent(new Event("zk-tour"));
       close();
+    } else if (c === "sound") {
+      // Turning sound on has to happen inside this key press: it is the only time a browser lets audio start
+      const want = /^off$/i.test(rest) ? false : /^on$/i.test(rest) ? true : !soundOn();
+      if (!setSound(want)) push({ kind: "err", text: "sound: this browser cannot make sound here" });
+      else out(want ? "sound on: clacks, page turns, a printer tick. 'sound off' stops it." : "sound off.");
+    } else if (c === "print" || c === "receipt") {
+      out("printing...");
+      window.dispatchEvent(new Event("zk-receipt"));
+      close();
+    } else if (c === "bugs") {
+      const done = squashedList();
+      out(`bugs closed: ${done.length} of ${BUGS.length}`);
+      for (const b of BUGS) {
+        if (done.includes(b.id)) push({ kind: "out", text: `[x] ${b.no}  ${b.name}` });
+        else push({ kind: "dim", text: `[ ] ${b.no}  ???  ${b.hint}` });
+      }
+      if (done.length >= BUGS.length) out("all closed. QA approves.");
     } else if (c === "secrets" || c === "achievements") {
       const have = foundList();
       out(`secrets found: ${have.length} of ${SECRETS.length}`);
@@ -375,6 +394,9 @@ export default function Terminal() {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "`" || e.code === "Backquote") { e.preventDefault(); close(); return; }
+    // Typewriter clacks, if sound is on (lib/sound.ts)
+    if (e.key === "Enter") play("enter");
+    else if ((e.key.length === 1 || e.key === "Backspace") && !e.ctrlKey && !e.metaKey) play("key");
     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
       const h = history.current;
       if (!h.length) return;

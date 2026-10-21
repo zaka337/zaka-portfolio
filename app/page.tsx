@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
 import { knockOver, stopKnockOver } from "@/lib/knockOver";
+import { useAsleep } from "@/lib/sleep";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -95,6 +96,7 @@ function RoleBlock() {
 
 function OpenStatus() {
   const [time, setTime] = useState("");
+  const asleep = useAsleep(); // night in Islamabad (lib/sleep.ts)
   useEffect(() => {
     const fmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Karachi" });
     const tick = () => setTime(fmt.format(new Date()));
@@ -104,8 +106,11 @@ function OpenStatus() {
   }, []);
   return (
     <div className="home-status home-enter home-enter-5">
-      <i className="home-status-dot" aria-hidden="true" />
-      <span>OPEN FOR WORK {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""}</span>
+      <i className={`home-status-dot${asleep ? " is-asleep" : ""}`} aria-hidden="true" />
+      <span>
+        {asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""}
+        {asleep ? ` ${'·'} REPLIES IN THE MORNING` : ""}
+      </span>
     </div>
   );
 }

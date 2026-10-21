@@ -1,0 +1,144 @@
+/* The receipt resume (components/Receipt.tsx): a strip of paper that comes out of a slot at the
+   bottom of the screen, one printed line at a time. The paper keeps its own light colours in
+   dark mode too, because receipts are white. */
+
+.rc-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9430;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(6, 6, 5, 0.38);
+  animation: rcFade 0.25s ease both;
+}
+@keyframes rcFade { from { opacity: 0; } to { opacity: 1; } }
+
+.rc-wrap {
+  --rc-paper: #f4f1e8;
+  --rc-ink: #0d0d0d;
+  position: relative;
+  width: min(330px, calc(100vw - 20px));
+  margin-bottom: max(14px, env(safe-area-inset-bottom));
+}
+/* The corner button sits low on phones: lift the printer clear of it */
+@media (max-width: 768px) {
+  .rc-wrap { margin-bottom: calc(max(14px, env(safe-area-inset-bottom)) + 44px); }
+}
+
+.rc-paper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;     /* new lines arrive at the bottom, by the slot, and push the rest up */
+  max-height: calc(100dvh - 120px);
+  overflow: hidden;
+  background: var(--rc-paper);
+  color: var(--rc-ink);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
+  border-radius: 2px 2px 0 0;
+  cursor: pointer;
+}
+.rc-paper.is-done {
+  justify-content: flex-start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  cursor: auto;
+}
+.rc-lines { padding: 14px 14px 4px; flex: none; }
+
+.rc-line {
+  font: 600 11px/14px "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: pre;
+  letter-spacing: 0;
+  color: var(--rc-ink);
+}
+.rc-small { font-size: 10px; opacity: 0.8; }
+
+.rc-bars {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  height: 42px;
+  margin: 10px 0 6px;
+}
+.rc-bars i { display: block; background: var(--rc-ink); flex: none; }
+
+.rc-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  background: var(--rc-paper);
+  box-shadow: 0 -8px 10px -8px rgba(0, 0, 0, 0.22);
+  flex: none;
+}
+.rc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid var(--rc-ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--rc-ink);
+  font: 800 10px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.rc-btn:hover, .rc-btn:focus-visible { background: var(--rc-ink); color: var(--rc-paper); }
+.rc-btn.is-main { background: var(--rc-ink); color: var(--rc-paper); }
+.rc-btn.is-main:hover, .rc-btn.is-main:focus-visible { background: transparent; color: var(--rc-ink); }
+
+/* The torn edge at the bottom of the paper */
+.rc-zig {
+  flex: none;
+  height: 8px;
+  margin-top: -1px;
+  background:
+    linear-gradient(135deg, var(--rc-paper) 25%, transparent 25%) -4px 0 / 8px 8px,
+    linear-gradient(225deg, var(--rc-paper) 25%, transparent 25%) -4px 0 / 8px 8px;
+}
+
+/* The printer's slot, the paper comes out of it */
+.rc-slot {
+  position: relative;
+  z-index: 1;
+  height: 14px;
+  margin: 0 -10px;
+  border-radius: 7px;
+  background: linear-gradient(#2a2a28, #0d0d0c);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.rc-slot i {
+  position: absolute;
+  inset: 4px 12px auto;
+  height: 3px;
+  border-radius: 2px;
+  background: #000;
+}
+
+/* Tearing it off: the paper leaves, the printer stays a moment longer and then goes too */
+.rc-wrap.is-tearing .rc-paper { animation: rcTear 0.5s cubic-bezier(0.5, 0, 0.9, 0.4) both; }
+.rc-wrap.is-tearing .rc-slot { animation: rcSlotOut 0.5s linear both; }
+@keyframes rcTear {
+  0%   { transform: none; opacity: 1; }
+  25%  { transform: translateY(-6px) rotate(-1.5deg); opacity: 1; }
+  100% { transform: translateY(-90vh) rotate(5deg); opacity: 0; }
+}
+@keyframes rcSlotOut { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-backdrop { animation: none; }
+  .rc-wrap.is-tearing .rc-paper, .rc-wrap.is-tearing .rc-slot { animation: rcFadeOut 0.16s linear both; }
+  .rc-btn { transition: none; }
+}
+@keyframes rcFadeOut { to { opacity: 0; } }
+
+@media print { .rc-backdrop { display: none !important; } }

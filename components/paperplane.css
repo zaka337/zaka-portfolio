@@ -1,0 +1,46 @@
+/* The paper plane (components/PaperPlane.tsx). It only draws over the page and lets every tap and
+   click through. */
+
+.pp-layer { position: fixed; inset: 0; z-index: 9350; pointer-events: none; overflow: hidden; color: var(--ink); }
+
+.pp-plane {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  will-change: transform;
+  filter: drop-shadow(0 6px 6px rgba(var(--ink-rgb), 0.22));
+}
+.pp-plane svg { display: block; }
+
+/* The trail: dots that appear as the plane passes, then fade */
+.pp-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: 0;
+  animation: ppDot 1.3s ease-out both;
+}
+@keyframes ppDot {
+  0%   { opacity: 0; transform: scale(0.4); }
+  12%  { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* Reduce Motion: a still plane that fades in and out above the button */
+.pp-calm {
+  position: fixed;
+  z-index: 9350;
+  width: 40px;
+  height: 40px;
+  color: var(--ink);
+  pointer-events: none;
+  animation: ppCalm 1.9s linear both;
+}
+.pp-calm svg { display: block; }
+@keyframes ppCalm { 0% { opacity: 0; } 15%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+@media print { .pp-layer, .pp-calm { display: none !important; } }

@@ -6,6 +6,7 @@ import { useScrollUnlock } from "@/lib/scrollStory";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { BrandIcon, type BrandName } from "@/components/BrandIcons";
 import { NEEDS, TIMELINES, MAX_MESSAGE, sendContact } from "@/lib/contactForm";
+import { useAsleep } from "@/lib/sleep";
 
 const EMAIL = "zakas2379@gmail.com";
 
@@ -80,6 +81,7 @@ export default function ContactMe() {
   useScrollUnlock();
 
   const [time, setTime] = useState("");
+  const asleep = useAsleep(); // night in Islamabad (lib/sleep.ts)
   useEffect(() => {
     const fmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Karachi" });
     const tick = () => setTime(fmt.format(new Date()));
@@ -136,7 +138,7 @@ export default function ContactMe() {
       name: name.trim(), email: email.trim(), needs, timeline, message: message.trim(),
       website: hp, elapsed: Date.now() - openedAt.current,
     });
-    if (result === "sent") { setStatus("sent"); return; }
+    if (result === "sent") { setStatus("sent"); window.dispatchEvent(new Event("zk-sent")); return; }
     if (result === "invalid") { setStatus("idle"); setError("Something in the form looks off. Check it and try again"); return; }
     // The server could not send: hand the same brief to the visitor's mail app instead.
     setStatus("fallback");
@@ -168,8 +170,9 @@ export default function ContactMe() {
         <div className="cm-meta">
           <span>{'ZAKA ULLAH WAHEED — FULL-STACK DEVELOPER'}</span>
           <span className="cm-status">
-            <i className="cm-dot" aria-hidden="true" />
-            OPEN FOR WORK {'·'} ISLAMABAD <span className="cm-time">{time ? `${time} PKT` : ""}</span>
+            <i className={`cm-dot${asleep ? " is-asleep" : ""}`} aria-hidden="true" />
+            {asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD <span className="cm-time">{time ? `${time} PKT` : ""}</span>
+            {asleep ? <> {'·'} REPLIES IN THE MORNING</> : null}
           </span>
         </div>
 
