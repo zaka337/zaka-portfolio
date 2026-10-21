@@ -1,0 +1,131 @@
+/* The search panel (components/Palette.tsx). Paper and ink, a hard offset shadow like a stamp, and
+   the chosen row turns to solid ink. The global reduced-motion rule and calm mode shorten the
+   animations to nothing. */
+
+/* The round button above the "Aa" one. Computers only: a phone has no Ctrl key, and the five
+   doors on the home screen already reach everything. */
+.pk-fab {
+  position: fixed;
+  right: 14px;
+  bottom: 98px;
+  z-index: 9000;
+  width: 34px;
+  height: 34px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 50%;
+  background: rgba(var(--paper-rgb), 0.92);
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, border-color 0.2s, transform 0.25s var(--ease-out), color 0.2s;
+}
+.pk-fab:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pk-fab:active { transform: scale(0.92); }
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) { .pk-fab { display: inline-flex; } }
+@media print { .pk-fab { display: none !important; } }
+
+.pk-back {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 13vh 16px 0;
+  background: rgba(var(--paper-rgb), 0.8);
+  animation: pkFade 0.18s ease both;
+}
+@keyframes pkFade { from { opacity: 0; } to { opacity: 1; } }
+
+.pk {
+  width: min(660px, 100%);
+  max-height: 76dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  box-shadow: 7px 7px 0 rgba(var(--ink-rgb), 0.92);
+  animation: pkIn 0.26s var(--ease-out) both;
+}
+@keyframes pkIn { from { opacity: 0; transform: translateY(-12px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+.pk-field { display: flex; align-items: center; gap: 12px; padding: 0 16px 0 18px; border-bottom: 1.5px solid var(--ink); }
+.pk-mag { flex: none; color: var(--ink-70); }
+.pk-input {
+  flex: 1;
+  min-width: 0;
+  height: 60px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: 700 1.15rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+.pk-input::placeholder { color: var(--ink-50); font-weight: 600; }
+.pk-esc, .pk-foot kbd {
+  padding: 3px 6px;
+  border: 1px solid rgba(var(--ink-rgb), 0.4);
+  border-radius: 3px;
+  font: 700 0.56rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.1em;
+  color: var(--ink-70);
+}
+
+.pk-list { overflow-y: auto; overscroll-behavior: contain; padding: 6px; max-height: min(50dvh, 440px); }
+.pk-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 54px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  animation: pkRow 0.3s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+@keyframes pkRow { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.pk-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pk-title { font-size: 1.02rem; font-weight: 800; letter-spacing: -0.01em; }
+.pk-title mark { background: none; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.pk-hint { font-size: 0.74rem; color: var(--ink-70); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pk-meta { display: flex; align-items: center; gap: 10px; }
+.pk-tag { font-size: 0.5rem; font-weight: 800; letter-spacing: 0.2em; color: var(--ink-50); }
+.pk-go { opacity: 0; font-size: 0.9rem; transform: translateX(-4px); transition: opacity 0.15s, transform 0.2s var(--ease-out); }
+.pk-row.is-on { background: var(--ink); color: var(--paper); }
+.pk-row.is-on .pk-hint, .pk-row.is-on .pk-tag { color: rgba(var(--paper-rgb), 0.72); }
+.pk-row.is-on .pk-go { opacity: 1; transform: none; }
+
+.pk-empty { padding: 26px 18px 30px; text-align: center; }
+.pk-empty p { margin: 0; font-size: 1rem; font-weight: 700; }
+.pk-try { margin-top: 12px !important; font-size: 0.78rem !important; font-weight: 600 !important; color: var(--ink-70); }
+.pk-chip { margin: 0 3px; padding: 5px 10px; border: 1px solid var(--ink); border-radius: 99px; background: transparent; color: var(--ink); font: 700 0.7rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif; cursor: pointer; }
+.pk-chip:hover { background: var(--ink); color: var(--paper); }
+
+.pk-foot { display: flex; align-items: center; gap: 16px; padding: 9px 16px; border-top: 1px solid rgba(var(--ink-rgb), 0.3); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; color: var(--ink-50); }
+.pk-foot kbd { margin-right: 4px; }
+.pk-foot kbd + kbd { margin-left: -1px; }
+.pk-count { margin-left: auto; }
+.pk-sr { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .pk-back { padding-top: 8vh; }
+  .pk-foot span:not(.pk-count) { display: none; }
+}

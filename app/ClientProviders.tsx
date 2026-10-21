@@ -30,6 +30,9 @@ const PaperPlane = dynamic(() => import("@/components/PaperPlane"), { ssr: false
 // The "Aa" button: bigger text, easy-read font, contrast, calm mode, read the page aloud
 const Access = dynamic(() => import("@/components/Access"), { ssr: false });
 
+// Ctrl+K (or /): search the whole site from the keyboard
+const Palette = dynamic(() => import("@/components/Palette"), { ssr: false });
+
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -47,6 +50,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <BugHunt />
       <PaperPlane />
       <Access />
+      <Palette />
       {children}
     </>
   );
