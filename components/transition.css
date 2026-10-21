@@ -1,0 +1,56 @@
+/* The curtain between pages (components/Transition.tsx). Only transforms and opacity move. It sits
+   under the cursor and the doodle layer, over everything else. */
+
+.tx {
+  position: fixed;
+  inset: 0;
+  z-index: 9980;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  will-change: transform;
+}
+.tx[data-phase="in"]  { animation: txCurtainIn 0.4s cubic-bezier(0.7, 0, 0.2, 1) both; }
+.tx[data-phase="out"] { animation: txCurtainOut 0.5s cubic-bezier(0.7, 0, 0.2, 1) 0.14s both; }
+@keyframes txCurtainIn  { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes txCurtainOut { from { transform: none; } to { transform: translateY(-100%); } }
+
+/* The place you are going to, as big as will fit on one line */
+.tx-word {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  max-width: 94vw;
+  font-weight: 900;
+  font-size: min(19vw, 26vh, calc(150vw / var(--n, 8)));
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tx-ch { display: inline-block; will-change: transform; }
+
+/* Letters tumble in from all around and settle, one after another */
+.tx[data-phase="in"] .tx-ch {
+  animation: txLetterIn 0.48s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  animation-delay: calc(0.1s + var(--i) * var(--step, 20ms));
+}
+@keyframes txLetterIn {
+  from { transform: translate(calc(var(--x) * 22vw), calc(var(--y) * 26vh)) rotate(calc(var(--r) * 1deg)) scale(0.3); opacity: 0; }
+  40%  { opacity: 1; }
+  to   { transform: none; opacity: 1; }
+}
+/* ...and fly up and away before the curtain lifts */
+.tx[data-phase="out"] .tx-ch {
+  animation: txLetterOut 0.34s cubic-bezier(0.5, 0, 0.9, 0.4) both;
+  animation-delay: calc(var(--i) * 12ms);
+}
+@keyframes txLetterOut {
+  from { transform: none; opacity: 1; }
+  to   { transform: translate(calc(var(--x) * 8vw), -40vh) rotate(calc(var(--r) * 0.5deg)); opacity: 0; }
+}
+
+@media print { .tx { display: none !important; } }

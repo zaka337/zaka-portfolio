@@ -36,6 +36,9 @@ const Palette = dynamic(() => import("@/components/Palette"), { ssr: false });
 // Hold D and move the mouse: the full stop draws in ink, and the ink fades
 const Doodle = dynamic(() => import("@/components/Doodle"), { ssr: false });
 
+// A paper curtain with the next page's name on it covers each page change (not with Reduce Motion)
+const Transition = dynamic(() => import("@/components/Transition"), { ssr: false });
+
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -55,6 +58,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <Access />
       <Palette />
       <Doodle />
+      <Transition />
       {children}
     </>
   );
