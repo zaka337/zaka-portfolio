@@ -13,6 +13,10 @@ const Voice = dynamic(() => import("@/components/Voice"), { ssr: false });
 // The avatar copies your head through the camera (`camera` in the terminal, or Shift+C). The face
 // tracker itself is only downloaded when someone turns it on.
 const LookBack = dynamic(() => import("@/components/LookBack"), { ssr: false });
+// The note that appears when a visitor finds a hidden thing (lib/secrets.ts)
+const SecretToast = dynamic(() => import("@/components/SecretToast"), { ssr: false });
+// Dark paper lit by a lamp that follows the pointer (`lamp` in the terminal, or hold the theme button)
+const Lamp = dynamic(() => import("@/components/Lamp"), { ssr: false });
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -23,6 +27,8 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <XRay />
       <Voice />
       <LookBack />
+      <SecretToast />
+      <Lamp />
       {children}
     </>
   );

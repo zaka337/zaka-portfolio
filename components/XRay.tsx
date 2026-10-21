@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { found } from "@/lib/secrets";
 import "./xray.css";
 
 /* Paper X-ray: "inspect element" for everyone. Press Shift+X (or run `xray` in the secret
@@ -74,6 +75,7 @@ function start(onExit: () => void) {
 
   layer.append(grid, wrap, ...guides.map((g) => g.line), title, close);
   document.body.appendChild(layer);
+  found("xray");
 
   let items: Item[] = [];
   let selected: Item | null = null;

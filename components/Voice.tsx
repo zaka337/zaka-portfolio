@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { understand, type Reply } from "@/lib/voiceIntents";
 import { crumblePage } from "@/lib/crumble";
+import { found } from "@/lib/secrets";
 import "./voice.css";
 
 /* Talk to the portfolio. Run `talk` in the secret terminal (or press Shift+V), say something
@@ -117,6 +118,7 @@ export default function Voice() {
     setNote("");
     const r = understand(said);
     if (r.act === "stop") { close(); return; }
+    found("talk");
     setReply(r.say);
     setLink(r.link ?? null);
     // A theme change is instant; the rest waits for the sentence to finish
@@ -131,6 +133,7 @@ export default function Voice() {
       if (r.act === "crumble") { close(); void crumblePage(); return; }
       if (r.act === "xray") { close(); window.dispatchEvent(new Event("zk-xray")); return; }
       if (r.act === "terminal") { close(); window.dispatchEvent(new Event("zk-terminal")); return; }
+      if (r.act === "lamp" || r.act === "lampoff") { close(); window.dispatchEvent(new CustomEvent("zk-lamp", { detail: r.act === "lamp" })); return; }
       if (r.go) router.push(r.go);
       later(r.link ? 14000 : 8000);
     });

@@ -13,6 +13,8 @@
      the same at 60 and 120 Hz). Rendering is one transform per letter per frame.
    - It runs only while the effect is active and removes everything it added when done. */
 
+import { found } from "@/lib/secrets";
+
 type Hooks = {
   /** Make the avatar say something in its speech bubble. */
   say: (text: string, ms?: number) => void;
@@ -547,6 +549,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks, options: { page?: b
       e.preventDefault();
       pull = true;
       ceiling = true;
+      found("tilt");
     }
   };
   const onKeyUp = (e: KeyboardEvent) => {
@@ -591,6 +594,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks, options: { page?: b
     if (!tiltSeen) {
       // A real sensor is talking: now the hint can promise it
       tiltSeen = true;
+      found("tilt");
       hint.textContent = "Tilt or shake your phone · tap anywhere to put it back";
     }
     // The sign convention differs between phones (iPhones report it upside down), so it is
@@ -687,5 +691,6 @@ export function knockOver(source: HTMLElement, hooks: Hooks, options: { page?: b
 
   render(0);
   raf = requestAnimationFrame(frame);
+  found(page ? "crumble" : "title");
   return true;
 }

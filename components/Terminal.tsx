@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PROJECTS } from "@/lib/projects";
 import { SOCIAL } from "@/lib/site";
 import { crumblePage } from "@/lib/crumble";
+import { SECRETS, found, foundList } from "@/lib/secrets";
 import "./terminal.css";
 
 /* A secret command line, in the site's own ink-and-paper language (the same window as the
@@ -18,7 +19,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -139,6 +140,7 @@ export default function Terminal() {
   useEffect(() => {
     if (!open) return;
     backRef.current = document.activeElement;
+    found("terminal");
     // Desktop gets the cursor straight away. A phone only raises its keyboard from a tap, so
     // there the first tap on the window does it.
     if (!touch) inputRef.current?.focus();
@@ -195,6 +197,7 @@ export default function Terminal() {
     push({ kind: "out", text: "********" });
     await sleep(450);
     if (run.current !== id) return;
+    found("hire");
     push({ kind: "out", text: "access granted. good call." }, { kind: "dim", text: "opening the project brief..." });
     await sleep(900);
     if (run.current !== id) return;
@@ -272,6 +275,21 @@ export default function Terminal() {
       }
     } else if (c === "snake") {
       out("snake lives on the Nokia. opening it..."); setTimeout(() => go("/contact"), 300);
+    } else if (c === "lamp" || c === "flashlight") {
+      // Dispatched inside the Enter key press, so a phone may ask for motion access
+      const off = /^off$/i.test(rest);
+      out(off ? "lamp off." : "lamp on. move your cursor (or finger, or tilt the phone). Esc switches it off.");
+      window.dispatchEvent(new CustomEvent("zk-lamp", { detail: !off }));
+      close();
+    } else if (c === "secrets" || c === "achievements") {
+      const have = foundList();
+      out(`secrets found: ${have.length} of ${SECRETS.length}`);
+      for (const s of SECRETS) {
+        if (have.includes(s.id)) push({ kind: "out", text: `[x] ${s.name}` });
+        else push({ kind: "dim", text: `[ ] ???  ${s.hint}` });
+      }
+      if (have.length >= SECRETS.length) push({ kind: "out", text: "all found. backstage is open: /backstage", href: "/backstage" });
+      else dim("find them all and something opens.");
     } else if (c === "camera" || c === "mirror" || c === "lookback") {
       // Like talk: dispatched right here, inside the Enter key press, so the browser may ask for the camera
       out("opening the camera... look at the screen, then turn your head. (Esc to turn it off)");

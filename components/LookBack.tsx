@@ -4,14 +4,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { mirror, poseFromMatrix } from "@/lib/mirror";
+import { found } from "@/lib/secrets";
 import "./lookback.css";
 
 /* Look back: the avatar copies the visitor's head. Run `camera` in the secret terminal (or press
    Shift+C), allow the camera, look at the screen for a second, then turn, nod and tilt.
 
    Everything happens on the visitor's own device: Google's MediaPipe face tracker runs in the
-   browser, its engine and model are served from this site (nothing is fetched from a third
-   party), and the picture is never recorded or uploaded. The camera is visible the whole time
+   browser, its engine and model are served from this site, and the picture is never recorded or
+   uploaded. One thing to know: the library itself tries to send anonymous usage logs to Google
+   (odml.pa.googleapis.com). The site's Content-Security-Policy (connect-src 'self', next.config.ts)
+   blocks that request, so keep that header: removing it would let those logs out. The camera is
+   visible the whole time
    (a small live preview and an off button), switches itself off when the visitor leaves the
    home page or the tab, and the tracker is only downloaded (about 6 MB over the network) when
    someone turns this on.
@@ -177,6 +181,7 @@ export default function LookBack() {
 
       if (!mirror.on) {
         mirror.on = true;
+        found("camera");
         show("on", "Turn, nod, tilt: I will copy you. It stays on this device.");
       }
       const k = 0.45;

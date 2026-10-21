@@ -1,0 +1,46 @@
+/* Lamp mode (components/Lamp.tsx): dark paper lit by a lamp that follows the pointer. One layer
+   with two gradients over the page: a faint warm light, and the darkness around it. It sits above
+   the page but below everything the other secrets draw, and lets every tap and click through. */
+
+.lamp-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  pointer-events: none;
+  --lr: clamp(150px, 26vmin, 320px); /* how far the light reaches */
+  background:
+    radial-gradient(circle at var(--lx, 50%) var(--ly, 42%),
+      rgba(255, 226, 170, 0.1) 0,
+      rgba(255, 226, 170, 0.04) calc(var(--lr) * 0.9),
+      transparent calc(var(--lr) * 1.4)),
+    radial-gradient(circle at var(--lx, 50%) var(--ly, 42%),
+      transparent 0,
+      transparent calc(var(--lr) * 0.3),
+      rgba(4, 4, 3, 0.55) calc(var(--lr) * 0.72),
+      rgba(4, 4, 3, 0.95) calc(var(--lr) * 1.35));
+  animation: lampOn 0.7s var(--ease-out) both;
+}
+@keyframes lampOn { from { opacity: 0; } to { opacity: 1; } }
+
+.lamp-hint {
+  position: fixed;
+  z-index: 8001;
+  left: 50%;
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 48px); /* above the theme button, which sits low */
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  padding: 8px 14px;
+  border: 1px solid rgba(var(--ink-rgb), 0.5);
+  border-radius: 2px;
+  background: rgba(var(--paper-rgb), 0.9);
+  color: var(--ink);
+  font: 700 0.6rem/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.lamp-hint.is-gone { opacity: 0; }
+
+@media print { .lamp-layer, .lamp-hint { display: none !important; } }

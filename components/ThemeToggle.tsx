@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 type Theme = "light" | "dark";
@@ -28,6 +28,27 @@ export default function ThemeToggle() {
     setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
   }, []);
 
+  /* Hold the toggle for a moment instead of tapping it: lamp mode (components/Lamp.tsx). It is
+     sent when the finger lifts, which is a real gesture, so a phone may then ask for motion
+     access. The tap that follows a long press must not also flip the theme. */
+  const press = useRef(0);
+  const held = useRef(false);
+  const skipClick = useRef(false);
+  const onDown = () => {
+    held.current = false;
+    window.clearTimeout(press.current);
+    press.current = window.setTimeout(() => { held.current = true; }, 650);
+  };
+  const onUp = () => {
+    window.clearTimeout(press.current);
+    if (!held.current) return;
+    held.current = false;
+    window.dispatchEvent(new CustomEvent("zk-lamp"));
+    skipClick.current = true;
+    window.setTimeout(() => { skipClick.current = false; }, 400);
+  };
+  const onCancel = () => { window.clearTimeout(press.current); held.current = false; };
+
   return (
     <button
       type="button"
@@ -36,7 +57,14 @@ export default function ThemeToggle() {
       aria-label="Dark mode"
       aria-pressed={theme === null ? undefined : theme === "dark"}
       title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      onClick={() => apply(theme === "dark" ? "light" : "dark")}
+      onPointerDown={onDown}
+      onPointerUp={onUp}
+      onPointerLeave={onCancel}
+      onPointerCancel={onCancel}
+      onClick={() => {
+        if (skipClick.current) { skipClick.current = false; return; }
+        apply(theme === "dark" ? "light" : "dark");
+      }}
     >
       <svg className="tt-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8z" />

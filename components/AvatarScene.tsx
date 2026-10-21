@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ENV_SIZE, ENV_SIGMA, preloadBakedEnv, bakedEnvTexture } from "@/lib/bakedEnv";
 import { mirror } from "@/lib/mirror";
+import { found } from "@/lib/secrets";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -548,6 +549,7 @@ export default function AvatarScene() {
     r.pitch = Math.max(-0.5, Math.min(0.5, r.pitch + dy * 0.006));
     r.yawV = r.yawV * 0.55 + ((dx * 0.011) / (ms / 1000)) * 0.45; // how fast the hand is turning it
     r.moved += Math.abs(dx) + Math.abs(dy);
+    if (r.moved > 8) found("head"); // really dragged it, not just tapped
     r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = now;
   };
   const onLetGo = () => {
