@@ -943,6 +943,24 @@ html.zk-skip #zk-loader { display: none !important; }
 }
 .egg-hint.is-on { opacity: 1; }
 
+/* A whole page crumbling (the terminal's rm -rf /): its text goes transparent while the
+   letters fall, so borders, images and the avatar stay and the empty boxes remain. */
+html[data-crumble] body :not(.avatar-scene):not(.avatar-scene *):not(.home-ghost):not(.home-ghost *):not(.egg-layer):not(.egg-layer *):not(.egg-hint):not(.egg-tilt):not(.zt-backdrop):not(.zt-backdrop *):not(.theme-toggle):not(.theme-toggle *) {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+}
+/* The rule above is inherited by whatever sits inside a hidden parent (the avatar lives in
+   <main>), so the parts that keep their text say so again. */
+html[data-crumble] :is(.avatar-scene, .home-ghost, .theme-toggle, .zt-backdrop, .egg-layer, .egg-hint, .egg-tilt) {
+  -webkit-text-fill-color: currentColor !important;
+}
+html[data-crumble] .avatar-scene { color: var(--ink); }
+html[data-crumble] body ::placeholder {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 /* iPhones only show their motion permission prompt from a tap, so tilt starts from this button */
 .egg-tilt {
   position: fixed;

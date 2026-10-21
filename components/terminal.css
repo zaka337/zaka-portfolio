@@ -1,0 +1,137 @@
+/* The secret terminal (components/Terminal.tsx). The same window as the Nokia page: paper,
+   a thin ink border, a round close button and an uppercase tag, with monospace inside.
+   No animation at all, so Reduce Motion needs nothing special. */
+
+.zt-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  align-items: flex-start; /* top on a phone: the keyboard comes up from the bottom */
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) 12px 12px;
+  background: rgba(var(--ink-rgb), 0.34);
+}
+@media (min-width: 769px) {
+  .zt-backdrop { align-items: center; padding: 24px; }
+}
+
+.zt-window {
+  width: min(720px, 100%);
+  max-height: min(560px, 64dvh);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 0 28px 70px rgba(var(--ink-rgb), 0.28);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.zt-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 46px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--ink);
+  flex: none;
+}
+.zt-close {
+  justify-self: start;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font: 400 18px/1 "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, color 0.2s;
+}
+.zt-close:hover { background: var(--ink); color: var(--paper); }
+.zt-title {
+  font-size: 0.72rem;
+  color: var(--ink-50);
+  white-space: nowrap;
+}
+.zt-tag {
+  justify-self: end;
+  font: 700 0.66rem/1 "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0.18em;
+}
+
+.zt-body {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 16px 18px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+@media (hover: none) {
+  /* 16px: below that, iPhones zoom the page when the prompt is tapped */
+  .zt-body { font-size: 16px; line-height: 1.5; }
+}
+
+.zt-line {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.zt-dim { color: var(--ink-50); }
+.zt-err { color: var(--ink); font-style: italic; }
+.zt-in  { color: var(--ink); font-weight: 700; }
+.zt-tap { margin-top: 6px; }
+
+/* A line that opens something (the project list) */
+.zt-link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.zt-link:hover { color: var(--ink-50); }
+
+.zt-prompt {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  margin: 0;
+}
+.zt-ps1 { font-weight: 700; flex: none; }
+.zt-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--ink);
+  font: inherit;
+  font-size: 16px; /* never below 16px on an iPhone, or it zooms */
+  border-radius: 0;
+}
+@media (min-width: 769px) and (hover: hover) {
+  .zt-input { font-size: 13px; }
+}
+.zt-input:disabled { opacity: 0.5; }

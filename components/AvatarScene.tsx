@@ -495,11 +495,21 @@ export default function AvatarScene() {
   /* Head tricks: press and drag the face to turn the head, let go to watch it spring back,
      flick it hard to send it spinning. A press that barely moves is still "say hi". */
   const rig = useRef<Rig>(newRig());
+  const press = useRef(0); // the long-press timer
+  useEffect(() => () => window.clearTimeout(press.current), []);
   const onGrab = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const r = rig.current;
     r.dragging = true;
     r.moved = 0;
+    // Held still for a moment: the secret terminal (components/Terminal.tsx)
+    window.clearTimeout(press.current);
+    press.current = window.setTimeout(() => {
+      if (!rig.current.dragging || rig.current.moved >= 8) return;
+      rig.current.moved = 999; // and this press is no longer a tap
+      navigator.vibrate?.(18);
+      window.dispatchEvent(new Event("zk-terminal"));
+    }, 650);
     r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = performance.now();
     r.yawV = 0; r.pitchV = 0; r.spinning = false; r.dizzyT = -1; // grabbing it stops everything
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* the window still gets the moves */ }
@@ -518,6 +528,7 @@ export default function AvatarScene() {
     r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = now;
   };
   const onLetGo = () => {
+    window.clearTimeout(press.current);
     const r = rig.current;
     if (!r.dragging) return;
     r.dragging = false;

@@ -30,6 +30,7 @@ interface Body {
   hw: number; hh: number; // half width/height of the glyph box (floor and wall contacts)
   inertia: number;
   held: boolean;
+  wait: number;           // ms before this letter lets go (a whole page crumbles from the bottom up)
   gx: number; gy: number; // while held: where the pointer wants the centre to be
   ox: number; oy: number; // while held: pointer offset from the centre when it was grabbed
   tw: { t0: number; dur: number; x0: number; y0: number; a0: number; a1: number } | null;
@@ -56,8 +57,15 @@ const easeOutBack = (t: number) => {
 
 let measureCtx: CanvasRenderingContext2D | null = null;
 
-/* One record per visible character: where it is, how big it is, how to draw it. */
-function gather(source: HTMLElement) {
+/* Things in a page that must not fall: the avatar and its bubble, what this effect adds
+   itself, the terminal, the outline word behind the face, and text nobody reads. */
+const PAGE_SKIP = "[aria-hidden='true'], .avatar-scene, .home-ghost, .egg-layer, .egg-hint, .egg-tilt, .egg-key, .zt-backdrop, .theme-toggle, script, style, noscript, textarea, input, select, svg";
+const MAX_PAGE_GLYPHS = 240; // a busy page keeps 60fps: the biggest letters fall, the rest just vanish
+
+/* One record per visible character: where it is, how big it is, how to draw it.
+   page: take every readable letter on screen (the terminal's "rm -rf /"), with its own
+   colour, instead of only the title's. */
+function gather(source: HTMLElement, page = false) {
   measureCtx ??= document.createElement("canvas").getContext("2d");
   const ctx = measureCtx;
   const glyphs: {
@@ -71,25 +79,36 @@ function gather(source: HTMLElement) {
   const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode() as Text | null; node; node = walker.nextNode() as Text | null) {
     const parent = node.parentElement;
-    // Skip controls inside the block (the visually hidden keyboard button): only the
-    // title's own text falls.
-    if (!parent || parent.closest("button")) continue;
+    if (!parent) continue;
+    // Title only: skip controls inside the block (the visually hidden keyboard button), so
+    // only the title's own text falls. A whole page keeps its buttons' text, minus the skips.
+    if (page ? parent.closest(PAGE_SKIP) : parent.closest("button")) continue;
     const cs = getComputedStyle(parent);
     if (cs.display === "none" || cs.visibility === "hidden") continue;
+    if (page) {
+      // Text that is invisible right now (opacity 0, a hidden ancestor, a transparent colour) stays put
+      const seen = (parent as HTMLElement & { checkVisibility?: (o: object) => boolean })
+        .checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true });
+      if (seen === false || /^(transparent|rgba\(\d+, \d+, \d+, 0\))$/.test(cs.color)) continue;
+    }
 
     const size = parseFloat(cs.fontSize);
     if (ctx) ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
     // The label is dim; the title uses the full ink (not the hover-dimmed colour it may have right now).
-    const tone = parent.classList.contains("label") ? "var(--ink-50)" : "var(--ink)";
+    // On a whole page every text keeps the colour it has.
+    const tone = page ? cs.color : parent.classList.contains("label") ? "var(--ink-50)" : "var(--ink)";
+    const upper = cs.textTransform === "uppercase", lower = cs.textTransform === "lowercase";
 
     const text = node.nodeValue ?? "";
     for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      if (/\s/.test(ch)) continue;
+      const raw = text[i];
+      if (/\s/.test(raw)) continue;
+      const ch = upper ? raw.toUpperCase() : lower ? raw.toLowerCase() : raw; // text-transform shows only on the original
       range.setStart(node, i);
       range.setEnd(node, i + 1);
       const rc = range.getClientRects()[0];
       if (!rc || rc.width < 1 || rc.height < 1) continue;
+      if (page && (rc.bottom < 0 || rc.top > window.innerHeight || rc.right < 0 || rc.left > window.innerWidth)) continue;
 
       const m = ctx ? ctx.measureText(ch) : null;
       const fontAscent = m && m.fontBoundingBoxAscent > 0 ? m.fontBoundingBoxAscent : size * 0.93;
@@ -116,6 +135,10 @@ function gather(source: HTMLElement) {
       });
     }
   }
+  if (page && glyphs.length > MAX_PAGE_GLYPHS) {
+    glyphs.sort((a, b) => b.size - a.size);
+    glyphs.length = MAX_PAGE_GLYPHS;
+  }
   return glyphs;
 }
 
@@ -137,16 +160,19 @@ export function stopKnockOver() {
   active?.stop();
 }
 
-/** Returns false if nothing happened (already running, no text found). */
-export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
+/** Returns false if nothing happened (already running, no text found).
+    options.page: every readable letter in `source` falls (the terminal's `rm -rf /`),
+    crumbling from the bottom up, and a click anywhere "runs git restore .". */
+export function knockOver(source: HTMLElement, hooks: Hooks, options: { page?: boolean } = {}): boolean {
   if (active) return false;
+  const page = !!options.page;
 
   /* Reduced motion (a device setting) gets a calm version instead of none: the letters
      do not shake, spin, leap or bounce, they simply let go and settle, they can still be
      dragged, and they fade out instead of flying home. */
   const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const glyphs = gather(source);
+  const glyphs = gather(source, page);
   if (!glyphs.length) {
     // Never fail silently: the avatar still answers
     hooks.say("WHATEVER.");
@@ -186,7 +212,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       el, hx: gl.cx, hy: gl.cy, x: gl.cx, y: gl.cy, vx: 0, vy: 0, a: 0, w: 0,
       r: gl.r, m: gl.hw * gl.hh, hw: gl.hw, hh: gl.hh,
       inertia: (gl.hw * gl.hh * (gl.hw * gl.hw + gl.hh * gl.hh)) / 3,
-      held: false, gx: 0, gy: 0, ox: 0, oy: 0, tw: null,
+      held: false, wait: 0, gx: 0, gy: 0, ox: 0, oy: 0, tw: null,
     };
   });
   const byEl = new Map<Element, Body>(bodies.map((b) => [b.el, b]));
@@ -195,13 +221,20 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   hint.className = "egg-hint";
   hint.setAttribute("role", "status");
   const touch = window.matchMedia("(hover: none)").matches;
-  hint.textContent = touch
-    ? `Tap anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around`
-    : `Click anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around${calm ? "" : " · hold space to pull them in"}`;
+  hint.textContent = page
+    ? `${touch ? "Tap" : "Click"} anywhere to run: git restore .`
+    : touch
+      ? `Tap anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around`
+      : `Click anywhere to put it back, or ${calm ? "drag" : "throw"} the letters around${calm ? "" : " · hold space to pull them in"}`;
+
+  /* The originals are only hidden, never moved or removed (React owns them): the title with
+     [data-egg], a whole page by making its text transparent with [data-crumble]. */
+  const hideOriginals = () => (page ? document.documentElement : source).setAttribute(page ? "data-crumble" : "data-egg", "");
+  const showOriginals = () => { source.removeAttribute("data-egg"); document.documentElement.removeAttribute("data-crumble"); };
 
   document.body.appendChild(layer);
   document.body.appendChild(hint);
-  source.setAttribute("data-egg", "");
+  hideOriginals();
 
   /* ── State ── */
   type Phase = "shake" | "fall" | "return";
@@ -225,7 +258,13 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
 
   const release = () => {
     for (const b of bodies) {
-      if (calm) {
+      if (page) {
+        // A collapse, not a leap: the letters at the bottom of the page let go first
+        b.wait = (1 - b.hy / H) * 700 + rand(0, 140);
+        b.vx = calm ? 0 : W * rand(-0.06, 0.06);
+        b.vy = calm ? 0 : -H * rand(0, 0.1);
+        b.w = calm ? 0 : rand(-2.5, 2.5);
+      } else if (calm) {
         // Let go and drop straight down: no leap, no sideways burst, no spin
         b.vx = W * rand(-0.01, 0.01);
         b.vy = 0;
@@ -282,6 +321,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
   const step = (dt: number) => {
     for (const b of bodies) {
       if (b.tw) continue;
+      if (b.wait > 0) { b.wait -= dt * 1000; continue; } // not let go yet
       if (calm) { b.w = 0; b.a = 0; } // calm: letters never spin, they stay upright
       if (b.held) {
         // Kinematic: chase the pointer. The chasing speed becomes the throw when released.
@@ -313,15 +353,23 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       boxContact(b, 1, 0, 0, 0.45 * bounce);
       boxContact(b, -1, 0, W, 0.45 * bounce);
       if (ceiling) boxContact(b, 0, 1, 0, 0.32 * bounce);
-      // Come to rest instead of jittering, but only against an edge that gravity is pressing it onto
-      const m = Math.max(b.hw, b.hh) * 1.5;
-      const pressed =
-        (gravY > 0.25 * g && b.y + m > floor) ||
-        (ceiling && gravY < -0.25 * g && b.y - m < 0) ||
-        (gravX > 0.25 * g && b.x + m > W) ||
-        (gravX < -0.25 * g && b.x - m < 0);
-      if (!pull && pressed && Math.abs(b.vx) < 9 && Math.abs(b.vy) < 14 && Math.abs(b.w) < 0.5) {
-        b.vx = 0; b.vy = 0; b.w = 0;
+      // Come to rest instead of jittering, but only against an edge that gravity is pressing it
+      // onto, and never stop it sliding along that edge when gravity is also pulling it along.
+      if (!pull && Math.abs(b.w) < 0.5) {
+        const m = Math.max(b.hw, b.hh) * 1.5;
+        const along = 0.12 * g; // gravity along an edge below this is too little to slide on
+        const onFloor = gravY > 0.25 * g && b.y + m > floor;
+        const onCeiling = ceiling && gravY < -0.25 * g && b.y - m < 0;
+        const onRight = gravX > 0.25 * g && b.x + m > W;
+        const onLeft = gravX < -0.25 * g && b.x - m < 0;
+        if ((onFloor || onCeiling) && Math.abs(b.vy) < 14 && (Math.abs(gravX) >= along || Math.abs(b.vx) < 9)) {
+          b.vy = 0; b.w = 0;
+          if (Math.abs(gravX) < along) b.vx = 0;
+        }
+        if ((onRight || onLeft) && Math.abs(b.vx) < 14 && (Math.abs(gravY) >= along || Math.abs(b.vy) < 9)) {
+          b.vx = 0; b.w = 0;
+          if (Math.abs(gravY) < along) b.vy = 0;
+        }
       }
 
       // The avatar's head (a capsule)
@@ -354,10 +402,10 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     // Letters against letters
     for (let i = 0; i < bodies.length; i++) {
       const p = bodies[i];
-      if (p.tw) continue;
+      if (p.tw || p.wait > 0) continue;
       for (let j = i + 1; j < bodies.length; j++) {
         const q = bodies[j];
-        if (q.tw || (p.held && q.held)) continue;
+        if (q.tw || q.wait > 0 || (p.held && q.held)) continue;
         const dx = q.x - p.x, dy = q.y - p.y;
         const min = p.r + q.r;
         const d2 = dx * dx + dy * dy;
@@ -382,6 +430,16 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
         }
       }
     }
+
+    // The screen edges get the last word: in a dense pile the letters on top push the ones
+    // below into the floor, and nothing may end a step outside the screen.
+    for (const b of bodies) {
+      if (b.tw || b.wait > 0 || b.held) continue;
+      boxContact(b, 0, -1, floor, 0.32 * bounce);
+      boxContact(b, 1, 0, 0, 0.45 * bounce);
+      boxContact(b, -1, 0, W, 0.45 * bounce);
+      if (ceiling) boxContact(b, 0, 1, 0, 0.32 * bounce);
+    }
   };
 
   /* ── Frame loop ── */
@@ -395,7 +453,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       // again. The Web Animations API is not affected by the page's reduced-motion CSS,
       // which would make a CSS fade instant; this is an opacity change only, nothing moves.
       bodies.forEach((b) => { b.held = false; });
-      source.removeAttribute("data-egg");
+      showOriginals();
       if (typeof layer.animate === "function") {
         layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: "ease-out", fill: "forwards" })
           .onfinish = () => finish();
@@ -404,11 +462,14 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
       }
       return;
     }
+    // Each letter leaves a beat after the one before; a whole page is capped at about a second
+    const stagger = Math.min(RETURN_STAGGER_MS, 900 / bodies.length);
     bodies.forEach((b, i) => {
       b.held = false;
+      b.wait = 0;
       const turns = Math.round(b.a / (Math.PI * 2));
       b.tw = {
-        t0: now + i * RETURN_STAGGER_MS, dur: RETURN_MS,
+        t0: now + i * stagger, dur: RETURN_MS,
         x0: b.x, y0: b.y, a0: b.a, a1: turns * Math.PI * 2,
       };
     });
@@ -519,7 +580,7 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     touched = performance.now();
     for (const b of bodies) {
       b.vx += rand(-1, 1) * W * 1.3;
-      b.vy += rand(-1.5, 0.3) * H; // a shake mostly tosses them up
+      b.vy += rand(-2.2, 0.2) * H; // a shake mostly tosses them up, well clear of the pile
       b.w += rand(-9, 9);
     }
   };
@@ -603,7 +664,8 @@ export function knockOver(source: HTMLElement, hooks: Hooks): boolean {
     layer.remove();
     hint.remove();
     tiltBtn?.remove();
-    source.removeAttribute("data-egg");
+    showOriginals();
+    if (page && phase === "return") hooks.say("RESTORED.", 1500);
     if (active === controller) active = null;
   }
 
