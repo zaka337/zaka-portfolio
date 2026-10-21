@@ -9,7 +9,7 @@ export type Reply = {
   say: string;                                  // what is spoken (and shown)
   go?: string;                                  // a page of this site to open once it has spoken
   link?: { label: string; href: string };       // something to tap: new tabs are only allowed from a tap
-  act?: "dark" | "light" | "crumble" | "xray" | "terminal" | "stop" | "lamp" | "lampoff";
+  act?: "dark" | "light" | "crumble" | "xray" | "terminal" | "stop" | "lamp" | "lampoff" | "tour";
 };
 
 /* How each project is likely to be heard: speech engines split and respell names, so these are
@@ -50,6 +50,7 @@ export function understand(raw: string, now: Date = new Date()): Reply {
   }
   if (has(/ (x ray|xray|blueprint) /) || has(/ show me the (skeleton|structure|bones) /)) return { say: "Drawing the blueprint.", act: "xray" };
   if (has(/ (terminal|command line|console|shell) /)) return { say: "Opening the terminal.", act: "terminal" };
+  if (has(/ (tour|show me around|walk me through|take me around|guided) /)) return { say: "Sure. A one minute walk around the site.", act: "tour" };
   if (has(/ (lamp|flashlight|torch|spotlight) /)) {
     return has(/ (off|stop|out) /) ? { say: "Lamp off.", act: "lampoff" } : { say: "Lamp on. Move around to light the page.", act: "lamp" };
   }

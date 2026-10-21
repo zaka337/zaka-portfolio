@@ -19,7 +19,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -280,6 +280,11 @@ export default function Terminal() {
       const off = /^off$/i.test(rest);
       out(off ? "lamp off." : "lamp on. move your cursor (or finger, or tilt the phone). Esc switches it off.");
       window.dispatchEvent(new CustomEvent("zk-lamp", { detail: !off }));
+      close();
+    } else if (c === "tour") {
+      // Dispatched inside the Enter key press, like the others
+      out("starting the tour. about a minute. Esc ends it.");
+      window.dispatchEvent(new Event("zk-tour"));
       close();
     } else if (c === "secrets" || c === "achievements") {
       const have = foundList();

@@ -17,6 +17,8 @@ const LookBack = dynamic(() => import("@/components/LookBack"), { ssr: false });
 const SecretToast = dynamic(() => import("@/components/SecretToast"), { ssr: false });
 // Dark paper lit by a lamp that follows the pointer (`lamp` in the terminal, or hold the theme button)
 const Lamp = dynamic(() => import("@/components/Lamp"), { ssr: false });
+// A one minute walk around the site (`tour` in the terminal, or ask the avatar for a tour)
+const Tour = dynamic(() => import("@/components/Tour"), { ssr: false });
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -29,6 +31,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <LookBack />
       <SecretToast />
       <Lamp />
+      <Tour />
       {children}
     </>
   );

@@ -1,0 +1,112 @@
+/* The sixty-second tour (components/Tour.tsx): a paper card with one line of text at the bottom,
+   and a soft spotlight (the rest of the page dimmed) on what it is talking about. Both let every
+   tap and click through to the page, except the card's own buttons. */
+
+.tr-spot {
+  position: fixed;
+  z-index: 9370;
+  pointer-events: none;
+  border-radius: 3px;
+  outline: 1.5px solid var(--ink);
+  outline-offset: 0;
+  box-shadow: 0 0 0 100vmax rgba(6, 6, 5, 0.5);
+  animation: trSpot 0.5s var(--ease-out) both;
+}
+@keyframes trSpot { from { opacity: 0; } to { opacity: 1; } }
+
+.tr-card {
+  position: fixed;
+  z-index: 9380;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  width: min(460px, calc(100vw - 24px));
+  padding: 14px 16px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 0 14px 40px rgba(var(--ink-rgb), 0.28);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  animation: trCard 0.35s var(--ease-out) both;
+}
+@keyframes trCard { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* The corner button sits low on phones: lift the card clear of it */
+@media (max-width: 768px) {
+  .tr-card { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 48px); }
+}
+
+.tr-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: rgba(var(--ink-rgb), 0.12);
+}
+.tr-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left center;
+  animation: trFill linear both;
+}
+.tr-bar i.is-paused { animation-play-state: paused; }
+@keyframes trFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.tr-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 6px;
+}
+.tr-count {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+.tr-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.tr-text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-70, var(--ink));
+}
+
+.tr-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tr-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font: 800 0.6rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.tr-btn:hover, .tr-btn:focus-visible { background: var(--ink); color: var(--paper); }
+.tr-btn.is-main { background: var(--ink); color: var(--paper); }
+.tr-btn.is-main:hover, .tr-btn.is-main:focus-visible { background: transparent; color: var(--ink); }
+
+/* Reduce Motion: a slide show you drive yourself, nothing animates */
+@media (prefers-reduced-motion: reduce) {
+  .tr-spot, .tr-card { animation: none; }
+  .tr-btn { transition: none; }
+}
+
+@media print { .tr-spot, .tr-card { display: none !important; } }

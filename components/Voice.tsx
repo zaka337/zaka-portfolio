@@ -133,6 +133,7 @@ export default function Voice() {
       if (r.act === "crumble") { close(); void crumblePage(); return; }
       if (r.act === "xray") { close(); window.dispatchEvent(new Event("zk-xray")); return; }
       if (r.act === "terminal") { close(); window.dispatchEvent(new Event("zk-terminal")); return; }
+      if (r.act === "tour") { close(); window.dispatchEvent(new Event("zk-tour")); return; }
       if (r.act === "lamp" || r.act === "lampoff") { close(); window.dispatchEvent(new CustomEvent("zk-lamp", { detail: r.act === "lamp" })); return; }
       if (r.go) router.push(r.go);
       later(r.link ? 14000 : 8000);
