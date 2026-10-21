@@ -15,6 +15,7 @@ import "./cursor.css";
      left alone     it waits with three bouncing dots (...), and after a while falls asleep (zZ)
      woken up       a jolt (!)
      pressed        it squashes and a ring ripples out
+     holding D      the dot swells and draws in ink (components/Doodle.tsx)
      over a field   it steps aside for the real text cursor
 
    The dot always sits exactly on the pointer (that is the click point); only the decoration moves
@@ -22,7 +23,7 @@ import "./cursor.css";
    work. Reduce Motion and calm mode keep the glyphs but drop the tail. Decorative only: aria-hidden. */
 
 type G =
-  | "" | "away" | "text" | "shake" | "up" | "down" | "wake" | "idle" | "sleep"
+  | "" | "away" | "text" | "draw" | "shake" | "up" | "down" | "wake" | "idle" | "sleep"
   | "arrow" | "ext" | "mail" | "bang" | "ask" | "smile" | "ring" | "cross" | "drag";
 
 // The glyphs are written as escapes: non-ASCII characters in source files have broken the build before
@@ -76,7 +77,7 @@ export default function CustomCursor() {
     const pos = { x: -200, y: -200 };
     const prev = { x: -200, y: -200 };
     let vx = 0, vy = 0, raf = 0, last = 0, tailOn = false;
-    let shown = false, away = false, down = false;
+    let shown = false, away = false, down = false, drawOn = false;
     let hover: G = "", scrollG: G = "";
     let shakeOn = false, wakeOn = false, idle = false, asleep = false;
     let lastMove = 0, idleT = 0, sleepT = 0, scrollT = 0, wakeT = 0, shakeT = 0;
@@ -87,6 +88,7 @@ export default function CustomCursor() {
     const resolve = () => {
       const g: G = away || !shown ? "away"
         : hover === "text" ? "text"
+        : drawOn ? "draw"
         : shakeOn ? "shake"
         : scrollG ? scrollG
         : wakeOn ? "wake"
@@ -220,6 +222,7 @@ export default function CustomCursor() {
       resolve();
     };
 
+    const onDoodle = (e: Event) => { drawOn = !!(e as CustomEvent).detail; resolve(); };
     const onLeave = () => { away = true; resolve(); };
     const onEnter = () => { away = false; resolve(); };
 
@@ -229,6 +232,7 @@ export default function CustomCursor() {
     window.addEventListener("mouseup", onUp, { passive: true, capture: true });
     window.addEventListener("blur", onUp);
     window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("zk-doodle", onDoodle);
     html.addEventListener("mouseleave", onLeave);
     html.addEventListener("mouseenter", onEnter);
 
@@ -240,6 +244,7 @@ export default function CustomCursor() {
       window.removeEventListener("mouseup", onUp, true);
       window.removeEventListener("blur", onUp);
       window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("zk-doodle", onDoodle);
       html.removeEventListener("mouseleave", onLeave);
       html.removeEventListener("mouseenter", onEnter);
       if (raf) cancelAnimationFrame(raf);

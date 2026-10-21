@@ -46,6 +46,8 @@
 .zk-cur.has-g .zk-head,
 .zk-cur[data-g="idle"] .zk-head { scale: 0; }
 .zk-cur[data-g="ring"] .zk-head { scale: 0.55; }
+/* Drawing (hold D): a bigger ink dot */
+.zk-cur[data-g="draw"] .zk-head { transform: scale(1.7); }
 /* Asleep: squashed flat, like something lying down */
 .zk-cur[data-g="sleep"] .zk-head { transform: scale(1.35, 0.7) translateY(2px); }
 

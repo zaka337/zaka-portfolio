@@ -33,6 +33,9 @@ const Access = dynamic(() => import("@/components/Access"), { ssr: false });
 // Ctrl+K (or /): search the whole site from the keyboard
 const Palette = dynamic(() => import("@/components/Palette"), { ssr: false });
 
+// Hold D and move the mouse: the full stop draws in ink, and the ink fades
+const Doodle = dynamic(() => import("@/components/Doodle"), { ssr: false });
+
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -51,6 +54,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <PaperPlane />
       <Access />
       <Palette />
+      <Doodle />
       {children}
     </>
   );

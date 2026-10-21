@@ -21,7 +21,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -301,6 +301,10 @@ export default function Terminal() {
     } else if (c === "search" || c === "find" || c === "k") {
       out("opening the search. (Ctrl K does the same, anywhere.)");
       window.dispatchEvent(new Event("zk-palette"));
+      close();
+    } else if (c === "doodle" || c === "draw") {
+      out("hold D and move the mouse. the ink fades. Esc wipes it.");
+      window.dispatchEvent(new Event("zk-doodle-hint"));
       close();
     } else if (c === "tldr") {
       out("the short version, on one screen...");

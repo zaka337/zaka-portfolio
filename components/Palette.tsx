@@ -89,6 +89,7 @@ export default function Palette() {
       else if (a.id === "theme") document.querySelector<HTMLButtonElement>(".theme-toggle")?.click();
       else if (a.id === "tour") window.dispatchEvent(new Event("zk-tour"));
       else if (a.id === "access") document.querySelector<HTMLButtonElement>(".ax-btn")?.click();
+      else if (a.id === "doodle") window.dispatchEvent(new Event("zk-doodle-hint"));
       else if (a.id === "resume") window.open(RESUME_PDF, "_blank", "noopener");
       else if (a.id === "copy") navigator.clipboard?.writeText(window.location.href.split("#")[0]).catch(() => {});
     }, 40);

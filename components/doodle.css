@@ -1,0 +1,46 @@
+/* Hold D and draw (components/Doodle.tsx). The canvas sits over the page and never catches the
+   pointer; the cursor dot swells while drawing (components/cursor.css). */
+
+.dd-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 9990;
+  pointer-events: none;
+}
+@media print { .dd-canvas, .dd-hint { display: none !important; } }
+
+.dd-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 9vh;
+  z-index: 9991;
+  margin: 0;
+  padding: 11px 18px;
+  transform: translate(-50%, 10px);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 800 0.62rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  box-shadow: 4px 4px 0 rgba(var(--ink-rgb), 0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.35s var(--ease-out);
+}
+.dd-hint.is-on { opacity: 1; transform: translate(-50%, 0); }
+.dd-hint kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  margin: 0 2px;
+  padding: 4px 6px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--paper);
+  font: inherit;
+  text-align: center;
+}
