@@ -107,10 +107,8 @@ function OpenStatus() {
   return (
     <div className="home-status home-enter home-enter-5">
       <i className={`home-status-dot${asleep ? " is-asleep" : ""}`} aria-hidden="true" />
-      <span>
-        {asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""}
-        {asleep ? ` ${'·'} REPLIES IN THE MORNING` : ""}
-      </span>
+      <span>{asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""}</span>
+      {asleep && <span className="home-status-sub">REPLIES IN THE MORNING</span>}
     </div>
   );
 }

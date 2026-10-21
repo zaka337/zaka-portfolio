@@ -375,7 +375,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const talkSway = rg.talking && !calm ? Math.sin(t * 3.1) * 0.05 : 0;
     const talkBob = rg.talking && !calm ? Math.sin(t * 11) * 0.028 + Math.sin(t * 5.3) * 0.02 : 0;
     bone.rotation.y += rg.yaw + talkSway;
-    const slump = sw * (0.5 + (calm ? 0 : Math.sin(t * 0.9) * 0.022)); // chin to chest, breathing slowly
+    const slump = sw * (0.44 + (calm ? 0 : Math.sin(t * 0.9) * 0.022)); // chin to chest, breathing slowly
     bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 * awake + nod + hi + rg.pitch + dizzyPitch + talkBob + slump;  // gentle up/down, chin safe
 
     // Breathing, depth parallax and a small lean into the turn
@@ -383,7 +383,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     if (g) {
       g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005) - sw * 0.012;
       g.position.x = -target.current.x * (calm ? 0.02 : 0.035) * awake;
-      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) * awake + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll + sw * 0.07;
+      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) * awake + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll + sw * 0.012;
     }
 
     // Look back: while the camera is mirroring the visitor, the head glides over to copy their head
