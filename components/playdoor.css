@@ -1,0 +1,47 @@
+/* The home screen's way into the racing game (components/PlayDoor.tsx). Reduce Motion and calm mode
+   shorten the animations to nothing through the global rules in app/globals.css. */
+
+.home-play-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(5vh + 72px);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.home-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 20px 7px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 800 0.66rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 5px 0 rgba(var(--ink-rgb), 0.28);
+  pointer-events: auto;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.home-play b { font-weight: 900; }
+.hp-car { display: block; width: 44px; height: 24px; overflow: visible; }
+.hp-wheel { transform-box: fill-box; transform-origin: center; }
+.home-play:hover, .home-play:focus-visible { transform: translateY(-3px); box-shadow: 0 8px 0 rgba(var(--ink-rgb), 0.28); }
+.home-play:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(var(--ink-rgb), 0.28); }
+.home-play:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.home-play:hover .hp-car, .home-play:focus-visible .hp-car { animation: hpBounce 0.34s ease-in-out infinite; }
+.home-play:hover .hp-wheel, .home-play:focus-visible .hp-wheel { animation: hpSpin 0.3s linear infinite; }
+@keyframes hpBounce { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1.5px) rotate(-1.5deg); } }
+@keyframes hpSpin { to { transform: rotate(360deg); } }
+
+/* Phone: in the empty row between the face and the bottom cards */
+@media (max-width: 768px) {
+  .home-play-wrap { position: static; grid-row: 2; grid-column: 1 / 7; align-self: end; justify-self: center; padding-bottom: 4px; }
+  .home-play { padding: 8px 18px 8px 12px; font-size: 0.6rem; min-height: 44px; }
+}
+@media print { .home-play-wrap { display: none; } }

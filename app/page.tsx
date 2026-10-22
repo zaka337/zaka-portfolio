@@ -7,6 +7,7 @@ import { knockOver, stopKnockOver } from "@/lib/knockOver";
 import { useAsleep } from "@/lib/sleep";
 import RoleType from "@/components/RoleType";
 import KineticText from "@/components/KineticText";
+import PlayDoor from "@/components/PlayDoor";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -148,6 +149,9 @@ export default function Home() {
         </div>
         <p className="nav-hint">START A PROJECT BRIEF</p>
       </Link>
+
+      {/* The racing game: the way in from the home screen */}
+      <PlayDoor />
 
       <OpenStatus />
 
