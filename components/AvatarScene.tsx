@@ -10,6 +10,8 @@ import { ENV_SIZE, ENV_SIGMA, preloadBakedEnv, bakedEnvTexture } from "@/lib/bak
 import { mirror } from "@/lib/mirror";
 import { found } from "@/lib/secrets";
 import { pkt, useAsleep, wake } from "@/lib/sleep";
+import { play, soundOn } from "@/lib/sound";
+import { faceFx, patchMaterial } from "@/components/face/faceFx";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -101,6 +103,7 @@ function upgradeMaterial(m: THREE.Material): THREE.Material {
     side: m.side,
   });
   p.name = m.name;
+  patchMaterial(p); // squish and looks (components/face/faceFx.ts)
   m.dispose();
   return p;
 }
@@ -277,7 +280,18 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     };
     gl.compileAsync(g, camera, stage).then(reveal, reveal);
 
-    return () => { cancelled = true; };
+    // Squish, boop, looks and the particle burst work on the meshes that are left
+    const meshes: THREE.Mesh[] = [];
+    scene.traverse((o) => { if (o instanceof THREE.Mesh) meshes.push(o); });
+    faceFx.attach(
+      { camera: camera as THREE.PerspectiveCamera, gl, model: scene, meshes, cutY: prep.metrics.cutY },
+      {
+        say: (text, ms) => window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } })),
+        sound: (name) => { if (soundOn()) play(name); },
+      },
+    );
+
+    return () => { cancelled = true; faceFx.detach(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, camera, gl, stage]);
 
@@ -315,6 +329,9 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
   useFrame((state, delta) => {
     if (paused.current) return;
     const calm = calmRef.current;
+    faceFx.setCalm(calm);
+    faceFx.frame(delta, state.clock.elapsedTime);
+    if (faceFx.frozen) return; // the head is particles right now: leave its pose as it was
     const t = state.clock.elapsedTime;
     const k = 1 - Math.exp(-delta * (calm ? 2.4 : 3.4));
     target.current.x += (mouse.current.x - target.current.x) * k;
@@ -552,29 +569,73 @@ export default function AvatarScene() {
     window.addEventListener("zk-talking", onTalking);
     return () => window.removeEventListener("zk-talking", onTalking);
   }, []);
+  /* What a press does depends on where on the face it lands (faceFx.regionAt): the cap bursts the
+     head into particles, the eyes change its look, the nose is a boop, and the cheeks, mouth and chin
+     squish like putty when dragged. A drag from the cap, eyes or nose is still the old head-turn, and
+     a plain tap on the cheeks is still "say hi". */
+  const pressRegion = useRef<"cap" | "eyes" | "nose" | "squish" | "turn">("turn");
+  const squishing = useRef(false);
+  const holdT = useRef(0);          // while it is particles: how long the face has been held (for the words)
+  const heldWords = useRef(false);
+  const swallow = useRef(false);    // the click after a press that has already done its job is ignored
+  const hintRef = useRef<HTMLSpanElement>(null);
+  const HINT = { cap: "DISSOLVE", eyes: "NEW LOOK", nose: "BOOP", squish: "SQUISH", turn: "SAY HI" };
+  const say = (text: string, ms = 1600) => window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } }));
+  useEffect(() => () => window.clearTimeout(holdT.current), []);
+
   const onGrab = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const r = rig.current;
-    r.dragging = true;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const region = faceFx.ready ? faceFx.regionAt((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height) : "turn";
+    pressRegion.current = region;
+    swallow.current = false;
     r.moved = 0;
-    // Held still for a moment: the secret terminal (components/Terminal.tsx)
+    r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = performance.now();
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* the window still gets the moves */ }
+    // While it is particles: a tap puts the head back together, holding spells words
+    if (faceFx.dissolved) {
+      swallow.current = true; heldWords.current = false;
+      window.clearTimeout(holdT.current);
+      holdT.current = window.setTimeout(() => { heldWords.current = true; faceFx.holdWords(true); }, 280);
+      return;
+    }
     window.clearTimeout(press.current);
+    if (region === "squish" && !r.asleep && faceFx.squishStart(e.clientX, e.clientY)) {
+      squishing.current = true;
+    } else {
+      r.dragging = true;
+      r.yawV = 0; r.pitchV = 0; r.spinning = false; r.dizzyT = -1; // grabbing it stops everything
+    }
+    // Held still for a moment: the secret terminal (components/Terminal.tsx)
     press.current = window.setTimeout(() => {
-      if (!rig.current.dragging || rig.current.moved >= 8) return;
+      if ((!rig.current.dragging && !squishing.current) || rig.current.moved >= 8) return;
       rig.current.moved = 999; // and this press is no longer a tap
+      if (squishing.current) { squishing.current = false; faceFx.squishEnd(); }
       navigator.vibrate?.(18);
       window.dispatchEvent(new Event("zk-terminal"));
     }, 650);
-    r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = performance.now();
-    r.yawV = 0; r.pitchV = 0; r.spinning = false; r.dizzyT = -1; // grabbing it stops everything
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* the window still gets the moves */ }
   };
   const onDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
     const r = rig.current;
-    if (!r.dragging) return;
+    if (!r.dragging && !squishing.current) {
+      // Not pressed: just hovering. Tell them what a press here would do.
+      if (e.pointerType === "mouse" && hintRef.current && faceFx.ready) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const t = faceFx.dissolved ? "TAP: BACK TOGETHER" : HINT[faceFx.regionAt((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height)];
+        if (hintRef.current.textContent !== t) hintRef.current.textContent = t;
+      }
+      return;
+    }
     const now = performance.now();
     const dx = e.clientX - r.lastX;
     const dy = e.clientY - r.lastY;
+    if (squishing.current) {
+      r.moved += Math.abs(dx) + Math.abs(dy);
+      r.lastX = e.clientX; r.lastY = e.clientY; r.lastT = now;
+      faceFx.squishMove(e.clientX, e.clientY);
+      return;
+    }
     const ms = Math.max(4, now - r.lastT);
     r.yaw += dx * 0.011;
     r.pitch = Math.max(-0.5, Math.min(0.5, r.pitch + dy * 0.006));
@@ -585,6 +646,10 @@ export default function AvatarScene() {
   };
   const onLetGo = () => {
     window.clearTimeout(press.current);
+    window.clearTimeout(holdT.current);
+    if (heldWords.current) { heldWords.current = false; faceFx.holdWords(false); return; }
+    if (swallow.current && faceFx.dissolved) { faceFx.reform(); return; }   // a short tap while it is particles
+    if (squishing.current) { squishing.current = false; faceFx.squishEnd(); return; }
     const r = rig.current;
     if (!r.dragging) return;
     r.dragging = false;
@@ -594,6 +659,39 @@ export default function AvatarScene() {
     if (calm) r.yawV = 0;                                        // calm: it just eases back
     else if (Math.abs(r.yawV) > 8) r.spinning = true;
   };
+  const onTap = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (swallow.current) { swallow.current = false; return; }
+    if (rig.current.moved > 8) { rig.current.moved = 0; return; } // that was a drag, not a tap
+    const reg = pressRegion.current;
+    pressRegion.current = "turn";
+    if (faceFx.ready && !asleep) {
+      if (reg === "cap") { faceFx.dissolve(); return; }
+      if (reg === "eyes") { faceFx.nextLook(); return; }
+      if (reg === "nose") { faceFx.boop(e.clientX, e.clientY); say("HONK!", 1200); return; }
+    }
+    sayHi();
+  };
+
+  /* Now and then, when nobody is doing anything, the face suggests something to try */
+  const asleepRef = useRef(asleep);
+  useEffect(() => { asleepRef.current = asleep; }, [asleep]);
+  useEffect(() => {
+    if (mode !== "3d") return;
+    const lines = ["PSST. DRAG MY CHEEKS.", "BOOP MY NOSE.", "CLICK MY CAP.", "LOOK ME IN THE EYE."];
+    let n = 0, last = performance.now();
+    const touch = () => { last = performance.now(); };
+    window.addEventListener("pointerdown", touch, true);
+    const id = window.setInterval(() => {
+      if (document.hidden || asleepRef.current || faceFx.dissolved || !faceFx.ready) return;
+      if (performance.now() - last < 11000) return;
+      if (document.querySelector(".zt-window, .tr-card, .rc-backdrop, .pk, [data-egg]")) return;
+      say(lines[n++ % lines.length], 2800);
+      last = performance.now() - 4000;
+      if (n >= 8) window.clearInterval(id);
+    }, 3000);
+    return () => { window.clearInterval(id); window.removeEventListener("pointerdown", touch, true); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   return (
     <div
@@ -671,16 +769,13 @@ export default function AvatarScene() {
         type="button"
         className="face-hit"
         aria-label="Say hi to Zaka's avatar"
-        onClick={() => {
-          if (rig.current.moved > 8) { rig.current.moved = 0; return; } // that was a drag, not a tap
-          sayHi();
-        }}
+        onClick={onTap}
         onPointerDown={onGrab}
         onPointerMove={onDrag}
         onPointerUp={onLetGo}
         onPointerCancel={onLetGo}
       >
-        <span className="face-hint" aria-hidden="true">SAY HI</span>
+        <span ref={hintRef} className="face-hint" aria-hidden="true">SAY HI</span>
       </button>
       <div className={`face-bubble${shown ? " is-on" : ""}`} role="status" aria-live="polite">{shown ? bubble : ""}</div>
     </div>

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MayhemEngine, type Phase, type Results, type HudData } from "./engine/engine";
 import { RACERS } from "./engine/cars";
+import { loadSelfie, saveSelfie, type Selfie } from "./engine/selfie";
+import FaceBooth from "./FaceBooth";
 import type { Control } from "./engine/input";
 import { fmtTime } from "./engine/util";
 import "./mayhem.css";
@@ -76,6 +78,10 @@ export default function MiniMayhem() {
   const [err, setErr] = useState("");
   const [record, setRecord] = useState(false);
   const [announce, setAnnounce] = useState("");
+  const [faceOpen, setFaceOpen] = useState(false);
+  const [face, setFace] = useState<{ thumb: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const photo = useRef<Blob | null>(null);
   const toastT = useRef(0);
   const countT = useRef(0);
   const refs = {
@@ -174,6 +180,7 @@ export default function MiniMayhem() {
       try {
         e.init();
         mapT.current = buildMap(e);
+        loadSelfie().then((sf) => { if (sf && !dead && engine.current === e) { e.setSelfie(sf); setFace({ thumb: sf.canvas.toDataURL("image/png") }); } });
       } catch (ex) {
         console.error(ex);
         e.dispose(); engine.current = null;
@@ -195,7 +202,7 @@ export default function MiniMayhem() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const en = engine.current;
-      if (!en) return;
+      if (!en || faceOpen) return;
       if (screen === "select") {
         if (e.code === "ArrowRight" || e.code === "KeyD") { e.preventDefault(); const n = (racer + 1) % RACERS.length; setRacer(n); en.setRacer(n); }
         else if (e.code === "ArrowLeft" || e.code === "KeyA") { e.preventDefault(); const n = (racer + RACERS.length - 1) % RACERS.length; setRacer(n); en.setRacer(n); }
@@ -204,7 +211,49 @@ export default function MiniMayhem() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [screen, racer]);
+  }, [screen, racer, faceOpen]);
+
+  // the face booth hands over a finished face
+  const useFace = (sf: Selfie | null) => {
+    engine.current?.setSelfie(sf);
+    saveSelfie(sf);
+    setFace(sf ? { thumb: sf.canvas.toDataURL("image/png") } : null);
+    setFaceOpen(false);
+    setAnnounce(sf ? "Your face is on the driver" : "Your face was removed");
+  };
+
+  // when the results come up, a portrait is already waiting, so Save is instant (and a phone's share sheet still counts the tap)
+  useEffect(() => {
+    photo.current = null;
+    if (!results) return;
+    let dead = false;
+    const t = window.setTimeout(() => {
+      engine.current?.photo({ place: ORD[results.place - 1] ?? String(results.place), time: fmtTime(results.time), name: face ? "YOU" : RACERS[racer].name })
+        .then((b) => { if (!dead) photo.current = b; });
+    }, 400);
+    return () => { dead = true; window.clearTimeout(t); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results]);
+
+  const savePhoto = async () => {
+    if (saving || !results) return;
+    setSaving(true);
+    try {
+      const blob = photo.current ?? await engine.current?.photo({ place: ORD[results.place - 1] ?? String(results.place), time: fmtTime(results.time), name: face ? "YOU" : RACERS[racer].name });
+      if (!blob) { showToast("COULD NOT MAKE THE PHOTO", false, 2200); return; }
+      const file = new File([blob], "mini-mayhem.jpg", { type: "image/jpeg" });
+      if (touchUi && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: "MINI MAYHEM" }); return; }
+        catch (e) { if ((e as Error).name === "AbortError") return; }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "mini-mayhem.jpg";
+      document.body.appendChild(a); a.click(); a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 5000);
+      showToast("PHOTO SAVED", true, 1800);
+    } finally { setSaving(false); }
+  };
 
   const toggleMute = () => {
     const m = !muted;
@@ -256,9 +305,20 @@ export default function MiniMayhem() {
       {(screen === "attract" || screen === "select") && (
         <div className="mm-topbar">
           <Link className="mm-chip" href="/projects">{'←'} PORTFOLIO</Link>
+          {screen === "select" && (
+            <span className="mm-facechips">
+              <button type="button" className="mm-chip mm-chip-face" onClick={() => setFaceOpen(true)}>
+                {face ? <img src={face.thumb} alt="" width={24} height={24} /> : <i className="mm-facedot" aria-hidden="true" />}
+                {face ? "YOUR FACE IS ON" : "ADD YOUR FACE"}
+              </button>
+              {face && <button type="button" className="mm-chip" aria-label="Remove your face" onClick={() => useFace(null)}>{'\u00d7'}</button>}
+            </span>
+          )}
           <button type="button" className="mm-chip" aria-pressed={muted} onClick={toggleMute}>SOUND {muted ? "OFF" : "ON"}</button>
         </div>
       )}
+
+      {screen === "select" && faceOpen && <FaceBooth onUse={(sf) => useFace(sf)} onClose={() => setFaceOpen(false)} />}
 
       {screen === "select" && (
         <div className="mm-select">
@@ -376,6 +436,7 @@ export default function MiniMayhem() {
           </ol>
           <div className="mm-btns">
             <button type="button" className="mm-btn mm-btn-hero" autoFocus onClick={again}>RACE AGAIN</button>
+            <button type="button" className="mm-btn" onClick={savePhoto} disabled={saving}>{saving ? "SAVING..." : "SAVE PHOTO"}</button>
             <button type="button" className="mm-btn" onClick={() => engine.current?.showSelect()}>CHANGE DRIVER</button>
             <Link className="mm-btn mm-btn-ghost" href="/projects">BACK TO THE PORTFOLIO</Link>
           </div>

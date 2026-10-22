@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { search, ITEMS, type Item } from "@/lib/palette";
 import { navigate } from "@/lib/nav";
 import { RESUME_PDF } from "@/lib/resume";
+import { faceAct } from "@/lib/faceAct";
 import "./palette.css";
 
 /* Search the whole site from the keyboard. Ctrl+K (Cmd+K on a Mac) or / opens it, or the round
@@ -90,6 +91,7 @@ export default function Palette() {
       else if (a.id === "tour") window.dispatchEvent(new Event("zk-tour"));
       else if (a.id === "access") document.querySelector<HTMLButtonElement>(".ax-btn")?.click();
       else if (a.id === "doodle") window.dispatchEvent(new Event("zk-doodle-hint"));
+      else if (a.id === "dissolve" || a.id === "look") faceAct(a.id, { goHome: () => navigate(router, "/") });
       else if (a.id === "resume") window.open(RESUME_PDF, "_blank", "noopener");
       else if (a.id === "copy") navigator.clipboard?.writeText(window.location.href.split("#")[0]).catch(() => {});
     }, 40);

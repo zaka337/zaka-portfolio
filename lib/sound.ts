@@ -9,7 +9,7 @@
    (components/Sound.tsx). */
 
 export type SoundName =
-  | "key" | "enter" | "page" | "chime" | "squash" | "tick" | "tear" | "whoosh" | "switch" | "ring";
+  | "key" | "enter" | "page" | "chime" | "squash" | "tick" | "tear" | "whoosh" | "switch" | "ring" | "honk";
 
 const KEY = "zk-sound";
 
@@ -134,6 +134,10 @@ export function play(name: SoundName) {
     case "chime": // a secret found
       tone(t, 0.42, { from: 880, gain: 0.16 });
       tone(t + 0.11, 0.55, { from: 1318, gain: 0.14 });
+      break;
+    case "honk": // a clown horn: two flat, buzzy notes
+      tone(t, 0.12, { type: "sawtooth", from: 392, gain: 0.3 });
+      tone(t + 0.13, 0.2, { type: "sawtooth", from: 311, to: 294, gain: 0.3 });
       break;
     case "squash":
       tone(t, 0.14, { from: 190, to: 48, gain: 0.4 });

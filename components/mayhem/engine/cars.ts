@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Merger, UNIT } from "./build";
 import { clamp, damp } from "./util";
+import type { Selfie } from "./selfie";
 
 /* The four racers: a toy-like open car and a driver with a head far too big for the body. All
    original, all built from simple shapes in code. The head is a separate group with its own
@@ -77,6 +78,8 @@ export interface Rig {
   steerPivot: THREE.Group[];
   wheelR: number[];
   animate(v: Vis, dt: number, spinDelta: number, steerAngle: number): void;
+  /** Put a photo on the driver's face (or null for the cartoon face again) */
+  setFace(s: Selfie | null): void;
   dispose(): void;
 }
 
@@ -204,40 +207,65 @@ export function buildRacer(spec: RacerSpec): Rig {
   head.position.set(0, ty + 1.05 + R * 0.88, -0.62);
   tilt.add(head);
   const hs = new Merger();
+  const fs = new Merger();   // the parts of the cartoon face that a photo takes the place of (eyes, cheeks, nose, shades, paint)
   hs.add(UNIT.sphere, "skin", 0, 0, 0, 0, R, R * 0.97, R * 0.98);
-  for (const sx of [-1, 1]) { hs.sphere("skin", sx * R * 0.97, -0.05, -0.05, 0.22, 0.28, 0.16); hs.sphere("pink", sx * 0.58, -0.22, R * 0.8, 0.16, 0.11, 0.06); hs.sphere("white", sx * 0.34, 0.14, R * 0.86, 0.27, 0.32, 0.14); }
-  hs.sphere("pink", 0, -0.14, R * 0.99, 0.17, 0.15, 0.15);
-  // headgear and hair
-  const cap = (scale: number, theta: number, key: string, z = 0, y = 0) => hs.add(new THREE.SphereGeometry(1, 22, 12, 0, Math.PI * 2, 0, Math.PI * theta), key, 0, y, z, 0, R * scale, R * scale, R * scale);
-  if (v === "speedster") {
-    cap(1.08, 0.56, "hat", 0, 0.03);
-    hs.cyl("hatAccent", 0, 0.66, 0.3, 0.1, 1.4, 0, Math.PI / 2 - 0.25, 0, 1, 0.6);
-    hs.box("shade", 0, 0.46, R * 0.93, R * 1.5, 0.26, 0.14, 0, -0.18);
-    for (const sx of [-1, 1]) { hs.cyl("hatAccent", sx * R * 1.03, 0.3, -0.1, 0.19, 0.06, 0, 0, Math.PI / 2); }
-    hs.box("hatAccent", 0, -0.02, -R * 1.03, 0.9, 0.18, 0.1);
-  } else if (v === "tactical") {
-    cap(1.1, 0.5, "hat", 0, 0.04);
-    hs.cyl("hat", 0, 0.5, 0.0, R * 1.2, 0.1, 0, 0, 0, 1, 1.2);
-    for (const [bx, by, bz, s] of [[0.5, 0.8, 0.5, 0.3], [-0.4, 0.9, -0.2, 0.34], [0.1, 1.0, -0.6, 0.28], [-0.7, 0.55, 0.6, 0.24]] as const) hs.add(UNIT.sphere, "hatAccent", bx, by, bz, 0, s, s * 0.35, s);
-    for (const sx of [-1, 1]) { hs.cyl("shade", sx * 0.34, 0.66, R * 0.96, 0.27, 0.12, 0, Math.PI / 2); hs.cyl("lens", sx * 0.34, 0.66, R * 1.03, 0.2, 0.05, 0, Math.PI / 2); }
-    hs.cyl("black", 0, 0.66, 0.0, R * 1.05, 0.13, 0, 0, 0, 1, 1.05);
-    for (const sx of [-1, 1]) hs.box("black", sx * 0.78, -0.35, 0.35, 0.06, 0.8, 0.06, 0, 0, sx * 0.3);
-  } else if (v === "drifter") {
-    cap(1.07, 0.5, "hat", 0, 0.05);
-    hs.box("hatAccent", 0, 0.18, -R * 1.05, 0.9, 0.07, 0.75, 0, 0.25);
-    hs.box("hatAccent", 0, 0.5, -R * 0.2, 0.18, 0.18, 0.18);
-    for (let k = 0; k < 5; k++) { const a = (k / 4 - 0.5) * 2.4; hs.add(UNIT.cone, "hair", Math.sin(a) * R * 1.0, 0.1, Math.cos(a) * R * 0.2 - R * 0.85 + 0.8, 0, 0.2, 0.7, 0.2, 0, -Math.sin(a) * 0.6); }
-    for (const sx of [-1, 1]) hs.rbox("shade", sx * 0.34, 0.14, R * 0.93, 0.62, 0.34, 0.12, 0.08);
-    hs.box("shade", 0, 0.17, R * 0.93, 0.16, 0.06, 0.1);
-    hs.sphere("gold", 0.26, -0.48, R * 0.92, 0.07);
-  } else {
-    for (let k = 0; k < 7; k++) { const t = k / 6; hs.add(UNIT.cone, "hair", 0, R * 0.95 + Math.sin(t * Math.PI) * 0.1 - 0.02, (t - 0.5) * 1.5, 0, 0.17, 0.5 + Math.sin(t * Math.PI) * 0.7, 0.2, -0.2 + t * 0.4); }
-    hs.cyl("hat", 0, 0.5, 0.0, R * 1.02, 0.2, 0, 0, 0, 1, 1.02);
-    hs.sphere("hat", -R * 0.95, 0.55, -0.4, 0.22);
-    for (const sx of [-1, 1]) { hs.box("blue", sx * 0.62, -0.18, R * 0.82, 0.45, 0.07, 0.04, 0, 0, sx * 0.4); hs.box("blue", sx * 0.58, -0.05, R * 0.86, 0.4, 0.06, 0.04, 0, 0, sx * 0.4); }
-    hs.sphere("gold", -0.16, -0.5, R * 0.92, 0.06);
+  for (const sx of [-1, 1]) { hs.sphere("skin", sx * R * 0.97, -0.05, -0.05, 0.22, 0.28, 0.16); fs.sphere("pink", sx * 0.58, -0.22, R * 0.8, 0.16, 0.11, 0.06); fs.sphere("white", sx * 0.34, 0.14, R * 0.86, 0.27, 0.32, 0.14); }
+  fs.sphere("pink", 0, -0.14, R * 0.99, 0.17, 0.15, 0.15);
+  // headgear and hair: built twice. With a photo on, the caps end above the eyebrows so the face shows.
+  const gear = (m: Merger, face: boolean) => {
+    const cap = (scale: number, theta: number, key: string, z = 0, y = 0) => {
+      const g = new THREE.SphereGeometry(1, 22, 12, 0, Math.PI * 2, 0, Math.PI * theta);
+      m.add(g, key, 0, y, z, 0, R * scale, R * scale, R * scale);
+      g.dispose();
+    };
+    if (v === "speedster") {
+      cap(1.08, face ? 0.36 : 0.56, "hat", 0, 0.03);
+      m.cyl("hatAccent", 0, 0.66, 0.3, 0.1, 1.4, 0, Math.PI / 2 - 0.25, 0, 1, 0.6);
+      if (!face) m.box("shade", 0, 0.46, R * 0.93, R * 1.5, 0.26, 0.14, 0, -0.18);
+      for (const sx of [-1, 1]) { m.cyl("hatAccent", sx * R * 1.03, 0.3, -0.1, 0.19, 0.06, 0, 0, Math.PI / 2); }
+      m.box("hatAccent", 0, -0.02, -R * 1.03, 0.9, 0.18, 0.1);
+    } else if (v === "tactical") {
+      cap(1.1, face ? 0.36 : 0.5, "hat", 0, 0.04);
+      m.cyl("hat", 0, face ? 0.62 : 0.5, 0.0, R * 1.2, 0.1, 0, 0, 0, 1, 1.2);
+      for (const [bx, by, bz, s] of [[0.5, 0.8, 0.5, 0.3], [-0.4, 0.9, -0.2, 0.34], [0.1, 1.0, -0.6, 0.28], [-0.7, 0.55, 0.6, 0.24]] as const) m.add(UNIT.sphere, "hatAccent", bx, by, bz, 0, s, s * 0.35, s);
+      for (const sx of [-1, 1]) { m.cyl("shade", sx * 0.34, face ? 0.84 : 0.66, R * 0.96, 0.27, 0.12, 0, Math.PI / 2); m.cyl("lens", sx * 0.34, face ? 0.84 : 0.66, R * 1.03, 0.2, 0.05, 0, Math.PI / 2); }
+      m.cyl("black", 0, face ? 0.72 : 0.66, 0.0, R * 1.05, 0.13, 0, 0, 0, 1, 1.05);
+      for (const sx of [-1, 1]) m.box("black", sx * 0.78, -0.35, 0.35, 0.06, 0.8, 0.06, 0, 0, sx * 0.3);
+    } else if (v === "drifter") {
+      cap(1.07, face ? 0.36 : 0.5, "hat", 0, 0.05);
+      m.box("hatAccent", 0, 0.18, -R * 1.05, 0.9, 0.07, 0.75, 0, 0.25);
+      m.box("hatAccent", 0, 0.5, -R * 0.2, 0.18, 0.18, 0.18);
+      for (let k = 0; k < 5; k++) { const a = (k / 4 - 0.5) * 2.4; m.add(UNIT.cone, "hair", Math.sin(a) * R * 1.0, 0.1, Math.cos(a) * R * 0.2 - R * 0.85 + 0.8, 0, 0.2, 0.7, 0.2, 0, -Math.sin(a) * 0.6); }
+      m.sphere("gold", 0.26, -0.48, R * 0.92, 0.07);
+    } else {
+      for (let k = 0; k < 7; k++) { const t = k / 6; m.add(UNIT.cone, "hair", 0, R * 0.95 + Math.sin(t * Math.PI) * 0.1 - 0.02, (t - 0.5) * 1.5, 0, 0.17, 0.5 + Math.sin(t * Math.PI) * 0.7, 0.2, -0.2 + t * 0.4); }
+      m.cyl("hat", 0, face ? 0.62 : 0.5, 0.0, R * 1.02, 0.2, 0, 0, 0, 1, 1.02);
+      m.sphere("hat", -R * 0.95, 0.55, -0.4, 0.22);
+      m.sphere("gold", -0.16, -0.5, R * 0.92, 0.06);
+    }
+  };
+  const ga = new Merger();
+  gear(ga, false);
+  // what a photo takes the place of: the shades on the drifter, the face paint on the wildcard
+  if (v === "drifter") {
+    for (const sx of [-1, 1]) fs.rbox("shade", sx * 0.34, 0.14, R * 0.93, 0.62, 0.34, 0.12, 0.08);
+    fs.box("shade", 0, 0.17, R * 0.93, 0.16, 0.06, 0.1);
+  } else if (v === "wildcard") {
+    for (const sx of [-1, 1]) { fs.box("blue", sx * 0.62, -0.18, R * 0.82, 0.45, 0.07, 0.04, 0, 0, sx * 0.4); fs.box("blue", sx * 0.58, -0.05, R * 0.86, 0.4, 0.06, 0.04, 0, 0, sx * 0.4); }
   }
   hs.build(mats, head, true, false);
+  const features = new THREE.Group();
+  head.add(features);
+  fs.build(mats, features, true, false);
+  const normalGear = new THREE.Group();
+  head.add(normalGear);
+  ga.build(mats, normalGear, true, false);
+  const photoGear = new THREE.Group();
+  photoGear.visible = false;
+  head.add(photoGear);
+  const gp = new Merger();
+  gear(gp, true);
+  gp.build(mats, photoGear, true, false);
 
   // the parts of the face that move
   const pupils: THREE.Mesh[] = [];
@@ -263,6 +291,40 @@ export function buildRacer(spec: RacerSpec): Rig {
   const teeth = new THREE.Mesh(UNIT.box, mats.white);
   teeth.position.set(0, -0.33, R * 0.99); teeth.scale.set(0.34, 0.07, 0.04);
   head.add(teeth);
+
+  // a photo of a real face: the front of the head, with the picture projected straight onto it. It
+  // has a soft oval edge, so it fades into the skin (whose colour is matched to the photo's).
+  const decalGeo = new THREE.SphereGeometry(1, 36, 28, Math.PI / 2 - 1.3, 2.6, Math.PI / 2 - 1.15, 2.3);
+  {
+    const pos = decalGeo.attributes.position, uv = decalGeo.attributes.uv, S = 0.95, CY = -0.04;
+    for (let i = 0; i < pos.count; i++) uv.setXY(i, 0.5 + pos.getX(i) / (2 * S), 0.5 + (pos.getY(i) - CY) / (2 * S));
+    uv.needsUpdate = true;
+  }
+  const decalMat = new THREE.MeshLambertMaterial({ transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const decal = new THREE.Mesh(decalGeo, decalMat);
+  decal.scale.set(R * 1.012, R * 0.97 * 1.012, R * 0.98 * 1.012);
+  decal.visible = false;
+  head.add(decal);
+  let faceOn = false;
+  let applied: Selfie | null = null;
+  const skinMat = mats.skin as THREE.MeshLambertMaterial;
+  const setFace = (sf: Selfie | null) => {
+    if (sf === applied) return;
+    applied = sf;
+    faceOn = !!sf;
+    features.visible = !sf; decal.visible = !!sf; normalGear.visible = !sf; photoGear.visible = !!sf;
+    for (const m of pupils) m.visible = !sf;
+    for (const m of brows) m.visible = !sf;
+    open.visible = !sf; smile.visible = !sf; teeth.visible = false;
+    decalMat.map?.dispose(); decalMat.map = null;
+    if (sf) {
+      const t = new THREE.CanvasTexture(sf.canvas);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+      decalMat.map = t;
+      skinMat.color.set(sf.skin);
+    } else skinMat.color.set(spec.skin);
+    decalMat.needsUpdate = true;
+  };
 
   // animation state (springs)
   const st = { pitch: 0, roll: 0, yaw: 0, bounce: 0, open: 0.1, brow: 0, look: 0, tiltP: 0, tiltR: 0, imp: 0 };
@@ -300,14 +362,15 @@ export function buildRacer(spec: RacerSpec): Rig {
     st.open = damp(st.open, wantOpen, 12, dt);
     open.scale.set(0.3, 0.04 + st.open * 0.3, 0.09);
     open.position.y = -0.42 - st.open * 0.05;
-    teeth.visible = st.open > 0.5;
-    smile.visible = st.open < 0.28;
+    teeth.visible = !faceOn && st.open > 0.5;
+    smile.visible = !faceOn && st.open < 0.28;
   };
 
   const dispose = () => {
     root.traverse((o) => { const m = o as THREE.Mesh; if (m.geometry && m.geometry !== UNIT.sphere && m.geometry !== UNIT.box) m.geometry.dispose(); });
     for (const m of Object.values(mats)) m.dispose();
+    decalMat.map?.dispose(); decalMat.dispose(); decalGeo.dispose();
   };
 
-  return { root, tilt, head, wheelSpin, steerPivot, wheelR, animate, dispose };
+  return { root, tilt, head, wheelSpin, steerPivot, wheelR, animate, setFace, dispose };
 }

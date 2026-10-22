@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { Track } from "./track";
 import { buildWorld, type World, type Quality, CP_COUNT } from "./world";
 import { RACERS, buildRacer, type Vis } from "./cars";
+import type { Selfie } from "./selfie";
 import { makeCar, placeCar, stepCar, wallsAndHeight, collideCars, emptyInput, type Car } from "./vehicle";
 import { driveAi, makeAi } from "./ai";
 import { initProgress, updateProgress, rank, LAPS } from "./race";
@@ -57,6 +58,7 @@ export class MayhemEngine {
   phase: Phase = "attract";
   paused = false;
   private racerIdx = 0;
+  private selfie: Selfie | null = null;
   private time = 0;
   private phaseTime = 0;
   private raceTime = 0;
@@ -165,7 +167,12 @@ export class MayhemEngine {
     this.racerIdx = idx;
     this.cars.forEach((c, i) => { c.human = i === idx; });
     this.player = this.cars[idx];
+    this.applyFace();
   }
+  /** Your photo goes on whoever you are driving as; the other three keep their own faces */
+  private applyFace() { for (const c of this.cars) c.rig.setFace(c.human ? this.selfie : null); }
+  setSelfie(s: Selfie | null) { this.selfie = s; this.applyFace(); }
+  get hasSelfie() { return !!this.selfie; }
   setRacer(idx: number) {
     this.assign(clamp(idx, 0, RACERS.length - 1));
     this.layoutGrid();
@@ -394,6 +401,59 @@ export class MayhemEngine {
     if (this.phase === "racing" || this.phase === "finished") this.audio.engine(clamp(Math.abs(p.speed) / p.spec.phys.maxSpeed, 0, 1), p.input.throttle, p.slide, !this.paused);
     else this.audio.engine(0.05, this.phase === "countdown" ? 0.8 : 0.1, 0, this.phase === "countdown" && !this.paused);
     this.renderer.render(this.world.scene, this.camera);
+  }
+
+  /** A portrait of the driver, taken at the finish: the face (yours, if you added it) in front of the
+      car, with the result written across the bottom. Rendered at its own size and put straight back, so
+      the picture on screen never changes. Returns a JPEG, or null if the browser would not make one. */
+  photo(info: { place: string; time: string; name: string }): Promise<Blob | null> {
+    const r = this.renderer, cam = this.camera, p = this.player;
+    const W = 1080, H = 1350;
+    const size = r.getSize(new THREE.Vector2());
+    const pr = r.getPixelRatio();
+    const keep = { fov: cam.fov, aspect: cam.aspect, pos: cam.position.clone(), quat: cam.quaternion.clone() };
+    const out = document.createElement("canvas");
+    out.width = W; out.height = H;
+    try {
+      p.rig.root.updateMatrixWorld(true);
+      const hp = p.rig.head.getWorldPosition(new THREE.Vector3());
+      const fx = Math.sin(p.h), fz = Math.cos(p.h), sx = Math.cos(p.h), sz = -Math.sin(p.h);
+      r.setPixelRatio(1); r.setSize(W, H, false);
+      cam.aspect = W / H; cam.fov = 33; cam.updateProjectionMatrix();
+      cam.position.set(hp.x + fx * 7.4 + sx * 0.7, hp.y + 0.2, hp.z + fz * 7.4 + sz * 0.7);
+      cam.lookAt(hp.x, hp.y - 0.95, hp.z);
+      cam.updateMatrixWorld();
+      this.fx.setScale(H, cam);
+      r.render(this.world.scene, cam);
+      const g = out.getContext("2d")!;
+      g.drawImage(r.domElement, 0, 0, W, H);
+      // the result, written across the bottom
+      const band = g.createLinearGradient(0, H * 0.7, 0, H);
+      band.addColorStop(0, "rgba(10,12,16,0)"); band.addColorStop(0.55, "rgba(10,12,16,0.78)"); band.addColorStop(1, "rgba(10,12,16,0.92)");
+      g.fillStyle = band; g.fillRect(0, H * 0.7, W, H * 0.3);
+      g.textAlign = "left"; g.textBaseline = "alphabetic";
+      g.fillStyle = "#ffd23f"; g.font = "900 54px Helvetica, Arial, sans-serif";
+      g.fillText("MINI MAYHEM", 64, H - 205);
+      g.fillStyle = "#ffffff"; g.font = "900 150px Helvetica, Arial, sans-serif";
+      g.fillText(info.place, 60, H - 70);
+      g.textAlign = "right";
+      g.font = "800 58px Helvetica, Arial, sans-serif"; g.fillStyle = "#ffffff";
+      g.fillText(info.time, W - 64, H - 118);
+      g.font = "700 34px Helvetica, Arial, sans-serif"; g.fillStyle = "rgba(255,255,255,0.78)";
+      g.fillText(`${info.name}  /  3 LAPS`, W - 64, H - 70);
+      g.textAlign = "center"; g.font = "600 26px Helvetica, Arial, sans-serif"; g.fillStyle = "rgba(255,255,255,0.6)";
+      g.fillText(`${location.host}/mini-mayhem`, W / 2, H - 22);
+    } catch (e) {
+      console.error(e);
+      return Promise.resolve(null);
+    } finally {
+      r.setPixelRatio(pr); r.setSize(size.x, size.y, false);
+      cam.fov = keep.fov; cam.aspect = keep.aspect; cam.position.copy(keep.pos); cam.quaternion.copy(keep.quat);
+      cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+      this.fx.setScale(r.domElement.height, cam);
+      r.render(this.world.scene, cam);   // resizing cleared the picture: put it straight back
+    }
+    return new Promise((res) => out.toBlob((b) => res(b), "image/jpeg", 0.92));
   }
 
   // ── cameras ──

@@ -12,7 +12,7 @@ export type Act =
   | { t: "go"; href: string }
   | { t: "ext"; href: string }
   | { t: "mail"; href: string }
-  | { t: "ui"; id: "theme" | "tour" | "access" | "copy" | "resume" | "doodle" };
+  | { t: "ui"; id: "theme" | "tour" | "access" | "copy" | "resume" | "doodle" | "dissolve" | "look" };
 
 export type GroupName = "Page" | "Project" | "Action" | "Link";
 
@@ -54,6 +54,8 @@ export const ITEMS: Item[] = [
   { id: "tour", group: "Action", title: "Take the 60-second tour", hint: "A guided walk around the site", words: "walk guide show me around intro demo", act: { t: "ui", id: "tour" } },
   { id: "access", group: "Action", title: "Reading and access options", hint: "Bigger text, easy-read font, contrast, calm mode", words: "accessibility text size font contrast calm reduce motion read aloud dyslexia", act: { t: "ui", id: "access" } },
   { id: "doodle", group: "Action", title: "Doodle with the cursor", hint: "Hold D and move the mouse", words: "draw paint pen ink sketch play fun", act: { t: "ui", id: "doodle" } },
+  { id: "dissolve", group: "Action", title: "Shatter Zaka into particles", hint: "The home page head, in tens of thousands of dots", words: "face head particles explode dissolve disintegrate magic fun 3d", act: { t: "ui", id: "dissolve" } },
+  { id: "look", group: "Action", title: "Change how Zaka's head looks", hint: "Gold, hologram, thermal, X-ray, cartoon", words: "face head scan look gold thermal xray hologram toon cartoon filter fun 3d", act: { t: "ui", id: "look" } },
   { id: "copy", group: "Action", title: "Copy a link to this page", hint: "For sharing", words: "share url address clipboard", act: { t: "ui", id: "copy" } },
   { id: "pdf", group: "Action", title: "Download the resume (PDF)", hint: RESUME_PDF.replace("/", ""), words: "cv download pdf file", act: { t: "ui", id: "resume" } },
   { id: "github", group: "Link", title: "GitHub", hint: "github.com/zaka337", words: "code repos source", act: { t: "ext", href: SOCIAL.github } },

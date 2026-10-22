@@ -8,6 +8,7 @@ import { crumblePage } from "@/lib/crumble";
 import { SECRETS, found, foundList } from "@/lib/secrets";
 import { BUGS, squashedList } from "@/lib/bugs";
 import { play, setSound, soundOn } from "@/lib/sound";
+import { faceAct } from "@/lib/faceAct";
 import "./terminal.css";
 
 /* A secret command line, in the site's own ink-and-paper language (the same window as the
@@ -21,7 +22,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -310,6 +311,26 @@ export default function Terminal() {
     } else if (c === "race" || c === "play" || c === "game" || c === "drive") {
       out("starting your engines. MINI MAYHEM is a 3D racing game.");
       setTimeout(() => go("/mini-mayhem"), 300);
+    } else if (c === "dissolve" || c === "boom" || c === "shatter") {
+      out("tap the cap, or: here goes. (hold on the face to spell words, tap to put it back.)");
+      faceAct("dissolve", { goHome: () => go("/") });
+      if (window.location.pathname === "/") close();
+    } else if (c === "look" || c === "looks" || c === "scan") {
+      const name = rest.trim();
+      out(name ? `look: ${name}` : "next look. (real, gold, hologram, thermal, xray, toon: 'look gold' picks one.)");
+      faceAct("look", { name: name || undefined, goHome: () => go("/") });
+      if (window.location.pathname === "/") close();
+    } else if (c === "boop") {
+      out("boop.");
+      faceAct("boop", { goHome: () => go("/") });
+      if (window.location.pathname === "/") close();
+    } else if (c === "squish") {
+      out("press and drag his cheeks, mouth or chin. he springs back.");
+      if (window.location.pathname !== "/") go("/");
+      else {
+        window.dispatchEvent(new CustomEvent("zk-say", { detail: { text: "DRAG MY CHEEKS, MOUTH OR CHIN.", ms: 3200 } }));
+        close();
+      }
     } else if (c === "tldr") {
       out("the short version, on one screen...");
       setTimeout(() => go("/tldr"), 250);
