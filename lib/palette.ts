@@ -38,6 +38,7 @@ export const ITEMS: Item[] = [
   page("fit", "Job-fit check", "Paste a job description, see the match", "/hire#fit", "job description match skills check requirements"),
   page("call", "Find a call time", "A time that works in your zone", "/hire#call", "meeting book schedule time zone calendar interview availability"),
   page("estimate", "Project estimate", "A rough timeline for your project", "/hire#estimate", "price cost quote timeline how long budget"),
+  page("race", "MINI MAYHEM (racing game)", "Tiny cars. Massive egos. A 3D race you can play", "/mini-mayhem", "game play race racing cars drive driving arcade fun 3d bridge island"),
   page("qa", "QA challenge", "Break this checkout", "/qa-challenge", "game bug test checkout break tester quality"),
   page("brief", "Send a project brief", "Tell him what you need", "/contact-me", "contact message email form inquiry hire write"),
   page("nokia", "The phone", "Pick up a Nokia, iPhone, Pixel or Nothing", "/contact", "contact nokia iphone pixel phone snake call"),

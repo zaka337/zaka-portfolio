@@ -116,6 +116,7 @@ export default function Doodle() {
       wake();
     };
     const onKeyDown = (e: KeyboardEvent) => {
+      if (document.documentElement.hasAttribute("data-mayhem")) return; // D is "steer right" in the racing game
       if (e.key.toLowerCase() === "d" && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !typing(e.target)) begin();
       else if (e.key === "Escape" && strokes.length) { strokes.length = 0; end(); wake(); }
     };

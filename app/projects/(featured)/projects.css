@@ -393,3 +393,22 @@
   .pj-frame, .pj-ghost { transform: none; }
   .pj-text { transform: none; opacity: 1; }
 }
+
+/* ─── The game card ─────────────────────────────────────────────── */
+
+.pj-game { padding: clamp(36px, 7vh, 90px) 4vw; background: var(--paper); }
+.pj-game-card {
+  display: grid; grid-template-columns: 1.25fr 1fr; align-items: stretch;
+  max-width: 1180px; margin: 0 auto;
+  border: 1.5px solid var(--ink); border-radius: 6px; overflow: hidden;
+  color: var(--ink); text-decoration: none; background: var(--paper);
+  box-shadow: 8px 8px 0 var(--ink);
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.pj-game-card:hover { transform: translate(-3px, -3px); box-shadow: 11px 11px 0 var(--ink); }
+.pj-game-img { display: block; width: 100%; height: 100%; object-fit: cover; min-height: 220px; }
+.pj-game-text { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 10px; padding: clamp(20px, 3.4vw, 44px); }
+.pj-game-text h2 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); font-weight: 900; font-style: italic; letter-spacing: -0.03em; line-height: 0.9; }
+.pj-game-tag { margin: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.28em; text-transform: uppercase; }
+.pj-game-copy { margin: 4px 0 8px; max-width: 30rem; font-size: clamp(0.9rem, 1.1vw, 1rem); line-height: 1.55; color: var(--ink-70); }
+@media (max-width: 800px) { .pj-game-card { grid-template-columns: 1fr; } .pj-game-img { height: auto; aspect-ratio: 1200 / 630; } }

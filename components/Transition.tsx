@@ -28,7 +28,7 @@ const GIVE_UP_MS = 4200;
 
 const LABELS: Record<string, string> = {
   "/": "HOME", "/about": "ABOUT", "/projects": "PROJECTS", "/projects/all": "ALL REPOS", "/resume": "RESUME",
-  "/hire": "HIRE", "/tldr": "TL;DR", "/qa-challenge": "BREAK IT", "/contact-me": "LET'S WORK", "/contact": "SAY HI",
+  "/hire": "HIRE", "/tldr": "TL;DR", "/qa-challenge": "BREAK IT", "/contact-me": "LET'S WORK", "/contact": "SAY HI", "/mini-mayhem": "MINI MAYHEM",
 };
 const labelFor = (path: string) =>
   LABELS[path] ?? PROJECTS.find((p) => `/projects/${p.slug}` === path)?.title.toUpperCase() ??

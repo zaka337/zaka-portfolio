@@ -125,6 +125,20 @@ export default function Projects() {
         </section>
       ))}
 
+      {/* A game, playable in the browser */}
+      <section className="pj-game" aria-labelledby="pj-game-h">
+        <Link className="pj-game-card" href="/mini-mayhem" aria-label="Play MINI MAYHEM, a 3D racing game built into this portfolio">
+          <Image className="pj-game-img" src="/mini-mayhem-preview.jpg" alt="" width={1200} height={630} sizes="(max-width: 900px) 92vw, 54vw" draggable={false} />
+          <div className="pj-game-text">
+            <p className="pj-label">Playable in your browser</p>
+            <h2 id="pj-game-h">MINI MAYHEM</h2>
+            <p className="pj-game-tag">Tiny cars. Massive egos.</p>
+            <p className="pj-game-copy">A 3D racing game I built into this portfolio: four drivers with giant cartoon heads, three laps, one island with a long bridge and a military base. Keyboard or touch.</p>
+            <span className="pj-btn pj-btn-solid">Play now {'→'}</span>
+          </div>
+        </Link>
+      </section>
+
       {/* Closing */}
       <section className="pj-cta">
         <p className="pj-label">That&apos;s the highlight reel</p>

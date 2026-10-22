@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/projects", label: "Projects" },
   { href: "/resume", label: "Resume" },
   { href: "/tldr", label: "The short version" },
+  { href: "/mini-mayhem", label: "Play a game" },
   { href: "/hire", label: "Hire me" },
   { href: "/contact-me", label: "Contact" },
 ];
