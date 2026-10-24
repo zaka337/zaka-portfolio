@@ -72,6 +72,6 @@
 
 /* Phone: beside the jaw, on the right, in the gap between the face and the bottom cards */
 @media (max-width: 768px) {
-  .home-play-wrap { --hp: 62px; left: auto; right: 14px; top: 60dvh; }
+  .home-play-wrap { --hp: 62px; left: auto; right: 14px; top: calc(var(--scene-c) + 5dvh); }
 }
 @media print { .home-play-wrap { display: none; } }

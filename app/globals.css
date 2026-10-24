@@ -288,7 +288,11 @@ canvas {
 @media (max-width: 768px) {
   /* Face sits in the empty middle row between the name row and the nav cards */
   .avatar-scene {
-    top: 55dvh !important;
+    /* The head stands on a pedestal (components/face/stand.ts), and the pedestal must end above the two rows of cards.
+       --scene-c (set on .portfolio-root below) is where the middle of the scene goes: the pedestal's bottom is 30.5dvh
+       below it, and the cards take (bottom padding + row gap + two cards of about 3.1 font sizes each) from the bottom.
+       The ghost word and the play sticker follow it. */
+    top: var(--scene-c) !important;
     height: 76dvh !important;
     transform: translateY(-50%);
   }
@@ -302,6 +306,7 @@ canvas {
   /* One fixed screen: name + SAY HI on top, clear middle row for the face,
      2x2 nav cards at the bottom. */
   .portfolio-root {
+    --scene-c: calc(69.5dvh - max(3dvh, 14px) - 1.4dvh - 6.2 * clamp(1rem, 5vw, 2rem) - 8px);
     height: 100dvh;
     min-height: 540px;
     overflow: hidden;
@@ -401,13 +406,13 @@ canvas {
 
 /* ─── Home entrance animations ──────────────────────────────────── */
 
+/* opacity starts at .01, not 0: Chrome never counts text that first paints at opacity 0 as a candidate for the
+   Largest Contentful Paint, so with 0 the page reported its LCP when tiny letters appeared seconds later */
 @keyframes homeEnter {
   from { opacity: 0.01; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* opacity starts at .01, not 0: Chrome never counts text that first paints at opacity 0 as a candidate for the
-   Largest Contentful Paint, so with 0 the page reported its LCP when tiny letters appeared seconds later */
 @keyframes homeAvatarFade {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -434,7 +439,8 @@ canvas {
 /* Head framing. AvatarScene publishes --face-cy / --face-h / --cut-y (the head's
    centre, height, chin and neck cut as % of the canvas) so these follow it at any size. */
 .avatar-scene canvas {
-  --neck-fade: linear-gradient(to bottom, #000 0%, #000 var(--chin-y, 56%), transparent var(--cut-y, 66%));
+  /* The neck no longer fades out: it ends in the stand's gold lip (components/face/stand.ts). The variable stays so the mask list below keeps its shape. */
+  --neck-fade: linear-gradient(to bottom, #000, #000);
   /* Fade the neck out, and trim the shoulders/arms off both sides */
   --side-trim: linear-gradient(to right, transparent calc(50% - var(--face-px, 300px) * 0.82), #000 calc(50% - var(--face-px, 300px) * 0.56), #000 calc(50% + var(--face-px, 300px) * 0.56), transparent calc(50% + var(--face-px, 300px) * 0.82));
   -webkit-mask-image: var(--neck-fade), var(--side-trim);
@@ -629,7 +635,7 @@ canvas {
 
 @media (max-width: 768px) {
   .home-status { display: none; }
-  .home-ghost { top: 51dvh; font-size: 30vw; }
+  .home-ghost { top: calc(var(--scene-c) - 4dvh); font-size: 30vw; }
   .face-bubble { left: 50%; transform-origin: 50% 100%; transform: translate(-50%, -100%) scale(0.6); }
   .face-bubble.is-on { transform: translate(-50%, -100%) scale(1); }
 }
