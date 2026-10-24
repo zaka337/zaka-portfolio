@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode } from "@/lib/seo";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "QA challenge: break this checkout",
+  title: { absolute: "QA Challenge: break this checkout | Zaka Ullah Waheed" },
   description:
-    "A small made-up shop checkout with six bugs hidden in it. Test it like a QA engineer, find the bugs, and see the Playwright check that would have caught each one. Built by Zaka Ullah Waheed, creator of QA with Zaka.",
+    "Break this checkout: six bugs are hidden in a made-up shop. Test it like a QA engineer, then see the Playwright check that would catch each one.",
   alternates: { canonical: `${SITE_URL}/qa-challenge` },
   openGraph: {
     title: `QA challenge: break this checkout | ${SITE_NAME}`,
@@ -15,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function QaLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <JsonLd data={breadcrumbNode([["QA challenge", "/qa-challenge"]])} />
+      {children}
+    </>
+  );
 }

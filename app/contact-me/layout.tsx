@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode } from "@/lib/seo";
 import "./contact-me.css";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
-
-const breadcrumbJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Home",    item: SITE_URL },
-    { "@type": "ListItem", position: 2, name: "Contact", item: `${SITE_URL}/contact-me` },
-  ],
-};
 
 export const metadata: Metadata = {
   title: "Let's Work Together",
   description:
-    "Hire Zaka Ullah Waheed — full-stack developer open to remote work and freelance projects. Reach out via email, LinkedIn, GitHub, or Instagram.",
+    "Contact Zaka Ullah Waheed, a full-stack developer open to remote and freelance work. Start a project brief or reach out by email, LinkedIn or GitHub.",
   alternates: { canonical: `${SITE_URL}/contact-me` },
   openGraph: {
     title: `Let's Work — ${SITE_NAME}`,
@@ -34,10 +27,7 @@ export const metadata: Metadata = {
 export default function ContactMeLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <JsonLd data={breadcrumbNode([["Contact", "/contact-me"]])} />
       {children}
     </>
   );

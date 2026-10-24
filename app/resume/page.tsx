@@ -3,13 +3,15 @@ import Link from "next/link";
 import { resume, RESUME_PDF } from "@/lib/resume";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import ScrollUnlock from "@/components/ScrollUnlock";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode } from "@/lib/seo";
 import PrintButton from "@/components/PrintButton";
 import "./resume.css";
 
 export const metadata: Metadata = {
-  title: "Resume",
+  title: { absolute: "Zaka Ullah Waheed Resume | Full-Stack & QA Automation" },
   description:
-    "Resume of Zaka Ullah Waheed: full-stack developer and QA automation engineer from Islamabad, Pakistan. Zong 5G QA automation intern, creator of QA with Zaka. React, Next.js, TypeScript, Flutter, Python, Playwright. Open to remote work.",
+    "Resume of Zaka Ullah Waheed, full-stack developer and QA automation engineer in Islamabad. Zong 5G and Apexify internships. Download the PDF.",
   alternates: { canonical: `${SITE_URL}/resume` },
   openGraph: {
     title: `Resume | ${SITE_NAME}`,
@@ -24,6 +26,7 @@ export default function ResumePage() {
   return (
     <div className="rs-page">
       <ScrollUnlock />
+      <JsonLd data={breadcrumbNode([["Resume", "/resume"]])} />
 
       <div className="rs-toolbar">
         <Link href="/">{'←'} Back</Link>

@@ -376,3 +376,13 @@ export const PROJECTS: Project[] = [
 export function getProject(slug: string): Project | undefined {
   return PROJECTS.find((p) => p.slug === slug);
 }
+
+/* Search-result descriptions for the case studies (about 150 characters each; the long summary stays on the page). */
+export const PROJECT_META: Record<string, string> = {
+  "qa-with-zaka": "QA with Zaka: a QA automation learning platform by Zaka Ullah Waheed. Four courses (Python, Selenium, Playwright, Appium), a dashboard and an AI helper.",
+  "zong-health-scanner": "Case study: a website health scanner built at Zong 5G. It loads a page in a real browser, runs eight checks and emails one report. By Zaka Ullah Waheed.",
+  "momcare-ai": "Case study: MomCare AI, a FastAPI backend that predicts maternal health risk (low, mid or high) from a patient's vitals. Built by Zaka Ullah Waheed.",
+  glamourhub: "Case study: GlamourHub, a premium e-commerce web app for the Pakistani market with makeup, dressing and jewelry collections. By Zaka Ullah Waheed.",
+  bazaarbox: "Case study: BazaarBox, a Flutter e-commerce app with a cart, checkout and a store-owner dashboard, running on Firebase. Built by Zaka Ullah Waheed.",
+  portfolio: "Case study: this 3D portfolio. A rigged avatar that follows your cursor, scroll stories, a working Nokia 3310 contact page and a racing game.",
+};

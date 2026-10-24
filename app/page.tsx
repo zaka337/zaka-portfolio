@@ -1,173 +1,38 @@
-"use client";
-
-import dynamic from "next/dynamic";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useRef, useEffect, useState } from "react";
-import { knockOver, stopKnockOver } from "@/lib/knockOver";
-import { useAsleep } from "@/lib/sleep";
-import RoleType from "@/components/RoleType";
-import KineticText from "@/components/KineticText";
-import PlayDoor from "@/components/PlayDoor";
+import HomeScreen from "@/components/HomeScreen";
+import { SITE_URL } from "@/lib/site";
 
-const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
-  ssr: false,
-  loading: () => null,
-});
-
-function OpenStatus() {
-  const [time, setTime] = useState("");
-  const asleep = useAsleep(); // night in Islamabad (lib/sleep.ts)
-  useEffect(() => {
-    const fmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Karachi" });
-    const tick = () => setTime(fmt.format(new Date()));
-    tick();
-    const id = setInterval(tick, 20000);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <div className="home-status home-enter home-enter-5">
-      {/* The status is also the way in to the hiring tools: fit check, call times, estimate */}
-      <Link href="/hire" className="home-status-link" aria-label="Open for work. Check the fit, book a call or get an estimate">
-        <i className={`home-status-dot${asleep ? " is-asleep" : ""}`} aria-hidden="true" />
-        <span>{asleep ? "ASLEEP" : "OPEN FOR WORK"} {'·'} ISLAMABAD{time ? ` ${time} PKT` : ""} {'→'}</span>
-        {asleep && <span className="home-status-sub">REPLIES IN THE MORNING</span>}
-      </Link>
-    </div>
-  );
-}
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+};
 
 export default function Home() {
-  const rootRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
-
-  // Click the title and it falls apart (lib/knockOver.ts). Leaving the page ends it.
-  useEffect(() => stopKnockOver, []);
-  const knock = () => {
-    const el = titleRef.current;
-    if (!el) return;
-    const say = (text: string, ms?: number) =>
-      window.dispatchEvent(new CustomEvent("zk-say", { detail: { text, ms } }));
-    try {
-      knockOver(el, { say, nod: () => window.dispatchEvent(new Event("zk-nod")) });
-    } catch {
-      // Whatever a browser refuses: leave the page exactly as it was and let the avatar answer
-      stopKnockOver();
-      el.removeAttribute("data-egg");
-      document.querySelectorAll(".egg-layer, .egg-hint").forEach((n) => n.remove());
-      say("WHATEVER.");
-    }
-  };
-
-  // Mouse parallax for the giant outlined word behind the face
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
-    // Write the variables on the ghost word itself. On the root they were inherited by
-    // every element on the page, so each mouse move re-styled the whole home screen.
-    const ghost = root.querySelector<HTMLElement>(".home-ghost");
-    if (!ghost) return;
-    let raf = 0;
-    let mx = 0;
-    let my = 0;
-    const onMove = (e: MouseEvent) => {
-      mx = (e.clientX / window.innerWidth - 0.5) * 2;
-      my = (e.clientY / window.innerHeight - 0.5) * 2;
-      if (!raf) {
-        raf = requestAnimationFrame(() => {
-          raf = 0;
-          ghost.style.setProperty("--mx", mx.toFixed(3));
-          ghost.style.setProperty("--my", my.toFixed(3));
-        });
-      }
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
-
   return (
-    <main ref={rootRef} className="portfolio-root">
-      <div className="home-ghost" aria-hidden="true"><span>ZAKA</span></div>
-      <AvatarScene />
-
-      {/* TOP LEFT — name */}
-      {/* A touch starts it when the finger lifts (onPointerUp), without waiting for the
-          browser's own click, which some phones do not send for a plain div. The click
-          that may follow is ignored: the effect is already running. */}
-      <div ref={titleRef} className="block-tl" data-hot onClick={knock}
-        onPointerUp={(e) => { if (e.pointerType === "touch") knock(); }}>
-        <div className="home-enter home-enter-0">
-          <p className="label">YOU CAN CALL ME</p>
-          <div className="nav-text">
-            <h1 className="title-huge">ZAKA<span className="blink-dot">.</span></h1>
-            <p className="title-sub">OR WHATEVER.</p>
-          </div>
-        </div>
-        {/* Keyboard route to the same click: visible only while focused */}
-        <button type="button" className="egg-key" onClick={(e) => { e.stopPropagation(); knock(); }}>
-          Knock the title over
-        </button>
-      </div>
-
-      {/* TOP RIGHT — contact */}
-      <Link href="/contact" className="block-tr nav-text" aria-label="Say hi. Pick up the phone" style={{ textDecoration: "none" }}>
-        <div className="home-enter home-enter-2">
-          <p className="nav-item"><KineticText text="SAY" fx="wave" /></p>
-          <p className="nav-item"><KineticText text="HI" fx="wave" start={3} /></p>
-        </div>
-        <p className="nav-hint">PICK UP THE PHONE</p>
-      </Link>
-
-      {/* MID LEFT — about */}
-      <Link href="/about" className="block-ml nav-text" aria-label="More about me. Story, toolkit and journey" style={{ textDecoration: "none" }}>
-        <div className="home-enter home-enter-3">
-          <p className="nav-item"><KineticText text="MORE" fx="type" delay={120} /></p>
-          <p className="nav-item"><KineticText text="ABOUT ME" fx="type" start={4} delay={120} /></p>
-        </div>
-        <p className="nav-hint">STORY {'·'} TOOLKIT {'·'} JOURNEY</p>
-      </Link>
-
-      {/* MID RIGHT — the role, as kinetic type (components/RoleType.tsx) */}
-      <RoleType />
-
-      {/* BOTTOM LEFT — projects */}
-      <Link href="/projects" className="block-bl nav-text" aria-label="My projects. Six featured, all repositories" style={{ textDecoration: "none" }}>
-        <div className="home-enter home-enter-4">
-          <p className="nav-item"><KineticText text="MY" fx="flip" delay={240} /></p>
-          <p className="nav-item"><KineticText text="PROJECTS" fx="flip" start={2} delay={240} /></p>
-        </div>
-        <p className="nav-hint">6 FEATURED {'·'} ALL REPOS</p>
-      </Link>
-
-      {/* BOTTOM RIGHT — contact me page */}
-      <Link href="/contact-me" className="block-br nav-text" aria-label="Contact me. Start a project brief" style={{ textDecoration: "none" }}>
-        <div className="home-enter home-enter-5">
-          <p className="nav-item"><KineticText text="CONTACT" fx="ring" delay={360} /></p>
-          <p className="nav-item"><KineticText text="ME" fx="ring" start={7} delay={360} /></p>
-        </div>
-        <p className="nav-hint">START A PROJECT BRIEF</p>
-      </Link>
-
-      {/* The racing game: the way in from the home screen */}
-      <PlayDoor />
-
-      <OpenStatus />
-
-      {/* Visually hidden — crawlable content for search engines */}
-      <div aria-hidden="true" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
-        <h2>Zaka Ullah Waheed — Full-Stack Developer from Pakistan</h2>
-        <p>{'Zaka Ullah Waheed is a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. Creator of QA with Zaka — a full-stack QA automation learning platform. Interned at Zong 5G. Building production-grade web apps, mobile apps, and automation tools since 2024. Open to remote work and freelance projects.'}</p>
-        <p>Skills: React, Next.js, TypeScript, Flutter, Firebase, Three.js, WebGL, QA Automation, Selenium, n8n, REST APIs, Tailwind CSS.</p>
-        <p>Projects: QA with Zaka, Zong Health Scanner, MomCare AI, Instagram Clone, Metro Mart, Docker web app.</p>
-        <nav>
-          <a href="/about">About Zaka Ullah Waheed</a>
-          <a href="/projects">Projects by Zaka Ullah Waheed</a>
-          <a href="/resume">Resume of Zaka Ullah Waheed</a>
-          <a href="/contact-me">Contact Zaka Ullah Waheed</a>
+    <>
+      <HomeScreen />
+      {/* The same facts as the site, as plain text. Always in the page for crawlers, readers and screen
+          readers (it is not aria-hidden), but out of sight because the home screen is made of big type.
+          Keep it true and short: whatever is written here must also be said somewhere visible. */}
+      <section className="sr-only" aria-label="About Zaka Ullah Waheed">
+        <h2>Zaka Ullah Waheed: full-stack developer and QA automation engineer</h2>
+        <p>
+          Zaka Ullah Waheed is a full-stack developer and QA automation engineer from Islamabad, Pakistan. He builds web apps
+          with React, Next.js and TypeScript, mobile apps with Flutter, and automated tests with Playwright. He created QA with
+          Zaka, a QA automation learning platform, and built a website health scanner during his QA automation internship at
+          Zong 5G. He is open to remote work.
+        </p>
+        <nav aria-label="More pages">
+          <Link href="/about" tabIndex={-1}>About Zaka Ullah Waheed</Link>
+          <Link href="/projects" tabIndex={-1}>Projects</Link>
+          <Link href="/resume" tabIndex={-1}>Resume</Link>
+          <Link href="/tldr" tabIndex={-1}>The short version</Link>
+          <Link href="/hire" tabIndex={-1}>Hire Zaka</Link>
+          <Link href="/qa-challenge" tabIndex={-1}>QA challenge</Link>
+          <Link href="/mini-mayhem" tabIndex={-1}>MINI MAYHEM, a 3D racing game</Link>
+          <Link href="/contact-me" tabIndex={-1}>Contact</Link>
         </nav>
-      </div>
-    </main>
+      </section>
+    </>
   );
 }

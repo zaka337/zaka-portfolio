@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode } from "@/lib/seo";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "TL;DR: Zaka Ullah Waheed in one screen",
+  title: { absolute: "TL;DR: Zaka Ullah Waheed in one screen" },
   description:
-    "The short version of Zaka Ullah Waheed: a full-stack developer with a QA mindset. What he does, three projects worth opening, and how to work with him. Open to remote work.",
+    "Zaka Ullah Waheed in one screen: what he does, three projects worth opening and how to work with him. Full-stack developer, QA mindset, open to remote.",
   alternates: { canonical: `${SITE_URL}/tldr` },
   openGraph: {
     title: `${SITE_NAME}: the short version`,
@@ -15,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function TldrLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <JsonLd data={breadcrumbNode([["The short version", "/tldr"]])} />
+      {children}
+    </>
+  );
 }

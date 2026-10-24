@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode, personRef } from "@/lib/seo";
 import { SITE_URL, SITE_NAME, QA_ZAKA } from "@/lib/site";
 import "./projects.css";
 
 export const metadata: Metadata = {
   title: "Projects — QA with Zaka & More",
   description:
-    "Explore Zaka Ullah Waheed's projects: QA with Zaka (QA automation learning platform), Zong Health Scanner, MomCare AI, e-commerce platforms, and mobile apps — built with React, Next.js, Flutter, Firebase, and TypeScript.",
+    "Projects by Zaka Ullah Waheed: QA with Zaka, Zong Health Scanner, MomCare AI, GlamourHub and BazaarBox. React, Next.js, Flutter, Python and Playwright.",
   keywords: [
     "QA with Zaka",
     "QA with Zaka platform",
@@ -35,28 +37,14 @@ export const metadata: Metadata = {
   },
 };
 
-const breadcrumbJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Home",     item: SITE_URL },
-    { "@type": "ListItem", position: 2, name: "Projects", item: `${SITE_URL}/projects` },
-  ],
-};
-
 const projectsJsonLd = {
-  "@context": "https://schema.org",
   "@type": "CollectionPage",
   "@id": `${SITE_URL}/projects`,
   name: `QA with Zaka & Projects — ${SITE_NAME}`,
   url: `${SITE_URL}/projects`,
   description:
     "Featured projects by Zaka Ullah Waheed, each with its own case study, including QA with Zaka — a full-stack QA automation learning platform — alongside Zong Health Scanner, MomCare AI, and more.",
-  author: {
-    "@type": "Person",
-    name: SITE_NAME,
-    url: SITE_URL,
-  },
+  author: personRef(),
   hasPart: [
     {
       "@type": "SoftwareApplication",
@@ -65,26 +53,26 @@ const projectsJsonLd = {
       description: QA_ZAKA.desc,
       applicationCategory: "EducationalApplication",
       operatingSystem: "Web",
-      author: { "@type": "Person", name: SITE_NAME, url: SITE_URL },
+      author: personRef(),
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     },
     {
       "@type": "SoftwareApplication",
       name: "Zong Health Scanner",
-      url: SITE_URL,
+      url: `${SITE_URL}/projects/zong-health-scanner`,
       description: "n8n-powered telecom website health scanner built for Zong 5G. Automated monitoring with real-time diagnostics.",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Web",
-      author: { "@type": "Person", name: SITE_NAME, url: SITE_URL },
+      author: personRef(),
     },
     {
       "@type": "SoftwareApplication",
       name: "MomCare AI",
-      url: SITE_URL,
+      url: `${SITE_URL}/projects/momcare-ai`,
       description: "Machine-learning backend that predicts maternal health risk (low, mid or high) from a patient's vitals, lifestyle and background.",
       applicationCategory: "HealthApplication",
       operatingSystem: "Web",
-      author: { "@type": "Person", name: SITE_NAME, url: SITE_URL },
+      author: personRef(),
     },
   ],
 };
@@ -92,14 +80,7 @@ const projectsJsonLd = {
 export default function ProjectsLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectsJsonLd) }}
-      />
+      <JsonLd data={[breadcrumbNode([["Projects", "/projects"]]), projectsJsonLd]} />
       {children}
     </>
   );

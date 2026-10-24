@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { PROJECTS, getProject } from "@/lib/projects";
+import { PROJECTS, PROJECT_META, getProject } from "@/lib/projects";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode, personRef } from "@/lib/seo";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import ScrollUnlock from "@/components/ScrollUnlock";
 import LiveProof from "@/components/LiveProof";
@@ -24,20 +26,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     : { url: "/opengraph-image", width: 1200, height: 630, alt: `${p.title} case study by ${SITE_NAME}` };
   return {
     title: `${p.title} — Case Study`,
-    description: p.summary,
+    description: PROJECT_META[p.slug] ?? p.summary,
     keywords: [p.title, `${p.title} case study`, p.kind, ...p.chips, "Zaka Ullah Waheed"],
     alternates: { canonical: url },
     openGraph: {
       type: "article",
       title: `${p.title} — Case Study | ${SITE_NAME}`,
-      description: p.summary,
+      description: PROJECT_META[p.slug] ?? p.summary,
       url,
       images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: `${p.title} — Case Study | ${SITE_NAME}`,
-      description: p.summary,
+      description: PROJECT_META[p.slug] ?? p.summary,
       images: [image.url],
     },
   };
@@ -64,36 +66,26 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
   const visit = p.live ?? p.repo;
   const shown = (p.live ?? `github.com/zaka337/${p.repoName ?? ""}`).replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: "Projects", item: `${SITE_URL}/projects` },
-          { "@type": "ListItem", position: 3, name: p.title, item: url },
-        ],
-      },
-      {
-        "@type": "SoftwareApplication",
-        "@id": p.slug === "qa-with-zaka" ? `${SITE_URL}/#qa-with-zaka` : `${url}#app`, // same id as the site-wide graph so they merge
-        name: p.title,
-        description: p.summary,
-        url: p.live ?? url,
-        applicationCategory: CATEGORY[p.slug] ?? "WebApplication",
-        operatingSystem: "Web",
-        author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: SITE_NAME, url: SITE_URL },
-        mainEntityOfPage: url,
-        ...(p.repo ? { sameAs: [p.repo] } : {}),
-      },
-    ],
-  };
+  const jsonLd = [
+    breadcrumbNode([["Projects", "/projects"], [p.title, `/projects/${p.slug}`]]),
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${url}#app`,
+      name: p.title,
+      description: PROJECT_META[p.slug] ?? p.summary,
+      url: p.live ?? url,
+      applicationCategory: CATEGORY[p.slug] ?? "WebApplication",
+      operatingSystem: "Web",
+      author: personRef(),
+      mainEntityOfPage: url,
+      ...(p.repo ? { sameAs: [p.repo] } : {}),
+    },
+  ];
 
   return (
     <main className="cs-root">
       <ScrollUnlock />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <JsonLd data={jsonLd} />
 
       <nav className="cs-nav">
         <Link href="/projects">{'←'} ALL PROJECTS</Link>

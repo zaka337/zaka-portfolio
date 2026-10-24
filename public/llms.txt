@@ -1,0 +1,32 @@
+# Zaka Ullah Waheed
+
+> Zaka Ullah Waheed is a full-stack developer and QA automation engineer from Islamabad, Pakistan. He builds web apps with React, Next.js and TypeScript, mobile apps with Flutter, and automated tests with Playwright. He is open to remote work.
+
+This is his portfolio site: a 3D interactive site with a live avatar, case studies, a resume, and a small racing game. The pages below are the useful ones. Everything on them is written by Zaka and checked against the projects themselves.
+
+## About him
+- [About](https://zaka-portfolio-two.vercel.app/about): his story, toolkit and journey from first HTML to production apps.
+- [Resume](https://zaka-portfolio-two.vercel.app/resume): full-stack developer and QA automation engineer. Interned at Zong 5G (QA automation, 2026) and Apexify Technologies (frontend, 2025). PDF: https://zaka-portfolio-two.vercel.app/Zaka-Ullah-Waheed-Resume.pdf
+- [The short version](https://zaka-portfolio-two.vercel.app/tldr): what he does, three projects worth opening, how to work with him, on one screen.
+
+## Projects (each has a case study)
+- [QA with Zaka](https://zaka-portfolio-two.vercel.app/projects/qa-with-zaka): a QA automation learning platform with four courses (Python, Selenium, Playwright, Appium), a student dashboard, an admin dashboard, an AI assistant and Stripe payments. Built with React, TypeScript, Vite and Supabase. Live at https://qa-with-zaka-4pc9.vercel.app/
+- [Zong Health Scanner](https://zaka-portfolio-two.vercel.app/projects/zong-health-scanner): a website health scanner built during the Zong 5G internship. It runs eight checks (visual changes, broken links, console errors, load time, SEO basics, security headers, mobile layout, accessibility) and emails one report. Python, Flask, Playwright, Docker, n8n.
+- [MomCare AI](https://zaka-portfolio-two.vercel.app/projects/momcare-ai): a prototype FastAPI backend that predicts maternal health risk (low, mid or high) from a patient's vitals. Python, scikit-learn.
+- [GlamourHub](https://zaka-portfolio-two.vercel.app/projects/glamourhub): a premium e-commerce web app for the Pakistani market.
+- [BazaarBox](https://zaka-portfolio-two.vercel.app/projects/bazaarbox): a Flutter e-commerce app on Firebase.
+- [This portfolio](https://zaka-portfolio-two.vercel.app/projects/portfolio): Next.js, React, Three.js, WebGL.
+- [All repositories](https://zaka-portfolio-two.vercel.app/projects/all): every public GitHub repository in a 3D carousel.
+
+## Work with him
+- [Hire](https://zaka-portfolio-two.vercel.app/hire): paste a job description to check the fit, find a call time in your time zone, or get a rough project estimate.
+- [Contact](https://zaka-portfolio-two.vercel.app/contact-me): start a project brief or reach out directly.
+
+## Play
+- [MINI MAYHEM](https://zaka-portfolio-two.vercel.app/mini-mayhem): a free 3D racing game in the browser. Four tiny cars with giant cartoon heads, three laps around an island.
+- [QA challenge](https://zaka-portfolio-two.vercel.app/qa-challenge): six bugs hidden in a made-up checkout. Find them, then see the Playwright check that would catch each one.
+
+## Elsewhere
+- GitHub: https://github.com/zaka337
+- LinkedIn: https://www.linkedin.com/in/zaka-ullah-waheed-80380832a
+- Instagram: https://www.instagram.com/notxzaka/

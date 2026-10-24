@@ -3,7 +3,9 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import ClientProviders from "./ClientProviders";
 import ThemeToggle from "@/components/ThemeToggle";
-import { SITE_URL, SITE_NAME, SOCIAL, QA_ZAKA } from "@/lib/site";
+import JsonLd from "@/components/JsonLd";
+import { personNode, websiteNode } from "@/lib/seo";
+import { SITE_URL, SITE_NAME, SOCIAL } from "@/lib/site";
 
 export const viewport: Viewport = {
   // Light is the default theme for every visitor, so the browser chrome matches it.
@@ -14,11 +16,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio",
+    default: "Zaka Ullah Waheed | Full-Stack Developer & QA Automation",
     template: "%s | Zaka Ullah Waheed Portfolio",
   },
   description:
-    "Zaka Ullah Waheed's 3D interactive developer portfolio — Full-Stack Developer from Pakistan featuring a live WebGL avatar built with Three.js. Building production-grade web apps, mobile apps, and QA automation with React, Next.js, Flutter, and TypeScript. Open to remote work.",
+    "Zaka Ullah Waheed is a full-stack developer and QA automation engineer from Islamabad, Pakistan. Explore his 3D portfolio, projects, resume and racing game.",
   keywords: [
     "Zaka Ullah Waheed",
     "Zaka portfolio",
@@ -61,12 +63,12 @@ export const metadata: Metadata = {
 
   openGraph: {
     type: "website",
-    locale: "en_PK",
+    locale: "en_US",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio",
+    title: "Zaka Ullah Waheed | Full-Stack Developer & QA Automation",
     description:
-      "Zaka Ullah Waheed's 3D interactive portfolio — Full-Stack Developer from Pakistan. Live WebGL avatar, Three.js, React, Next.js, Flutter, QA Automation. Open to remote work.",
+      "3D interactive portfolio of Zaka Ullah Waheed, full-stack developer and QA automation engineer from Pakistan. React, Next.js, Flutter, Playwright. Open to remote work.",
     images: [
       {
         url: "/opengraph-image",
@@ -79,9 +81,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Zaka Ullah Waheed — Full-Stack Developer | 3D Interactive Portfolio",
+    title: "Zaka Ullah Waheed | Full-Stack Developer & QA Automation",
     description:
-      "Zaka Ullah Waheed's 3D interactive portfolio — Full-Stack Developer from Pakistan. Live WebGL avatar, React, Next.js, Flutter, QA Automation. Open to remote work.",
+      "3D interactive portfolio of Zaka Ullah Waheed, full-stack developer and QA automation engineer from Pakistan. Open to remote work.",
     images: ["/opengraph-image"],
     creator: "@notxzaka",
   },
@@ -98,134 +100,11 @@ export const metadata: Metadata = {
     },
   },
 
-  alternates: {
-    canonical: SITE_URL,
-  },
+  // No canonical here: a page without its own would claim to be the home page. The home page sets its own (app/page.tsx).
 
   verification: {
     google: "DKB_MhzU-pvDYGsvo2EjCQA0mimMBQFvWqICbRasY1Q",
   },
-};
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      url: SITE_URL,
-      name: `${SITE_NAME} — 3D Interactive Portfolio`,
-      description:
-        "Zaka Ullah Waheed's 3D interactive developer portfolio — Full-Stack Developer from Pakistan featuring a live WebGL avatar built with Three.js. Specialising in React, Next.js, Flutter, and QA Automation.",
-      inLanguage: "en-PK",
-      potentialAction: {
-        "@type": "SearchAction",
-        target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/projects` },
-        "query-input": "required name=search_term_string",
-      },
-    },
-    {
-      "@type": "Person",
-      "@id": `${SITE_URL}/#person`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      image: {
-        "@type": "ImageObject",
-        url: `${SITE_URL}/opengraph-image`,
-        width: 1200,
-        height: 630,
-      },
-      sameAs: [SOCIAL.github, SOCIAL.linkedin, SOCIAL.instagram],
-      jobTitle: "Full-Stack Developer",
-      description:
-        "Full-Stack Developer specialising in React, Next.js, Flutter, and QA Automation. Based in Pakistan, open to remote work. Creator of QA with Zaka — a QA automation learning platform — and a 3D interactive developer portfolio.",
-      email: SOCIAL.email,
-      address: {
-        "@type": "PostalAddress",
-        addressCountry: "PK",
-      },
-      hasOccupation: {
-        "@type": "Occupation",
-        name: "Full-Stack Developer",
-        description: "Builds production-grade web apps, mobile apps, and QA automation tools using React, Next.js, Flutter, Firebase, and TypeScript.",
-        occupationalCategory: "15-1252.00",
-        skills: "React, Next.js, TypeScript, Flutter, Firebase, QA Automation, Selenium, n8n, Three.js, WebGL",
-      },
-      knowsAbout: [
-        "React.js",
-        "Next.js",
-        "TypeScript",
-        "Flutter",
-        "Firebase",
-        "QA Automation",
-        "Selenium",
-        "n8n",
-        "Three.js",
-        "WebGL",
-        "REST APIs",
-        "Tailwind CSS",
-      ],
-      alumniOf: {
-        "@type": "EducationalOrganization",
-        name: "University",
-        addressCountry: "PK",
-      },
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": `${SITE_URL}/#qa-with-zaka`,
-      name: QA_ZAKA.name,
-      url: QA_ZAKA.url,
-      description: QA_ZAKA.desc,
-      applicationCategory: "EducationalApplication",
-      operatingSystem: "Web",
-      author: { "@id": `${SITE_URL}/#person` },
-      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      keywords: "QA with Zaka, AI QA platform, automated testing, full-stack education, Zaka Ullah Waheed",
-    },
-    {
-      "@type": "FAQPage",
-      "@id": `${SITE_URL}/#faq`,
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is QA with Zaka?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "QA with Zaka is a full-stack QA automation learning platform built and shipped by Zaka Ullah Waheed, a Full-Stack Developer from Pakistan. It offers four structured courses (Python, Selenium, Playwright and Appium), a student dashboard with progress tracking, an AI assistant and Stripe payments, built with React, TypeScript, Vite and Supabase.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who built QA with Zaka?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "QA with Zaka was built by Zaka Ullah Waheed, a Full-Stack Developer from Pakistan specialising in React, Next.js, Flutter, and QA Automation. The platform is live at qa-with-zaka-4pc9.vercel.app.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Where can I find Zaka Ullah Waheed's portfolio?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: `Zaka Ullah Waheed's 3D interactive developer portfolio is at ${SITE_URL}. It features a live WebGL avatar, a 3D project carousel, and showcases projects including QA with Zaka, Zong Health Scanner, and MomCare AI.`,
-          },
-        },
-      ],
-    },
-    {
-      "@type": "CreativeWork",
-      "@id": `${SITE_URL}/#portfolio`,
-      name: "Zaka Ullah Waheed — 3D Interactive Developer Portfolio",
-      url: SITE_URL,
-      author: { "@id": `${SITE_URL}/#person` },
-      description:
-        "A 3D interactive developer portfolio featuring a real-time WebGL avatar that tracks mouse movement, built with Three.js, React, and Next.js. Showcases full-stack development projects, mobile apps, and QA automation work.",
-      keywords: "3D portfolio, WebGL, Three.js, interactive portfolio, full-stack developer, React, Next.js",
-      inLanguage: "en-PK",
-      about: { "@id": `${SITE_URL}/#person` },
-    },
-  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -249,10 +128,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="me" href={SOCIAL.linkedin} />
         <link rel="me" href={SOCIAL.instagram} />
         <link rel="me" href={`mailto:${SOCIAL.email}`} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <JsonLd data={[websiteNode(), personNode()]} />
       </head>
       <body>
         {/* Loading screen — shown before React hydrates, dismissed when GLB loads */}

@@ -1,21 +1,30 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { PROJECTS } from "@/lib/projects";
+import { LAST_UPDATED } from "@/lib/seo";
 
+/* lastModified is a fixed date (lib/seo.ts LAST_UPDATED), bumped when the content really changes.
+   It used to be "now", which tells a crawler every page changed on every visit, so it learns to ignore it. */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  const lastModified = new Date(LAST_UPDATED);
+  const page = (path: string, changeFrequency: "weekly" | "monthly" | "yearly", priority: number) => ({
+    url: `${SITE_URL}${path}`,
+    lastModified,
+    changeFrequency,
+    priority,
+  });
   return [
-    { url: SITE_URL,                   lastModified: now, changeFrequency: "monthly", priority: 1.0 },
-    { url: `${SITE_URL}/about`,        lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${SITE_URL}/projects`,     lastModified: now, changeFrequency: "weekly",  priority: 0.85 },
-    { url: `${SITE_URL}/projects/all`,    lastModified: now, changeFrequency: "weekly",  priority: 0.6 },
-    { url: `${SITE_URL}/resume`,       lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/hire`,         lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/tldr`,         lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/mini-mayhem`,   lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/qa-challenge`, lastModified: now, changeFrequency: "yearly",  priority: 0.6 },
-    { url: `${SITE_URL}/contact-me`,   lastModified: now, changeFrequency: "yearly",  priority: 0.8 },
-    { url: `${SITE_URL}/contact`,      lastModified: now, changeFrequency: "yearly",  priority: 0.7 },
-    ...PROJECTS.map((p) => ({ url: `${SITE_URL}/projects/${p.slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.8 })),
+    page("", "monthly", 1.0),
+    page("/about", "monthly", 0.9),
+    page("/projects", "weekly", 0.85),
+    ...PROJECTS.map((p) => page(`/projects/${p.slug}`, "monthly", 0.8)),
+    page("/resume", "monthly", 0.8),
+    page("/hire", "monthly", 0.8),
+    page("/tldr", "monthly", 0.8),
+    page("/contact-me", "yearly", 0.8),
+    page("/mini-mayhem", "monthly", 0.7),
+    page("/contact", "yearly", 0.6),
+    page("/qa-challenge", "yearly", 0.6),
+    page("/projects/all", "weekly", 0.6),
   ];
 }

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbNode } from "@/lib/seo";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Hire Zaka: job-fit check, book a call, project estimate",
+  title: { absolute: "Hire Zaka Ullah Waheed | Full-Stack & QA Automation Developer" },
   description:
-    "Thinking of working with Zaka Ullah Waheed? Paste a job description to see how his skills match, find a call time in your own time zone, or get a rough timeline for your project. Open to remote work.",
+    "Hire Zaka Ullah Waheed: paste a job description to check the fit, find a call time in your time zone, or get a rough project estimate. Open to remote work.",
   alternates: { canonical: `${SITE_URL}/hire` },
   openGraph: {
     title: `Hire ${SITE_NAME}`,
@@ -15,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function HireLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <JsonLd data={breadcrumbNode([["Hire", "/hire"]])} />
+      {children}
+    </>
+  );
 }
