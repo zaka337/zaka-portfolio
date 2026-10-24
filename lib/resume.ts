@@ -101,7 +101,7 @@ export const resume = {
     {
       school: "Air University",
       degree: "BS Information Technology",
-      period: "Started 2022",
+      period: "Started 2023",
     },
   ],
 };

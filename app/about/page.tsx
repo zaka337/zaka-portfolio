@@ -157,12 +157,12 @@ const TIMELINE = [
   {
     year: "2022",
     title: "Where It All Started",
-    desc: "First lines of HTML. First React component. First bug that took hours to fix. Joined Air University for BS Information Technology. Been hooked ever since.",
+    desc: "First lines of HTML. First React component. First bug that took hours to fix. Been hooked ever since.",
   },
   {
     year: "2023",
     title: "APIs, Testing & Workflow Automation",
-    desc: "Went deep into REST API integration, QA automation with Selenium and JMeter, and CI-ready Postman/Newman test collections. Learned that reliability matters as much as features.",
+    desc: "Joined Air University for BS Information Technology. Went deep into REST API integration, QA automation with Selenium and JMeter, and CI-ready Postman/Newman test collections. Learned that reliability matters as much as features.",
   },
   {
     year: "2024",
