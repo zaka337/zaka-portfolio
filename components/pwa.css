@@ -90,3 +90,5 @@
 
 /* the game fills the screen with its own HUD, and works offline anyway */
 html[data-mayhem] .pwa-bar { display: none; }
+/* The voice caption lives in the same bottom-centre spot: the install offer steps aside while it is open */
+html:has(.vc-caption) .pwa-bar { display: none; }
