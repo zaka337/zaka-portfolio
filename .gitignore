@@ -26,3 +26,6 @@ yarn-error.log*
 
 # Look back: engine files copied from node_modules at build time (scripts/copy-mediapipe.mjs)
 /public/mediapipe/wasm
+
+# The service worker: generated after every build by scripts/make-sw.mjs
+/public/sw.js

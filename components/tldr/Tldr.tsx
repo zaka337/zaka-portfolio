@@ -7,6 +7,7 @@ import { PROJECTS } from "@/lib/projects";
 import { resume } from "@/lib/resume";
 import { SOCIAL } from "@/lib/site";
 import { AVAIL } from "@/lib/availability";
+import { askInstall, usePwa } from "@/lib/pwa";
 import CountUp from "@/components/hire/CountUp";
 import "./tldr.css";
 
@@ -39,6 +40,7 @@ export default function Tldr() {
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
   const t = useRef(0);
+  const pwa = usePwa();
 
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
@@ -146,6 +148,7 @@ export default function Tldr() {
           <button type="button" className="td-btn td-btn-ghost" onClick={copy}>{copied ? "LINK COPIED" : "COPY LINK"}</button>
           {canShare && <button type="button" className="td-btn td-btn-ghost" onClick={share}>SHARE</button>}
           <button type="button" className="td-btn td-btn-ghost" onClick={() => window.print()}>PRINT</button>
+          {!pwa.installed && (pwa.canInstall || pwa.ios) && <button type="button" className="td-btn td-btn-ghost" onClick={askInstall}>INSTALL APP</button>}
         </div>
         <span className="td-live" role="status" aria-live="polite">{copied ? "Link copied to the clipboard" : ""}</span>
         <p className="td-more">Prefer the long version? <Link href="/about">About</Link> {'·'} <Link href="/projects">Projects</Link> {'·'} <Link href="/resume">Resume</Link></p>

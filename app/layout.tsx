@@ -51,6 +51,9 @@ export const metadata: Metadata = {
     "AI QA platform Pakistan",
     "automated testing platform",
   ],
+  applicationName: "Zaka",
+  // Added to an iPhone or iPad Home Screen, it opens as its own app (the icon is app/apple-icon.tsx)
+  appleWebApp: { capable: true, title: "Zaka", statusBarStyle: "default" },
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
   publisher: SITE_NAME,

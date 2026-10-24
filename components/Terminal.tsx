@@ -9,6 +9,7 @@ import { SECRETS, found, foundList } from "@/lib/secrets";
 import { BUGS, squashedList } from "@/lib/bugs";
 import { play, setSound, soundOn } from "@/lib/sound";
 import { faceAct } from "@/lib/faceAct";
+import { askInstall, getPwa } from "@/lib/pwa";
 import "./terminal.css";
 
 /* A secret command line, in the site's own ink-and-paper language (the same window as the
@@ -22,7 +23,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -331,6 +332,10 @@ export default function Terminal() {
         window.dispatchEvent(new CustomEvent("zk-say", { detail: { text: "DRAG MY CHEEKS, MOUTH OR CHIN.", ms: 3200 } }));
         close();
       }
+    } else if (c === "install" || c === "pwa" || c === "offline") {
+      const s = getPwa();
+      out(s.installed ? "you are already using the installed app." : s.offlineReady ? "a full copy of this site is saved on this device, so it opens with no connection." : "saving a copy for offline use...");
+      if (!s.installed) { askInstall(); close(); }
     } else if (c === "tldr") {
       out("the short version, on one screen...");
       setTimeout(() => go("/tldr"), 250);

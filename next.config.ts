@@ -44,6 +44,15 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: security },
       {
+        // The service worker (written by scripts/make-sw.mjs): never cached, so a new deploy reaches every visitor
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
         source: "/Avatar.glb",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },

@@ -30,6 +30,10 @@ const PaperPlane = dynamic(() => import("@/components/PaperPlane"), { ssr: false
 // The "Aa" button: bigger text, easy-read font, contrast, calm mode, read the page aloud
 const Access = dynamic(() => import("@/components/Access"), { ssr: false });
 
+// The installable, offline version of the site: registers the service worker, offers "install as an app",
+// and shows an offline bar. Does nothing in development.
+const PwaProvider = dynamic(() => import("@/components/PwaProvider"), { ssr: false });
+
 // Ctrl+K (or /): search the whole site from the keyboard
 const Palette = dynamic(() => import("@/components/Palette"), { ssr: false });
 
@@ -59,6 +63,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <Palette />
       <Doodle />
       <Transition />
+      <PwaProvider />
       {children}
     </>
   );

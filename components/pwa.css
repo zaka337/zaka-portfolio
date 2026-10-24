@@ -1,0 +1,92 @@
+/* The bar for the installable, offline version of the site (components/PwaProvider.tsx): paper on ink,
+   small uppercase type, at the bottom of the screen like a till receipt slip. It never covers the top
+   of the page, where the secret-found note and the page curtain live. */
+
+.pwa-bar {
+  position: fixed;
+  z-index: 9500;
+  left: 50%;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 12px 10px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 2px;
+  box-shadow: 0 14px 40px rgba(var(--ink-rgb), 0.28);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-align: center;
+  animation: pwaIn 0.35s var(--ease-out) both;
+}
+@keyframes pwaIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+.pwa-tag {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #ffd23f;
+  white-space: nowrap;
+}
+.pwa-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.pwa-share { flex: 0 0 auto; color: #ffd23f; }
+
+.pwa-btn {
+  padding: 0.55rem 0.9rem;
+  border: 1.5px solid rgba(var(--paper-rgb), 0.55);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--paper);
+  font: 800 0.6rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+}
+.pwa-btn:hover, .pwa-btn:focus-visible { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.pwa-btn.is-main { background: #ffd23f; border-color: #ffd23f; color: #0d0d0d; }
+.pwa-btn.is-main:hover, .pwa-btn.is-main:focus-visible { background: var(--paper); border-color: var(--paper); color: #0d0d0d; }
+.pwa-btn:focus-visible, .pwa-x:focus-visible { outline: 2px solid #ffd23f; outline-offset: 3px; }
+
+.pwa-x {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--paper);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.pwa-x:hover { background: rgba(var(--paper-rgb), 0.16); }
+
+/* offline is a status, not a question: quieter, and a red dot like a recording light */
+.pwa-bar.is-offline .pwa-tag::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #ff5a1f;
+  vertical-align: 1px;
+}
+.pwa-bar.is-online .pwa-tag { color: #7be39a; }
+
+@media (max-width: 520px) {
+  .pwa-bar { width: calc(100vw - 24px); padding: 10px 12px; }
+  .pwa-text { font-size: 0.74rem; }
+}
+@media print { .pwa-bar { display: none; } }
+
+/* the game fills the screen with its own HUD, and works offline anyway */
+html[data-mayhem] .pwa-bar { display: none; }
