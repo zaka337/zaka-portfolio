@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { understand, type Reply } from "@/lib/voiceIntents";
 import { crumblePage } from "@/lib/crumble";
+import { pickVoice } from "@/lib/speech";
 import { found } from "@/lib/secrets";
 import "./voice.css";
 
@@ -37,14 +38,6 @@ const getRecognition = () => {
 
 const talking = (on: boolean) => window.dispatchEvent(new CustomEvent("zk-talking", { detail: on }));
 
-/* A calm English voice, if the device has one; otherwise whatever it defaults to */
-function pickVoice(): SpeechSynthesisVoice | null {
-  const all = window.speechSynthesis?.getVoices?.() ?? [];
-  const en = all.filter((v) => /^en[-_]/i.test(v.lang));
-  const liked = /(daniel|alex|aaron|fred|arthur|oliver|google uk english male|google us english|microsoft (guy|mark|david|ryan|george)|male)/i;
-  return en.find((v) => liked.test(v.name)) ?? en.find((v) => /en[-_](gb|us)/i.test(v.lang)) ?? en[0] ?? null;
-}
-
 /* Speak, and call `done` when finished (or when the browser forgets to say it did) */
 function speak(text: string, done?: () => void) {
   const synth = typeof window !== "undefined" ? window.speechSynthesis : undefined;
@@ -61,8 +54,8 @@ function speak(text: string, done?: () => void) {
     const u = new SpeechSynthesisUtterance(text);
     const v = pickVoice();
     if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
-    u.rate = 1.02;
-    u.pitch = 0.92;
+    u.rate = 1;
+    u.pitch = 1; // it used to be lowered to 0.92, which made the built-in male voices sound even deeper and more robotic
     u.onstart = () => talking(true);
     u.onend = end;
     u.onerror = end;

@@ -142,7 +142,7 @@ export default function Access() {
       const next = () => { if (done || token !== run.current) return; done = true; window.clearTimeout(safety.current); step(i + 1); };
       try {
         const u = new SpeechSynthesisUtterance(text);
-        const v = pickVoice();
+        const v = pickVoice(true); // a whole page read aloud: avoid the voices that cut off after ~15 s
         if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
         u.rate = rateRef.current;
         u.onend = next;
