@@ -21,9 +21,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = getProject(slug);
   if (!p) return {};
   const url = `${SITE_URL}/projects/${p.slug}`;
-  const image = p.shot
-    ? { url: p.shot, width: 1280, height: 800, alt: `${p.title} screenshot` }
-    : { url: "/opengraph-image", width: 1200, height: 630, alt: `${p.title} case study by ${SITE_NAME}` };
+  // A project with a screenshot shares that. The others get the generated card next to this page
+  // (opengraph-image.tsx), which Next adds itself when no image is set here.
+  const image = p.shot ? { url: p.shot, width: 1280, height: 800, alt: `${p.title} screenshot` } : null;
   return {
     title: `${p.title} — Case Study`,
     description: PROJECT_META[p.slug] ?? p.summary,
@@ -34,13 +34,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: `${p.title} — Case Study | ${SITE_NAME}`,
       description: PROJECT_META[p.slug] ?? p.summary,
       url,
-      images: [image],
+      ...(image ? { images: [image] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: `${p.title} — Case Study | ${SITE_NAME}`,
       description: PROJECT_META[p.slug] ?? p.summary,
-      images: [image.url],
+      ...(image ? { images: [image.url] } : {}),
     },
   };
 }

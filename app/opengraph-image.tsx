@@ -43,7 +43,7 @@ export default function OGImage() {
               textTransform: "uppercase",
             }}
           >
-            3D INTERACTIVE PORTFOLIO · 2025
+            3D INTERACTIVE PORTFOLIO
           </span>
           <span
             style={{
