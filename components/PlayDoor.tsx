@@ -18,7 +18,7 @@ export default function PlayDoor() {
             <circle cx="50" cy="50" r="27.5" fill="#fff7dc" stroke="#0d1420" strokeWidth="1.6" />
             <g transform="rotate(-15 50 50)">
               <g className="hp-spin">
-                <text fontSize="11" fontWeight="900" fill="#0d1420" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
+                <text fontSize="12" fontWeight="900" fill="#0d1420" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
                   <textPath href="#hp-circ" textLength="184" lengthAdjust="spacing">PLAY &bull; MINI MAYHEM &bull;</textPath>
                 </text>
               </g>
