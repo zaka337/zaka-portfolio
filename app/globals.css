@@ -288,8 +288,8 @@ canvas {
 @media (max-width: 768px) {
   /* Face sits in the empty middle row between the name row and the nav cards */
   .avatar-scene {
-    /* The head stands on a pedestal (components/face/stand.ts), and the pedestal must end above the two rows of cards.
-       --scene-c (set on .portfolio-root below) is where the middle of the scene goes: the pedestal's bottom is 30.5dvh
+    /* The head rests in a gold hand (components/face/hand.ts), and the hand must end above the two rows of cards.
+       --scene-c (set on .portfolio-root below) is where the middle of the scene goes: the hand's lowest point is within 30.5dvh
        below it, and the cards take (bottom padding + row gap + two cards of about 3.1 font sizes each) from the bottom.
        The ghost word and the play sticker follow it. */
     top: var(--scene-c) !important;
@@ -439,7 +439,7 @@ canvas {
 /* Head framing. AvatarScene publishes --face-cy / --face-h / --cut-y (the head's
    centre, height, chin and neck cut as % of the canvas) so these follow it at any size. */
 .avatar-scene canvas {
-  /* The neck no longer fades out: it ends in the stand's gold lip (components/face/stand.ts). The variable stays so the mask list below keeps its shape. */
+  /* The neck no longer fades out: it ends in the palm of the hand (components/face/hand.ts). The variable stays so the mask list below keeps its shape. */
   --neck-fade: linear-gradient(to bottom, #000, #000);
   /* Fade the neck out, and trim the shoulders/arms off both sides */
   --side-trim: linear-gradient(to right, transparent calc(50% - var(--face-px, 300px) * 0.82), #000 calc(50% - var(--face-px, 300px) * 0.56), #000 calc(50% + var(--face-px, 300px) * 0.56), transparent calc(50% + var(--face-px, 300px) * 0.82));
