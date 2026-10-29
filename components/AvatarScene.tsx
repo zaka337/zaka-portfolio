@@ -12,7 +12,6 @@ import { found } from "@/lib/secrets";
 import { pkt, useAsleep, wake } from "@/lib/sleep";
 import { play, soundOn } from "@/lib/sound";
 import { faceFx, patchMaterial } from "@/components/face/faceFx";
-import { createHand, HAND, type Hand } from "@/components/face/hand";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -63,16 +62,13 @@ function Studio() {
    the clipping planes only reach that state through a render. Without this, compileAsync
    links a program with no clipping plane, and the first real frame needs another one with
    the plane in it: linked synchronously, which froze the page for 0.7s+ right as the face
-   appeared. One draw-less render of a throwaway mesh that has the plane makes compile see
-   it, so the program built in parallel is the one the first frame uses. If a three upgrade
-   changes this, the worst case is the old stall (check with a second linkProgram after zk-ready).
-   The plane is on each material (localClippingEnabled), not on the renderer: a renderer plane
-   would also cut the hand, which sits below the cut. Every material that is drawn, the hand's
-   too, carries exactly one plane so they all compile for the same state. */
-function primeClipping(gl: THREE.WebGLRenderer, camera: THREE.Camera, plane: THREE.Plane) {
+   appeared. One draw-less render of a throwaway mesh makes compile see the plane, so the
+   program built in parallel is the one the first frame uses. If a three upgrade changes
+   this, the worst case is the old stall (check with a second linkProgram after zk-ready). */
+function primeClipping(gl: THREE.WebGLRenderer, camera: THREE.Camera) {
   const probe = new THREE.Mesh(
     new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3)),
-    new THREE.MeshBasicMaterial({ clippingPlanes: [plane] }),
+    new THREE.MeshBasicMaterial(),
   );
   probe.frustumCulled = false;
   const scene = new THREE.Scene();
@@ -118,7 +114,6 @@ const VERTICAL_OFFSET = -0.06; // positive = face moves UP on screen
 type Prepared = {
   baseY: number;
   metrics: { topY: number; chinY: number; cutY: number };
-  plane: THREE.Plane;              // keeps what is above the cut (the neck's end, hidden in the palm)
   headBone: THREE.Object3D | null;
   headRest: { x: number; y: number };
 };
@@ -155,11 +150,6 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
   const { scene } = useGLTF("/Avatar.glb");
   const stage = useThree((s) => s.scene);
   const groupRef = useRef<THREE.Group>(null);
-  /* The head leans in the palm, not about its feet: this group sits at the cut neck and
-     only rolls, and the model hangs inside it (groupRef). The hand itself does not move. */
-  const leanRef = useRef<THREE.Group>(null);
-  const pivotY = useRef(0);
-  const handRef = useRef<Hand | null>(null);
   const headBone = useRef<THREE.Object3D | null>(null);
   const headRestRot = useRef({ x: 0, y: 0 });
   const { camera, gl } = useThree();
@@ -204,12 +194,9 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
        loading screen. Before, compiling blocked the page for several seconds. */
   useLayoutEffect(() => {
     const g = groupRef.current;
-    const lean = leanRef.current;
-    if (!g || !lean) return;
+    if (!g) return;
     let cancelled = false;
 
-    lean.position.set(0, 0, 0);
-    lean.rotation.set(0, 0, 0);
     g.scale.setScalar(SCALE);
     g.position.set(0, 0, 0);
     g.updateMatrixWorld(true);
@@ -228,7 +215,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
 
       const worldChin = chinY - faceMidY + VERTICAL_OFFSET;
       const worldTop  = box.max.y - faceMidY + VERTICAL_OFFSET;
-      const cutY      = worldChin - HAND.neckDrop; // the neck ends here, inside the palm
+      const cutY      = worldChin - 0.18 * (SCALE / 3.5); // neck fades out between chin and here (in proportion to the head)
 
       let bone: THREE.Object3D | null = null;
       let rest = { x: 0, y: 0 };
@@ -257,11 +244,13 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       prep = {
         baseY: base,
         metrics: { topY: worldTop, chinY: worldChin, cutY },
-        plane: new THREE.Plane(new THREE.Vector3(0, 1, 0), -cutY),
         headBone: bone,
         headRest: rest,
       };
       prepared.set(scene, prep);
+    } else {
+      g.position.y = prep.baseY;
+      g.updateMatrixWorld(true);
     }
 
     baseY.current = prep.baseY;
@@ -269,34 +258,14 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     headBone.current = prep.headBone;
     headRestRot.current = prep.headRest;
 
-    // The head leans about the middle of the cut neck: the lean group sits there, the model hangs in it
-    pivotY.current = prep.metrics.cutY;
-    lean.position.set(HAND.axis.x, pivotY.current, 0);
-    g.position.set(-HAND.axis.x, prep.baseY - pivotY.current, 0);
-    lean.updateMatrixWorld(true);
-
-    // Everything the avatar is made of is cut at the plane (per material: the hand below it is not)
-    scene.traverse((o) => {
-      if (!(o instanceof THREE.Mesh)) return;
-      for (const m of Array.isArray(o.material) ? o.material : [o.material]) m.clippingPlanes = [prep!.plane];
-    });
-
     camera.position.set(0, 0, 3.0);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 
-    gl.clippingPlanes = [];
-    gl.localClippingEnabled = true;
+    // Small buffer so chin doesn't clip on slight downward tilt
+    gl.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -prep.metrics.cutY)];
     gl.toneMappingExposure = 0.96;
-    primeClipping(gl, camera, prep.plane);
-
-    // The hand the head rests in (components/face/hand.ts). Its materials carry a plane that never
-    // cuts anything, so they compile for the same clipping state as the avatar's.
-    const hand = createHand(stage.environment, new THREE.Plane(new THREE.Vector3(0, 1, 0), 100));
-    hand.root.position.set(HAND.axis.x, prep.metrics.cutY, HAND.axis.z);
-    hand.root.visible = false;
-    stage.add(hand.root);
-    handRef.current = hand;
+    primeClipping(gl, camera);
 
     publishLayout();
 
@@ -304,14 +273,12 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const reveal = () => {
       if (cancelled) return;
       g.visible = true;
-      hand.root.visible = true;
       revealed.current = true;
       publishLayout();
       // Signal the loading screen to dismiss
       window.dispatchEvent(new Event("zk-ready"));
     };
-    const compiled = Promise.all([gl.compileAsync(g, camera, stage), gl.compileAsync(hand.root, camera, stage)]);
-    compiled.then(reveal, reveal);
+    gl.compileAsync(g, camera, stage).then(reveal, reveal);
 
     // Squish, boop, looks and the particle burst work on the meshes that are left
     const meshes: THREE.Mesh[] = [];
@@ -324,19 +291,7 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       },
     );
 
-    // For tests (same switch as faceFx): the scene, to measure and screenshot against
-    if (/[?&]test(&|$)/.test(location.search)) (window as unknown as { __avatar?: unknown }).__avatar = { THREE, scene, stage, camera, gl, group: g, metrics: prep.metrics };
-
-    return () => {
-      cancelled = true;
-      faceFx.detach();
-      stage.remove(hand.root);
-      handRef.current = null;
-      // Disposed only once the shaders are ready: three keeps polling the materials until then, and
-      // a disposed one would throw there (a page left, or React's dev double-run, in the middle of it)
-      const dispose = () => hand.dispose();
-      compiled.then(dispose, dispose);
-    };
+    return () => { cancelled = true; faceFx.detach(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, camera, gl, stage]);
 
@@ -376,7 +331,6 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const calm = calmRef.current;
     faceFx.setCalm(calm);
     faceFx.frame(delta, state.clock.elapsedTime);
-    handRef.current?.tick(state.clock.elapsedTime, calm); // the hand stays put while the head is particles
     if (faceFx.frozen) return; // the head is particles right now: leave its pose as it was
     const t = state.clock.elapsedTime;
     const k = 1 - Math.exp(-delta * (calm ? 2.4 : 3.4));
@@ -441,14 +395,12 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
     const slump = sw * (0.34 + (calm ? 0 : Math.sin(t * 0.9) * 0.02)); // chin to chest, breathing slowly
     bone.rotation.x = headRestRot.current.x + target.current.y * 0.10 * awake + nod + hi + rg.pitch + dizzyPitch + talkBob + slump;  // gentle up/down, chin safe
 
-    // Breathing, a small slide and a lean into the turn. The lean is a roll about the cut neck (in
-    // the palm), so the head tilts in the hand instead of swinging on a pendulum from its feet.
+    // Breathing, depth parallax and a small lean into the turn
     const g = groupRef.current;
-    const lean = leanRef.current;
-    if (g && lean) {
-      g.position.y = baseY.current - pivotY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005) - sw * 0.012;
-      g.position.x = -HAND.axis.x - target.current.x * (calm ? 0.004 : 0.01) * awake;
-      lean.rotation.z = -target.current.x * (calm ? 0.022 : 0.05) * awake + (calm ? 0 : Math.sin(t * 0.45) * 0.014) + dizzyRoll * 1.5 + sw * 0.03;
+    if (g) {
+      g.position.y = baseY.current + (calm ? 0 : Math.sin(t * 1.5) * 0.005) - sw * 0.012;
+      g.position.x = -target.current.x * (calm ? 0.02 : 0.035) * awake;
+      g.rotation.z = -target.current.x * (calm ? 0.01 : 0.02) * awake + (calm ? 0 : Math.sin(t * 0.45) * 0.008) + dizzyRoll + sw * 0.012;
     }
 
     // Look back: while the camera is mirroring the visitor, the head glides over to copy their head
@@ -459,16 +411,14 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       const w = mirror.weight;
       bone.rotation.y += (headRestRot.current.y + mirror.yaw - bone.rotation.y) * w;
       bone.rotation.x += (headRestRot.current.x + mirror.pitch - bone.rotation.x) * w;
-      const gz = leanRef.current;
+      const gz = groupRef.current;
       if (gz) gz.rotation.z += (mirror.roll - gz.rotation.z) * w;
     }
   });
 
   return (
-    <group ref={leanRef}>
-      <group ref={groupRef}>
-        <primitive object={scene} />
-      </group>
+    <group ref={groupRef}>
+      <primitive object={scene} />
     </group>
   );
 }
