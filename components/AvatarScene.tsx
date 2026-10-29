@@ -12,6 +12,8 @@ import { found } from "@/lib/secrets";
 import { pkt, useAsleep, wake } from "@/lib/sleep";
 import { play, soundOn } from "@/lib/sound";
 import { faceFx, patchMaterial } from "@/components/face/faceFx";
+import { patchExpressions, EXPRESSION_CACHE_KEY } from "@/components/face/expressions";
+import { life } from "@/components/face/life";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -104,6 +106,12 @@ function upgradeMaterial(m: THREE.Material): THREE.Material {
   });
   p.name = m.name;
   patchMaterial(p); // squish and looks (components/face/faceFx.ts)
+  if (skin) {
+    // blinks, smiles and brows are for the skin only, not the hair or the cap (components/face/expressions.ts)
+    const base = p.onBeforeCompile, key = p.customProgramCacheKey;
+    p.onBeforeCompile = (shader, r) => { base.call(p, shader, r); patchExpressions(shader); };
+    p.customProgramCacheKey = () => key.call(p) + "+" + EXPRESSION_CACHE_KEY;
+  }
   m.dispose();
   return p;
 }
@@ -291,7 +299,8 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       },
     );
 
-    return () => { cancelled = true; faceFx.detach(); };
+    const stopLife = life.attach(); // he blinks, smiles and reacts (components/face/life.ts)
+    return () => { cancelled = true; faceFx.detach(); stopLife(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, camera, gl, stage]);
 
@@ -414,6 +423,9 @@ function AvatarModel({ calm, rig }: { calm: boolean; rig: React.RefObject<Rig> }
       const gz = groupRef.current;
       if (gz) gz.rotation.z += (mirror.roll - gz.rotation.z) * w;
     }
+
+    // The face itself: blinks, smiles, brows (components/face/life.ts)
+    life.update(delta, { calm, sleep: sw, dizzy: rg.dizzyT >= 0, grabbed: rg.dragging, squished: faceFx.squishing, talking: rg.talking });
   });
 
   return (
