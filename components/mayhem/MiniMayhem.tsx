@@ -7,6 +7,7 @@ import { RACERS } from "./engine/cars";
 import { loadSelfie, saveSelfie, type Selfie } from "./engine/selfie";
 import FaceBooth from "./FaceBooth";
 import GameAd from "./GameAd";
+import { SUPPORT_URL, supportEnabled } from "@/lib/support";
 import type { Control } from "./engine/input";
 import { fmtTime } from "./engine/util";
 import "./mayhem.css";
@@ -442,6 +443,11 @@ export default function MiniMayhem() {
             <button type="button" className="mm-btn" onClick={() => engine.current?.showSelect()}>CHANGE DRIVER</button>
             <Link className="mm-btn mm-btn-ghost" href="/projects">BACK TO THE PORTFOLIO</Link>
           </div>
+          {supportEnabled && (
+            <a className="mm-support" href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+              ENJOYED THE GAME? SUPPORT IT {'↗'}
+            </a>
+          )}
           <GameAd where="results" />
         </div>
       )}

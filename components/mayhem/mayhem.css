@@ -200,6 +200,14 @@ html[data-mayhem], html[data-mayhem] body { overflow: hidden !important; height:
 .mm-stand b { font-weight: 900; font-style: italic; letter-spacing: 0.04em; }
 .mm-stand span { font-size: 0.85rem; font-weight: 800; font-variant-numeric: tabular-nums; color: rgba(247, 244, 234, 0.85); }
 .mm-results .mm-btns { justify-content: center; }
+/* With the support link or an ad space the results panel is taller, so it is tightened to keep fitting the window */
+.mm-results:has(.mm-support, .mm-ad) .mm-place { font-size: clamp(3rem, 10vh, 4.6rem); margin: 0 0 4px; }
+.mm-results:has(.mm-support, .mm-ad) .mm-rline { padding: 4px 4px; }
+.mm-results:has(.mm-support, .mm-ad) .mm-stand { margin-top: 8px; gap: 3px; }
+.mm-results:has(.mm-support, .mm-ad) .mm-stand li { padding: 4px 12px; }
+.mm-results:has(.mm-support, .mm-ad) .mm-btns { margin-top: 8px; }
+.mm-results:has(.mm-support, .mm-ad) .mm-support { margin-top: 8px; }
+.mm-results:has(.mm-ad) .mm-ad { margin-top: 8px; }
 
 /* ── touch controls ── */
 .mm-touch { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 max(env(safe-area-inset-right), 14px) max(env(safe-area-inset-bottom), 14px) max(env(safe-area-inset-left), 14px); pointer-events: none; }
@@ -268,4 +276,7 @@ html[data-mayhem], html[data-mayhem] body { overflow: hidden !important; height:
 .mm-ad-ask .mm-btn { padding: 0.5rem 0.95rem; font-size: 0.7rem; }
 .mm-ad-results .mm-ad-ask .mm-btns { justify-content: center; }
 
+/* The optional "support the game" link on the results screen (lib/support.ts): a plain link, drawn only when its address is set */
+.mm-support { display: inline-block; margin-top: 12px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.16em; color: var(--w); text-decoration: none; opacity: 0.85; }
+.mm-support:hover, .mm-support:focus-visible { opacity: 1; text-decoration: underline; }
 @media print { .mm-stage { display: none; } }

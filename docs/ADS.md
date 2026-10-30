@@ -48,6 +48,16 @@ turning it on, and the honest expectations.
 - Do not put the ad close to a button or over the game; keep the space where it is.
 - Keep `/privacy` true. It says what the code does; change it if the code changes.
 
+## Free option: a "support the game" link (no domain, no ad account)
+
+If you cannot pay for a domain, the game can show an optional link on its **results screen**: "Enjoyed the game? Support it".
+It is a plain link to a free tip page (Ko-fi, Buy Me a Coffee, PayPal.me, GitHub Sponsors or similar), so nothing loads from
+that service unless a visitor follows it. Check which of those can pay out to you where you live before you pick one.
+
+1. Create your free tip page and copy its https address.
+2. In Vercel, Settings, Environment Variables (Production), add `NEXT_PUBLIC_SUPPORT_URL` with that address, and redeploy.
+3. To remove it, delete the variable and redeploy. An address that is missing or not https shows no link.
+
 ## Turning it off
 
 Delete the two environment variables in Vercel and redeploy. Everything returns to how it was: no ad space, no
@@ -62,5 +72,6 @@ third-party script, strict security rules everywhere.
 | `app/api/region/route.ts` | tells the page the visitor's country (from Vercel's header) so it knows whether to ask |
 | `app/ads.txt/route.ts` | `/ads.txt`, built from the publisher id (404 while ads are off) |
 | `next.config.ts` | when ads are on, the game page alone also allows Google's ad servers |
+| `lib/support.ts` | reads `NEXT_PUBLIC_SUPPORT_URL` for the support link (https only) |
 | `app/privacy/page.tsx` | the privacy page |
 | `components/mayhem/mayhem.css` | styles (`.mm-ad`) |

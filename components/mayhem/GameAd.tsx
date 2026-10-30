@@ -76,12 +76,11 @@ function Slot({ where }: { where: "title" | "results" }) {
     <aside className={`mm-ad mm-ad-${where}`} data-status={status} aria-label="Advertisement">
       {mode === "ask" ? (
         <div className="mm-ad-ask">
-          <p>This game can show one small ad here. It helps pay for the project. The ad comes from Google and may use cookies. Allow it?</p>
+          <p>One small ad can show here to help pay for the project. It comes from Google and may use cookies. Allow it? <Link href="/privacy">Privacy</Link></p>
           <div className="mm-btns">
             <button type="button" className="mm-btn" onClick={() => { write(KEY, "yes", localStorage); setMode("show"); }}>ALLOW ADS</button>
             <button type="button" className="mm-btn mm-btn-ghost" onClick={() => { write(KEY, "no", localStorage); setMode("off"); }}>NO THANKS</button>
           </div>
-          <p><Link href="/privacy">How this site treats your data</Link></p>
         </div>
       ) : (
         <>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import { adsEnabled } from "@/lib/ads";
+import { supportEnabled } from "@/lib/support";
 import ScrollUnlock from "@/components/ScrollUnlock";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbNode } from "@/lib/seo";
@@ -94,6 +95,16 @@ export default function PrivacyPage() {
             <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">adssettings.google.com</a>.
           </p>
         </section>
+
+        {supportEnabled && (
+          <section>
+            <h2>Supporting the game</h2>
+            <p>
+              The game's results screen has a link to a page where you can support it. Nothing is loaded from that page unless you
+              follow the link; once you do, you are on another service with its own privacy rules.
+            </p>
+          </section>
+        )}
 
         <section>
           <h2>Where the site runs</h2>
