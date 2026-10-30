@@ -10,6 +10,40 @@ export const mirror = {
   roll: 0,         // positive tips the top of the head toward the left of the screen
 };
 
+/* The visitor's expression, each 0..1 and already eased: the camera (components/LookBack.tsx) writes it and
+   the avatar's face director (components/face/life.ts) shows it while the camera is mirroring. Same six
+   weights as components/face/expressions.ts. Mirror rule: the visitor's LEFT eye is the avatar's eye on the
+   LEFT of the screen, as in a mirror (MediaPipe's "Left" is the person's own left). */
+export const mirrorFace = { blinkL: 0, blinkR: 0, smile: 0, frown: 0, browUp: 0, browDown: 0, asym: 0 };
+export type MirrorFace = typeof mirrorFace;
+export const resetMirrorFace = () => { for (const k of Object.keys(mirrorFace) as (keyof MirrorFace)[]) mirrorFace[k] = 0; };
+
+/** MediaPipe's blendshape scores, by name (eyeBlinkLeft, mouthSmileRight, browInnerUp ...) */
+export type Blend = Record<string, number>;
+export const toBlend = (cats: { categoryName: string; score: number }[] | undefined): Blend => {
+  const b: Blend = {};
+  if (cats) for (const c of cats) b[c.categoryName] = c.score;
+  return b;
+};
+const ramp = (v: number, lo: number, hi: number) => Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+
+/** The six weights for what the face is doing now. `n` is the same person's resting face (looking at the screen),
+    so a naturally squinty or smiley face does not count as an expression. */
+export function expressionFromBlend(b: Blend, n: Blend): MirrorFace {
+  const d = (k: string) => (b[k] ?? 0) - (n[k] ?? 0);
+  const smileL = d("mouthSmileLeft"), smileR = d("mouthSmileRight");
+  const smile = ramp((smileL + smileR) / 2, 0.06, 0.55);
+  return {
+    blinkL: ramp(b.eyeBlinkLeft ?? 0, Math.max(0.2, (n.eyeBlinkLeft ?? 0) + 0.12), 0.65),
+    blinkR: ramp(b.eyeBlinkRight ?? 0, Math.max(0.2, (n.eyeBlinkRight ?? 0) + 0.12), 0.65),
+    smile,
+    asym: smile > 0.15 ? Math.max(-1, Math.min(1, (smileL - smileR) * 2.2)) : 0,
+    frown: ramp((d("mouthFrownLeft") + d("mouthFrownRight")) / 2, 0.08, 0.5),
+    browUp: Math.max(ramp(d("browInnerUp"), 0.08, 0.5), ramp((d("browOuterUpLeft") + d("browOuterUpRight")) / 2, 0.08, 0.5)),
+    browDown: ramp((d("browDownLeft") + d("browDownRight")) / 2, 0.1, 0.5),
+  };
+}
+
 const asin = (v: number) => Math.asin(Math.max(-1, Math.min(1, v)));
 
 /* The face tracker (MediaPipe Face Landmarker) gives a 4x4 matrix for where the head is. These

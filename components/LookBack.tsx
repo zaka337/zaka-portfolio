@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
-import { mirror, poseFromMatrix } from "@/lib/mirror";
+import { mirror, mirrorFace, resetMirrorFace, poseFromMatrix, toBlend, expressionFromBlend, type Blend, type MirrorFace } from "@/lib/mirror";
 import { found } from "@/lib/secrets";
 import "./lookback.css";
 
@@ -20,8 +20,9 @@ import "./lookback.css";
    home page or the tab, and the tracker is only downloaded (about 6 MB over the network) when
    someone turns this on.
 
-   The avatar has no face controls, only a movable head, so it copies head turns, nods and
-   tilts, not expressions. How the tracker's numbers map to those angles is in lib/mirror.ts. */
+   The avatar copies head turns, nods and tilts, and also blinks, winks, smiles and raised or lowered
+   brows (the tracker's blendshape scores, shown by the face in components/face/life.ts). How the
+   tracker's numbers map to angles and expressions is in lib/mirror.ts. */
 
 type State = "off" | "asking" | "loading" | "centering" | "on" | "lost" | "error";
 
@@ -66,6 +67,7 @@ export default function LookBack() {
       stream?.getTracks().forEach((t) => t.stop());
       try { landmarker?.close(); } catch { /* already closed */ }
       mirror.on = false;
+      resetMirrorFace();
       if (videoRef.current) videoRef.current.srcObject = null;
       if (session.current === mine) session.current = null;
       setState(next);
@@ -73,7 +75,9 @@ export default function LookBack() {
       if (next === "error") window.setTimeout(() => setState((s) => (s === "error" ? "off" : s)), 7000);
     };
 
-    const samples: { yaw: number; pitch: number; roll: number }[] = [];
+    const samples: { yaw: number; pitch: number; roll: number; blend: Blend }[] = [];
+    let neutralBlend: Blend = {};
+    const easedFace: MirrorFace = { blinkL: 0, blinkR: 0, smile: 0, frown: 0, browUp: 0, browDown: 0, asym: 0 };
     let calStart = 0;
     const mine = {
       stop: () => finish("off"),
@@ -119,7 +123,7 @@ export default function LookBack() {
           runningMode: "VIDEO",
           numFaces: 1,
           outputFacialTransformationMatrixes: true,
-          outputFaceBlendshapes: false,
+          outputFaceBlendshapes: true,
           minFaceDetectionConfidence: 0.4,
           minFacePresenceConfidence: 0.4,
           minTrackingConfidence: 0.4,
@@ -149,10 +153,16 @@ export default function LookBack() {
       lastFrame = video.currentTime;
 
       let matrix: { data: ArrayLike<number> } | undefined;
-      try { matrix = landmarker!.detectForVideo(video, now).facialTransformationMatrixes?.[0]; } catch { return; }
+      let blend: Blend = {};
+      try {
+        const res = landmarker!.detectForVideo(video, now);
+        matrix = res.facialTransformationMatrixes?.[0];
+        blend = toBlend(res.faceBlendshapes?.[0]?.categories);
+      } catch { return; }
       if (!matrix) {
         if (now - lastSeen > 800 && mirror.on) {
           mirror.on = false;
+          resetMirrorFace();
           show("lost", "I cannot see your face. Move into the picture.");
         }
         return;
@@ -164,7 +174,7 @@ export default function LookBack() {
         // The first second, looking at the screen, is "straight ahead": whatever angle the camera
         // sits at, that becomes the avatar's neutral
         if (!calStart) calStart = now;
-        samples.push(p);
+        samples.push({ ...p, blend });
         if (now - calStart > CALIBRATE_MS && samples.length >= 5) {
           const n = samples.length;
           neutral = {
@@ -172,6 +182,10 @@ export default function LookBack() {
             pitch: samples.reduce((s, v) => s + v.pitch, 0) / n,
             roll: samples.reduce((s, v) => s + v.roll, 0) / n,
           };
+          // the resting face: what each expression score reads while they simply look at the screen
+          neutralBlend = {};
+          for (const sm of samples) for (const key of Object.keys(sm.blend)) neutralBlend[key] = (neutralBlend[key] ?? 0) + sm.blend[key] / n;
+          for (const key of Object.keys(easedFace) as (keyof MirrorFace)[]) easedFace[key] = 0;
           calibrating = false;
           samples.length = 0;
           eased.yaw = eased.pitch = eased.roll = 0;
@@ -191,6 +205,13 @@ export default function LookBack() {
       mirror.yaw = clamp(eased.yaw * 1.15, 1.0);   // a little more than you turn, so it reads from across a desk
       mirror.pitch = clamp(eased.pitch, 0.5);
       mirror.roll = clamp(eased.roll, 0.5);
+      // the face: blinks are quick (follow them almost at once), the rest is eased a little
+      const ex = expressionFromBlend(blend, neutralBlend);
+      for (const key of Object.keys(ex) as (keyof MirrorFace)[]) {
+        const kk = key === "blinkL" || key === "blinkR" ? 0.8 : 0.45;
+        easedFace[key] += (ex[key] - easedFace[key]) * kk;
+        mirrorFace[key] = easedFace[key];
+      }
     };
     raf = requestAnimationFrame(loop);
   }, []);

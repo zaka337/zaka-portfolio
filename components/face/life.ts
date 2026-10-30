@@ -1,4 +1,5 @@
 import { setFace, getFace, NEUTRAL } from "./expressions";
+import { mirror, mirrorFace } from "@/lib/mirror";
 
 /* The director of the face: decides WHEN he blinks, smiles, frowns or looks surprised, and hands the six
    weights to expressions.ts every frame. Nothing here draws anything.
@@ -14,6 +15,9 @@ import { setFace, getFace, NEUTRAL } from "./expressions";
      HEY THERE! HI, I'M ZAKA ...   a smile        WHOA...  HONK!   surprise (brows up, a blink)
      WHATEVER.                     annoyed        OW!              ouch (brows down, eyes shut)
      RESTORED.                     relief         LET'S BUILD ...  a smile and a wink
+   While the camera mirrors the visitor (Shift+C or the terminal's `camera`) he shows THEIR face instead:
+   blinks, winks, smiles, frowns and brows are copied (lib/mirror.ts, components/LookBack.tsx), and
+   nothing of his own is started meanwhile.
    Because of his state
      dizzy      brows up, eyes fluttering      talking   a slight smile, brows that move with the voice
      asleep     the eyes close as he nods off (and he stays that way until he is woken)
@@ -94,7 +98,7 @@ export const life = {
     window.addEventListener("zk-nod", onNod);
     document.addEventListener("pointerover", onOver);
     document.addEventListener("pointerout", onOut);
-    if (/[?&]test(&|$)/.test(location.search)) (window as unknown as { __faceLife?: unknown }).__faceLife = { moment, state, face: getFace, set: setFace, pause: (p: boolean) => { state.paused = p; } };
+    if (/[?&]test(&|$)/.test(location.search)) (window as unknown as { __faceLife?: unknown }).__faceLife = { moment, state, face: getFace, set: setFace, pause: (p: boolean) => { state.paused = p; }, mirrorFace, mirror };
     state.attached++;
     return () => {
       window.removeEventListener("zk-say", onSay);
@@ -115,9 +119,11 @@ export const life = {
     state.now += dt;
     const t = state.now;
     const awake = inp.sleep < 0.15;
+    const mw = Math.min(1, Math.max(0, mirror.weight)); // 0..1: how much he is copying the visitor's face right now
+    const idle = !inp.calm && awake && mw < 0.5;        // may he start things on his own?
 
     // ── blinking on his own
-    if (!inp.calm && awake && t >= state.nextBlink) {
+    if (idle && t >= state.nextBlink) {
       blink(t);
       if (Math.random() < 0.2) blink(t + 0.27);
       else if (Math.random() < 0.08) blink(t, 1.7);                         // now and then a slow, heavy blink
@@ -159,7 +165,7 @@ export const life = {
     // talking: a slight smile and brows that move with the voice
     if (inp.talking) { smile = Math.max(smile, 0.22); up = Math.max(up, inp.calm ? 0.1 : 0.12 + 0.08 * Math.sin(t * 5.3)); }
     // now and then, when nothing is going on, a small smile
-    if (!inp.calm && awake && !inp.talking) {
+    if (idle && !inp.talking) {
       if (t >= state.nextSmile) { state.smileAt = t; state.nextSmile = t + rand(14, 30); state.asym = rand(-1, 1) * 0.8; }
       smile = Math.max(smile, 0.4 * pulse(t - state.smileAt, 0.6, 1.8, 1.2));
     }
@@ -176,10 +182,14 @@ export const life = {
     // a real smile squeezes the eyes a little
     const cheek = 0.16 * state.smile;
     const both = Math.max(lid * 0.98, squint, cheek);
+    // while the camera mirrors the visitor, their face takes over (eased in and out with the head copy)
+    const f = mirrorFace;
+    const mix = (own: number, theirs: number) => own + (theirs - own) * mw;
     setFace({
-      smile: state.smile, frown: state.frown, browUp: state.browUp, browDown: state.browDown, asym: state.asym,
-      blinkL: Math.max(blinkL, both),
-      blinkR: Math.max(blinkR, both, wink),
+      smile: mix(state.smile, f.smile), frown: mix(state.frown, f.frown), browUp: mix(state.browUp, f.browUp),
+      browDown: mix(state.browDown, f.browDown), asym: mix(state.asym, f.asym),
+      blinkL: mix(Math.max(blinkL, both), f.blinkL),
+      blinkR: mix(Math.max(blinkR, both, wink), f.blinkR),
     });
   },
 };
