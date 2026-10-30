@@ -26,5 +26,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/contact", "yearly", 0.6),
     page("/qa-challenge", "yearly", 0.6),
     page("/projects/all", "weekly", 0.6),
+    page("/privacy", "yearly", 0.3),
   ];
 }

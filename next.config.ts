@@ -6,8 +6,18 @@ import type { NextConfig } from "next";
    'wasm-unsafe-eval' is for the WebAssembly the 3D model decoder and the camera's face tracker
    run; blob: is for textures and the camera preview. The camera, microphone and motion sensors are
    allowed for this site only, because the hidden features use them. Production only: the
-   development server needs eval, which this policy would block. */
-const security = [
+   development server needs eval, which this policy would block.
+
+   The one exception: when the game's ad space is switched on (the two NEXT_PUBLIC_ADS_* settings, lib/ads.ts), the
+   MINI MAYHEM page alone also lets Google's ad servers in. Every other page keeps the strict policy. Nothing else
+   about the policy changes, and with the settings missing nothing changes at all. */
+const adsOn = /^ca-pub-\d{10,20}$/.test(process.env.NEXT_PUBLIC_ADS_CLIENT ?? "") && /^\d{6,20}$/.test(process.env.NEXT_PUBLIC_ADS_SLOT ?? "");
+const AD_HOSTS = [
+  "https://pagead2.googlesyndication.com", "https://*.googlesyndication.com", "https://*.google.com", "https://*.googleadservices.com",
+  "https://*.doubleclick.net", "https://*.adtrafficquality.google", "https://www.googletagservices.com",
+].join(" ");
+
+const securityHeaders = (ads: boolean) => [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -20,11 +30,12 @@ const security = [
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+          `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${ads ? " " + AD_HOSTS : ""}`,
           "style-src 'self' 'unsafe-inline'",
-          "img-src 'self' data: blob:",
+          ads ? "img-src 'self' data: blob: https:" : "img-src 'self' data: blob:",
           "font-src 'self' data:",
-          "connect-src 'self' data: blob:",
+          `connect-src 'self' data: blob:${ads ? " " + AD_HOSTS : ""}`,
+          ...(ads ? [`frame-src ${AD_HOSTS}`] : []),
           "media-src 'self' blob:",
           "worker-src 'self' blob:",
           "object-src 'none'",
@@ -42,7 +53,9 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
-      { source: "/:path*", headers: security },
+      // Every page but the game gets the strict policy; the game gets it too unless its ad space is on (see above)
+      { source: adsOn ? "/:path((?!mini-mayhem).*)" : "/:path*", headers: securityHeaders(false) },
+      ...(adsOn ? [{ source: "/mini-mayhem", headers: securityHeaders(true) }] : []),
       {
         // The service worker (written by scripts/make-sw.mjs): never cached, so a new deploy reaches every visitor
         source: "/sw.js",

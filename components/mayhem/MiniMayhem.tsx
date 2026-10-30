@@ -6,6 +6,7 @@ import { MayhemEngine, type Phase, type Results, type HudData } from "./engine/e
 import { RACERS } from "./engine/cars";
 import { loadSelfie, saveSelfie, type Selfie } from "./engine/selfie";
 import FaceBooth from "./FaceBooth";
+import GameAd from "./GameAd";
 import type { Control } from "./engine/input";
 import { fmtTime } from "./engine/util";
 import "./mayhem.css";
@@ -299,6 +300,7 @@ export default function MiniMayhem() {
             <button type="button" className="mm-btn mm-btn-hero" autoFocus onClick={() => { engine.current?.audio.start(); engine.current?.showSelect(); }}>PLAY</button>
           </div>
           <p className="mm-meta">{'3 LAPS · 4 RACERS · 1 ISLAND'}</p>
+          <GameAd where="title" />
         </div>
       )}
 
@@ -440,6 +442,7 @@ export default function MiniMayhem() {
             <button type="button" className="mm-btn" onClick={() => engine.current?.showSelect()}>CHANGE DRIVER</button>
             <Link className="mm-btn mm-btn-ghost" href="/projects">BACK TO THE PORTFOLIO</Link>
           </div>
+          <GameAd where="results" />
         </div>
       )}
     </div>
