@@ -4,6 +4,7 @@ import { useRef, useEffect, useLayoutEffect, useState, Suspense, use } from "rea
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, PerformanceMonitor } from "@react-three/drei";
 import Image from "next/image";
+import { createPortal } from "react-dom";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ENV_SIZE, ENV_SIGMA, preloadBakedEnv, bakedEnvTexture } from "@/lib/bakedEnv";
@@ -14,6 +15,7 @@ import { play, soundOn } from "@/lib/sound";
 import { faceFx, patchMaterial } from "@/components/face/faceFx";
 import { patchExpressions, EXPRESSION_CACHE_KEY } from "@/components/face/expressions";
 import { life } from "@/components/face/life";
+import SceneGuard from "@/components/face/SceneGuard";
 
 /* Soft studio reflections, no HDR download. The environment map is pre-baked
    (scripts/bake-env.mjs, public/env/) because building it on the GPU compiles a GGX
@@ -467,6 +469,8 @@ function startingDpr() {
 export default function AvatarScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<Mode>("pending");
+  // Why the 3D scene gave up, if it did (the still photo is shown instead). Only displayed with ?debug in the address.
+  const [failure, setFailure] = useState("");
   const [bubble, setBubble] = useState("");
   const [shown, setShown] = useState(false);
   // The ratio the screen starts at is also its ceiling: PerformanceMonitor only steps
@@ -720,6 +724,7 @@ export default function AvatarScene() {
       }}
     >
       {mode === "3d" && (
+        <SceneGuard onFail={(e) => { setFailure(String(e?.message ?? e).slice(0, 300)); setMode("still"); }}>
         <Canvas
           dpr={dpr}
           camera={{ fov: 45, near: 0.1, far: 100, position: [0, 0, 3.0] }}
@@ -762,6 +767,14 @@ export default function AvatarScene() {
             <AvatarModel calm={calm} rig={rig} />
           </Suspense>
         </Canvas>
+        </SceneGuard>
+      )}
+
+      {mode === "still" && failure && typeof document !== "undefined" && /[?&]debug(&|$)/.test(location.search) && createPortal(
+        <p style={{ position: "fixed", left: 8, right: 8, bottom: 8, zIndex: 9999, margin: 0, padding: "8px 10px", borderRadius: 8, background: "rgba(0,0,0,0.85)", color: "#fff", font: "12px/1.4 monospace", wordBreak: "break-word" }}>
+          3D could not start: {failure} | {navigator.userAgent.replace("Mozilla/5.0 ", "").slice(0, 140)}
+        </p>,
+        document.body,
       )}
 
       {mode === "still" && (

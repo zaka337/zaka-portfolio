@@ -8,6 +8,7 @@ import { useAsleep } from "@/lib/sleep";
 import RoleType from "@/components/RoleType";
 import KineticText from "@/components/KineticText";
 import PlayDoor from "@/components/PlayDoor";
+import SceneGuard from "@/components/face/SceneGuard";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
   ssr: false,
@@ -90,7 +91,10 @@ export default function HomeScreen() {
   return (
     <main ref={rootRef} className="portfolio-root">
       <div className="home-ghost" aria-hidden="true"><span>ZAKA</span></div>
-      <AvatarScene />
+      {/* If the scene's own code cannot load or run, the page carries on without the head instead of dying */}
+      <SceneGuard>
+        <AvatarScene />
+      </SceneGuard>
 
       {/* TOP LEFT — name */}
       {/* A touch starts it when the finger lifts (onPointerUp), without waiting for the
