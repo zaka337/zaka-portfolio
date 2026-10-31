@@ -6,6 +6,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import JsonLd from "@/components/JsonLd";
 import { personNode, websiteNode } from "@/lib/seo";
 import { SITE_URL, SITE_NAME, SOCIAL } from "@/lib/site";
+import { DEBUG_SCRIPT } from "@/lib/debugNote";
 
 export const viewport: Viewport = {
   // Light is the default theme for every visitor, so the browser chrome matches it.
@@ -111,6 +112,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-PK" suppressHydrationWarning>
       <head>
+        {/* Only with ?debug in the address: a note on the screen with what this phone can do and any error it hits,
+            started before anything else so it still works if the site's own code is what fails (lib/debugNote.ts) */}
+        <script dangerouslySetInnerHTML={{ __html: DEBUG_SCRIPT }} />
         {/* Apply the saved (else system) theme before first paint so there is no flash */}
         <script dangerouslySetInnerHTML={{ __html: `var t='light';try{if(localStorage.getItem('zk-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)` }} />
         {/* The reading and access choices (components/Access.tsx), applied before first paint.

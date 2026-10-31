@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import LoaderCleanup from "@/components/LoaderCleanup";
+import Guard from "@/components/Guard";
 
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
 // A secret command line (` key, or long-press the face on a phone). Loaded after the page.
@@ -43,27 +44,29 @@ const Doodle = dynamic(() => import("@/components/Doodle"), { ssr: false });
 // A paper curtain with the next page's name on it covers each page change (not with Reduce Motion)
 const Transition = dynamic(() => import("@/components/Transition"), { ssr: false });
 
+// Every extra sits in its own Guard: if one cannot load or throws on some phone, only that one is left out and the
+// page itself carries on (see components/Guard.tsx).
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <>
       <LoaderCleanup />
-      <CustomCursor />
-      <Terminal />
-      <XRay />
-      <Voice />
-      <LookBack />
-      <SecretToast />
-      <Lamp />
-      <Tour />
-      <Sound />
-      <Receipt />
-      <BugHunt />
-      <PaperPlane />
-      <Access />
-      <Palette />
-      <Doodle />
-      <Transition />
-      <PwaProvider />
+      <Guard name="Cursor"><CustomCursor /></Guard>
+      <Guard name="Terminal"><Terminal /></Guard>
+      <Guard name="XRay"><XRay /></Guard>
+      <Guard name="Voice"><Voice /></Guard>
+      <Guard name="LookBack"><LookBack /></Guard>
+      <Guard name="SecretToast"><SecretToast /></Guard>
+      <Guard name="Lamp"><Lamp /></Guard>
+      <Guard name="Tour"><Tour /></Guard>
+      <Guard name="Sound"><Sound /></Guard>
+      <Guard name="Receipt"><Receipt /></Guard>
+      <Guard name="BugHunt"><BugHunt /></Guard>
+      <Guard name="PaperPlane"><PaperPlane /></Guard>
+      <Guard name="Access"><Access /></Guard>
+      <Guard name="Palette"><Palette /></Guard>
+      <Guard name="Doodle"><Doodle /></Guard>
+      <Guard name="Transition"><Transition /></Guard>
+      <Guard name="Pwa"><PwaProvider /></Guard>
       {children}
     </>
   );

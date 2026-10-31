@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { debugNote } from "@/lib/debugNote";
 
 /* What a visitor sees when a page throws while it runs, instead of the framework's bare "This page couldn't load".
    The links are plain <a> tags on purpose: a full page load works even if the page's own scripts are what broke.
@@ -8,6 +9,7 @@ import { useEffect } from "react";
 export default function ErrorPage({ error, retry, reset }: { error: Error & { digest?: string }; retry?: () => void; reset?: () => void }) {
   useEffect(() => {
     console.error(error);
+    debugNote(`page crashed: ${String(error?.message ?? error).slice(0, 220)}`);
     // do not leave the loading screen over the message
     try { document.getElementById("zk-loader")?.classList.add("zk-done"); } catch { /* nothing to hide */ }
   }, [error]);

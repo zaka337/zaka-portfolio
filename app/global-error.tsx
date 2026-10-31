@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+import { debugNote } from "@/lib/debugNote";
+
 /* The last safety net: when even the root layout fails, this replaces the whole document (it must bring its own html and
    body, and it gets none of the site's styles). Same message as app/error.tsx, in plain inline styles. */
 export default function GlobalError({ error, retry, reset }: { error: Error & { digest?: string }; retry?: () => void; reset?: () => void }) {
+  useEffect(() => { debugNote(`site crashed: ${String(error?.message ?? error).slice(0, 220)}`); }, [error]);
   const link = { color: "#0d0d0d", fontWeight: 700, textDecoration: "underline" } as const;
   return (
     <html lang="en">
