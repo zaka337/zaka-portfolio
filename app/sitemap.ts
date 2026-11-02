@@ -19,8 +19,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/projects", "weekly", 0.85),
     ...PROJECTS.map((p) => page(`/projects/${p.slug}`, "monthly", 0.8)),
     page("/resume", "monthly", 0.8),
-    page("/hire", "monthly", 0.8),
-    page("/tldr", "monthly", 0.8),
+    // the two pages that also exist in Urdu: each entry names its other-language twin (hreflang)
+    ...(["hire", "tldr"] as const).flatMap((slug) => [
+      { ...page(`/${slug}`, "monthly", 0.8), alternates: { languages: { en: `${SITE_URL}/${slug}`, ur: `${SITE_URL}/ur/${slug}` } } },
+      { ...page(`/ur/${slug}`, "monthly", 0.7), alternates: { languages: { en: `${SITE_URL}/${slug}`, ur: `${SITE_URL}/ur/${slug}` } } },
+    ]),
     page("/contact-me", "yearly", 0.8),
     page("/mini-mayhem", "monthly", 0.7),
     page("/contact", "yearly", 0.6),

@@ -1,3 +1,5 @@
+import { makeT, type T } from "@/lib/i18n";
+
 /* The project estimator's brain (components/hire/Estimator.tsx). It turns what a visitor needs,
    roughly how big it is, and a few features into a range in weeks and a simple timeline, and
    writes a ready-made brief for the contact form.
@@ -67,21 +69,22 @@ export interface Estimate {
 
 const round = (w: number) => Math.max(0.5, Math.round(w * 2) / 2);
 
-export function estimate(p: Pick): Estimate {
+/* `t` writes the labels and notes in the reader's language (English by default). */
+export function estimate(p: Pick, t: T = makeT(null)): Estimate {
   const [bMin, bMax] = BASE[p.kind][p.size];
   let min = bMin, max = bMax;
-  const parts: { label: string; weeks: number }[] = [{ label: `${p.kind}, ${SIZES[p.size].toLowerCase()}`, weeks: (bMin + bMax) / 2 }];
+  const parts: { label: string; weeks: number }[] = [{ label: t("{kind}, {size}", { kind: t(p.kind), size: t(SIZES[p.size]).toLowerCase() }), weeks: (bMin + bMax) / 2 }];
   for (const id of p.features) {
     const f = FEATURES.find((x) => x.id === id);
     if (!f) continue;
     min += f.weeks[0];
     max += f.weeks[1];
-    parts.push({ label: f.label, weeks: (f.weeks[0] + f.weeks[1]) / 2 });
+    parts.push({ label: t(f.label), weeks: (f.weeks[0] + f.weeks[1]) / 2 });
   }
   if (p.design === "need") {
     min *= 1.15;
     max *= 1.25;
-    parts.push({ label: "Design help", weeks: ((min + max) / 2) * 0.17 });
+    parts.push({ label: t("Design help"), weeks: ((min + max) / 2) * 0.17 });
   }
   min = round(min);
   max = Math.max(min + 0.5, round(max));
@@ -96,41 +99,41 @@ export function estimate(p: Pick): Estimate {
     ["launch", "Launch and handover", 0.07],
   ];
   const total = shares.reduce((s, x) => s + x[2], 0);
-  let t = 0;
+  let at = 0;
   const phases: Phase[] = shares.map(([id, label, share]) => {
     const weeks = (share / total) * mid;
-    const ph = { id, label, weeks, start: t };
-    t += weeks;
+    const ph = { id, label: t(label), weeks, start: at };
+    at += weeks;
     return ph;
   });
 
   const load = Math.min(1, Math.log2(1 + mid) / Math.log2(1 + 36));
-  const loadLabel = mid <= 2 ? "A quick job" : mid <= 6 ? "A small project" : mid <= 14 ? "A substantial build" : "A big build";
+  const loadLabel = t(mid <= 2 ? "A quick job" : mid <= 6 ? "A small project" : mid <= 14 ? "A substantial build" : "A big build");
 
   const w = WINDOW_WEEKS[p.urgency];
   let window: Estimate["window"] = "open";
-  let windowNote = "No deadline, so the work can be planned around what matters most.";
+  let windowNote = t("No deadline, so the work can be planned around what matters most.");
   if (Number.isFinite(w)) {
-    if (max <= w) { window = "fits"; windowNote = "This should fit inside the time you have in mind."; }
-    else if (min <= w) { window = "tight"; windowNote = "Tight: it fits only at the fast end, or if the first version is kept smaller."; }
-    else { window = "over"; windowNote = "Longer than the time you have in mind. Splitting it into a first version and a second one would help."; }
+    if (max <= w) { window = "fits"; windowNote = t("This should fit inside the time you have in mind."); }
+    else if (min <= w) { window = "tight"; windowNote = t("Tight: it fits only at the fast end, or if the first version is kept smaller."); }
+    else { window = "over"; windowNote = t("Longer than the time you have in mind. Splitting it into a first version and a second one would help."); }
   }
   return { min, max, mid, phases, load, loadLabel, window, windowNote, parts };
 }
 
-const weeksText = (e: Estimate) => (e.min === e.max ? `${e.min}` : `${e.min} to ${e.max}`);
+const weeksText = (e: Estimate, t: T = makeT(null)) => (e.min === e.max ? `${e.min}` : t("{min} to {max}", { min: e.min, max: e.max }));
 
 /** The brief that goes into the contact form */
-export function briefText(p: Pick, e: Estimate): string {
-  const names = p.features.map((id) => FEATURES.find((f) => f.id === id)?.label.toLowerCase()).filter(Boolean);
+export function briefText(p: Pick, e: Estimate, t: T = makeT(null)): string {
+  const names = p.features.map((id) => { const f = FEATURES.find((x) => x.id === id); return f ? t(f.label).toLowerCase() : ""; }).filter(Boolean);
   return [
-    `Hi Zaka, I'm looking for a ${p.kind.toLowerCase()} (${SIZES[p.size].toLowerCase()}).`,
-    names.length ? `It would need: ${names.join(", ")}.` : "",
-    p.design === "need" ? "I would also need help with the design." : "I already have the designs.",
-    `Timeline: ${p.urgency.toLowerCase()}.`,
-    `Your estimator suggested about ${weeksText(e)} weeks.`,
+    t("Hi Zaka, I'm looking for a {kind} ({size}).", { kind: t(p.kind).toLowerCase(), size: t(SIZES[p.size]).toLowerCase() }),
+    names.length ? t("It would need: {list}.", { list: names.join(t(", ")) }) : "",
+    p.design === "need" ? t("I would also need help with the design.") : t("I already have the designs."),
+    t("Timeline: {urgency}.", { urgency: t(p.urgency).toLowerCase() }),
+    t("Your estimator suggested about {weeks} weeks.", { weeks: weeksText(e, t) }),
     "",
-    "A little more about it: ",
+    t("A little more about it: "),
   ].filter((l) => l !== "").join("\n");
 }
 

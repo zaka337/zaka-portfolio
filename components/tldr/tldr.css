@@ -121,3 +121,16 @@
   .td-btn { display: none; }
   .td-plinks a::after { content: " (" attr(href) ")"; font-weight: 400; letter-spacing: 0; }
 }
+
+/* The link to the other language ("اردو" on the English page, "English" on the Urdu one) */
+.td-lang {
+  margin-inline-start: 0.7em;
+  padding: 0.12em 0.6em;
+  border: 1px solid currentColor;
+  border-radius: 99px;
+  font-family: "Noto Nastaliq Urdu", "Segoe UI", Tahoma, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.7;
+  white-space: nowrap;
+}

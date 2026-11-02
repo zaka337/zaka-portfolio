@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   title: { absolute: "TL;DR: Zaka Ullah Waheed in one screen" },
   description:
     "Zaka Ullah Waheed in one screen: what he does, three projects worth opening and how to work with him. Full-stack developer, QA mindset, open to remote.",
-  alternates: { canonical: `${SITE_URL}/tldr` },
+  alternates: {
+    canonical: `${SITE_URL}/tldr`,
+    languages: { en: `${SITE_URL}/tldr`, ur: `${SITE_URL}/ur/tldr`, "x-default": `${SITE_URL}/tldr` },
+  },
   openGraph: {
     title: `${SITE_NAME}: the short version`,
     description: "What he does, three projects worth opening, and how to work with him. One screen.",

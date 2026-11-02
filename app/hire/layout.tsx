@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   title: { absolute: "Hire Zaka Ullah Waheed | Full-Stack & QA Automation Developer" },
   description:
     "Hire Zaka Ullah Waheed: paste a job description to check the fit, find a call time in your time zone, or get a rough project estimate. Open to remote work.",
-  alternates: { canonical: `${SITE_URL}/hire` },
+  alternates: {
+    canonical: `${SITE_URL}/hire`,
+    languages: { en: `${SITE_URL}/hire`, ur: `${SITE_URL}/ur/hire`, "x-default": `${SITE_URL}/hire` },
+  },
   openGraph: {
     title: `Hire ${SITE_NAME}`,
     description: "Check the fit with a job description, find a call time in your time zone, and get a rough project timeline.",

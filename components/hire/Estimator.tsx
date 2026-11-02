@@ -7,11 +7,13 @@ import {
 } from "@/lib/estimate";
 import { saveDraft } from "@/lib/draft";
 import { play } from "@/lib/sound";
+import { useLang } from "@/components/i18n/Lang";
 
 /* The project estimator. Pick what you need, how big it is and a few extras, and the answer
    builds as you go: a tower of blocks, a range in weeks that counts to its new value, and a
    timeline that redraws itself. Timelines only, never prices, and always a rough guide: Zaka
-   confirms after reading the real brief (lib/estimate.ts has the numbers). */
+   confirms after reading the real brief (lib/estimate.ts has the numbers).
+   English is the key for every string (see lib/i18n.ts); the Urdu version is /ur/hire. */
 
 /* A number that glides to its new value instead of jumping */
 function useTween(target: number, ms = 650): number {
@@ -45,6 +47,7 @@ const WINDOW_LABEL = { fits: "Fits your time", tight: "Tight", over: "Longer tha
 
 export default function Estimator() {
   const router = useRouter();
+  const { t, ar } = useLang();
   const [kind, setKind] = useState<Kind>("Web app");
   const [size, setSize] = useState(2);
   const [features, setFeatures] = useState<string[]>(["auth"]);
@@ -53,7 +56,7 @@ export default function Estimator() {
   const [copied, setCopied] = useState(false);
 
   const pick: Pick = { kind, size, features, design, urgency };
-  const est = useMemo(() => estimate(pick), [kind, size, features, design, urgency]); // eslint-disable-line react-hooks/exhaustive-deps
+  const est = useMemo(() => estimate(pick, t), [kind, size, features, design, urgency, t]); // eslint-disable-line react-hooks/exhaustive-deps
   const avail = featuresFor(kind);
 
   const chooseKind = (k: Kind) => {
@@ -71,9 +74,9 @@ export default function Estimator() {
 
   // The tower: the base build, then one block per extra, then design help
   const blocks = [
-    { id: "base", label: `${kind}`, h: 30 + size * 12, tone: "base" },
-    ...features.map((id) => ({ id, label: SHORT[id] ?? id, h: 24, tone: "feat" })),
-    ...(design === "need" ? [{ id: "design", label: "Design", h: 24, tone: "design" }] : []),
+    { id: "base", label: t(kind), h: 30 + size * 12, tone: "base" },
+    ...features.map((id) => ({ id, label: t(SHORT[id] ?? id), h: 24, tone: "feat" })),
+    ...(design === "need" ? [{ id: "design", label: t("Design"), h: 24, tone: "design" }] : []),
   ];
   const widthFor = (tone: string, i: number) => (tone === "base" ? 100 : tone === "design" ? 72 : 58 + ((i * 13) % 28));
 
@@ -81,67 +84,66 @@ export default function Estimator() {
   const maxPart = Math.max(...est.parts.map((p) => p.weeks), 1);
 
   const sendBrief = () => {
-    saveDraft({ from: "project estimate", message: briefText(pick, est), needs: [kind], timeline: TIMELINE_CHIP[urgency] });
+    saveDraft({ from: "project estimate", message: briefText(pick, est, t), needs: [kind], timeline: TIMELINE_CHIP[urgency] });
     router.push("/contact-me");
   };
   const copy = async () => {
-    try { await navigator.clipboard.writeText(briefText(pick, est)); setCopied(true); window.setTimeout(() => setCopied(false), 2200); } catch { /* clipboard refused */ }
+    try { await navigator.clipboard.writeText(briefText(pick, est, t)); setCopied(true); window.setTimeout(() => setCopied(false), 2200); } catch { /* clipboard refused */ }
   };
 
   return (
     <section className="es" aria-labelledby="es-title">
       <div className="es-intro">
-        <p className="hr-label">PROJECT ESTIMATE</p>
-        <h2 id="es-title" className="hr-h2">How long would your project take?</h2>
+        <p className="hr-label">{t("PROJECT ESTIMATE")}</p>
+        <h2 id="es-title" className="hr-h2">{t("How long would your project take?")}</h2>
         <p className="hr-lead">
-          Pick what you need and watch the estimate build. It is a rough guide from typical projects, in weeks, not a quote:
-          I confirm after reading your real brief.
+          {t("Pick what you need and watch the estimate build. It is a rough guide from typical projects, in weeks, not a quote: I confirm after reading your real brief.")}
         </p>
       </div>
 
       <div className="es-grid">
         <div className="es-controls">
           <fieldset className="es-step">
-            <legend className="hr-micro"><b>1</b> WHAT DO YOU NEED?</legend>
+            <legend className="hr-micro"><b>1</b> {t("WHAT DO YOU NEED?")}</legend>
             <div className="es-kinds">
               {KINDS.map((k) => (
-                <button key={k} type="button" className="es-kind" aria-pressed={kind === k} onClick={() => chooseKind(k)}>{k}</button>
+                <button key={k} type="button" className="es-kind" aria-pressed={kind === k} onClick={() => chooseKind(k)}>{t(k)}</button>
               ))}
             </div>
           </fieldset>
 
           <fieldset className="es-step">
-            <legend className="hr-micro"><b>2</b> HOW BIG IS IT?</legend>
+            <legend className="hr-micro"><b>2</b> {t("HOW BIG IS IT?")}</legend>
             <div className="es-size">
               <input
                 type="range" min={0} max={4} step={1} value={size}
-                aria-label="How big is it" aria-valuetext={SIZES[size]}
+                aria-label={t("How big is it")} aria-valuetext={t(SIZES[size])}
                 onChange={(e) => { setSize(Number(e.target.value)); play("key"); }}
               />
               <div className="es-ticks" aria-hidden="true">
-                {SIZES.map((s, i) => <span key={s} className={i === size ? "is-on" : ""}>{s}</span>)}
+                {SIZES.map((s, i) => <span key={s} className={i === size ? "is-on" : ""}>{t(s)}</span>)}
               </div>
             </div>
           </fieldset>
 
           <fieldset className="es-step">
-            <legend className="hr-micro"><b>3</b> ANY EXTRAS?</legend>
+            <legend className="hr-micro"><b>3</b> {t("ANY EXTRAS?")}</legend>
             <div className="es-feats">
               {avail.map((f) => (
-                <button key={f.id} type="button" className="hr-chip" aria-pressed={features.includes(f.id)} onClick={() => toggle(f.id)}>{f.label}</button>
+                <button key={f.id} type="button" className="hr-chip" aria-pressed={features.includes(f.id)} onClick={() => toggle(f.id)}>{t(f.label)}</button>
               ))}
             </div>
-            <div className="es-two" role="group" aria-label="Design">
-              <button type="button" className="hr-chip" aria-pressed={design === "have"} onClick={() => setDesign("have")}>I have designs</button>
-              <button type="button" className="hr-chip" aria-pressed={design === "need"} onClick={() => setDesign("need")}>I need design help</button>
+            <div className="es-two" role="group" aria-label={t("Design")}>
+              <button type="button" className="hr-chip" aria-pressed={design === "have"} onClick={() => setDesign("have")}>{t("I have designs")}</button>
+              <button type="button" className="hr-chip" aria-pressed={design === "need"} onClick={() => setDesign("need")}>{t("I need design help")}</button>
             </div>
           </fieldset>
 
           <fieldset className="es-step">
-            <legend className="hr-micro"><b>4</b> HOW SOON?</legend>
+            <legend className="hr-micro"><b>4</b> {t("HOW SOON?")}</legend>
             <div className="es-feats">
               {URGENCY.map((u) => (
-                <button key={u} type="button" className="hr-chip" aria-pressed={urgency === u} onClick={() => setUrgency(u)}>{u}</button>
+                <button key={u} type="button" className="hr-chip" aria-pressed={urgency === u} onClick={() => setUrgency(u)}>{t(u)}</button>
               ))}
             </div>
           </fieldset>
@@ -149,14 +151,14 @@ export default function Estimator() {
 
         <div className="es-out" aria-live="polite">
           <div className="es-card">
-            <p className="hr-micro">ROUGH ESTIMATE</p>
+            <p className="hr-micro">{t("ROUGH ESTIMATE")}</p>
             <p className="es-weeks">
               <span className="es-num">{minT.toFixed(est.min % 1 ? 1 : 0)}</span>
-              <span className="es-to"> to </span>
+              <span className="es-to">{t(" to ")}</span>
               <span className="es-num">{maxT.toFixed(est.max % 1 ? 1 : 0)}</span>
-              <span className="es-unit"> weeks</span>
+              <span className="es-unit">{t(" weeks")}</span>
             </p>
-            <p className="hr-srt">{`About ${weeksLabel(est)} weeks. ${est.loadLabel}. ${WINDOW_LABEL[est.window]}.`}</p>
+            <p className="hr-srt">{t("About {weeks} weeks. {load}. {window}.", { weeks: weeksLabel(est, t), load: est.loadLabel, window: t(WINDOW_LABEL[est.window]) })}</p>
 
             <div className="es-gauge" aria-hidden="true">
               <div className="es-gauge-fill" style={{ transform: `scaleX(${loadT})` }} />
@@ -174,12 +176,12 @@ export default function Estimator() {
               <div className="es-ground" />
             </div>
 
-            <span className={`es-window is-${est.window}`}>{WINDOW_LABEL[est.window]}</span>
+            <span className={`es-window is-${est.window}`}>{t(WINDOW_LABEL[est.window])}</span>
             <p className="hr-note">{est.windowNote}</p>
           </div>
 
           <div className="es-card">
-            <p className="hr-micro">THE TIMELINE (A TYPICAL SPLIT)</p>
+            <p className="hr-micro">{t("THE TIMELINE (A TYPICAL SPLIT)")}</p>
             <div className="es-gantt" aria-hidden="true">
               {est.phases.map((p, i) => (
                 <div key={p.id} className="es-row">
@@ -189,13 +191,13 @@ export default function Estimator() {
                   </div>
                 </div>
               ))}
-              <div className="es-scale"><span>Week 0</span><span>about {weeksLabel(est)}</span></div>
+              <div className="es-scale"><span>{t("Week 0")}</span><span>{t("about {weeks}", { weeks: weeksLabel(est, t) })}</span></div>
             </div>
             <ul className="hr-srt">{est.phases.map((p) => <li key={p.id}>{p.label}</li>)}</ul>
           </div>
 
           <div className="es-card">
-            <p className="hr-micro">WHERE THE WEEKS GO</p>
+            <p className="hr-micro">{t("WHERE THE WEEKS GO")}</p>
             <ul className="es-parts">
               {est.parts.map((p, i) => (
                 <li key={p.label}>
@@ -207,8 +209,8 @@ export default function Estimator() {
           </div>
 
           <div className="es-actions">
-            <button type="button" className="hr-btn is-main" onClick={sendBrief}><span>Use this as my brief</span><span aria-hidden="true">{'→'}</span></button>
-            <button type="button" className="hr-btn" onClick={copy}>{copied ? "Copied" : "Copy the brief"}</button>
+            <button type="button" className="hr-btn is-main" onClick={sendBrief}><span>{t("Use this as my brief")}</span><span aria-hidden="true">{ar.fwd}</span></button>
+            <button type="button" className="hr-btn" onClick={copy}>{copied ? t("Copied") : t("Copy the brief")}</button>
           </div>
         </div>
       </div>

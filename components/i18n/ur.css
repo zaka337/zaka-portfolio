@@ -1,0 +1,151 @@
+/* The Urdu pages (/ur/*): right to left, in the Urdu font. Loaded only by app/ur/layout.tsx. It sits on top of the English
+   stylesheets (components/tldr/tldr.css, components/hire/hire.css), which were written left to right: this file mirrors what
+   needs mirroring and adjusts what Urdu script needs. Three facts drive most of it:
+   - Urdu has no capital letters, and its letters join, so letter-spacing and text-transform must be off.
+   - Nastaliq lines are far taller than Latin ones and its small sizes are hard to read: bigger sizes, much more line-height,
+     and nothing may clip it (the rise-in masks on the headlines are opened up).
+   - Time axes (the week bars, the timeline) are drawn left to right in every language, as clocks are. */
+
+/* Latin letters, digits and punctuation keep the site's own font; only Arabic-script text uses the Urdu font. Done with a
+   font that covers just those characters, because putting Arial first would also take the Arabic letters it half-covers,
+   and a line would mix two different handwritings. */
+@font-face {
+  font-family: "UrLatin";
+  src: local("Helvetica Neue"), local("HelveticaNeue"), local("Helvetica"), local("Arial");
+  font-weight: 100 599;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-203A, U+2190-21FF;
+}
+@font-face {
+  font-family: "UrLatin";
+  src: local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"), local("Helvetica Bold"), local("Arial Bold"), local("Arial-BoldMT");
+  font-weight: 600 900;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-203A, U+2190-21FF;
+}
+
+.ur-root {
+  --ur-font: "UrLatin", var(--font-ur), "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+
+.ur-root :is(.td-root, .hr-root) { font-family: var(--ur-font); }
+
+/* Urdu has no upper case, and spacing letters apart breaks the joins between them */
+.ur-root :is(.td-root, .hr-root) * { letter-spacing: 0 !important; text-transform: none !important; }
+
+/* The link back to English, in the Latin font, with a little spacing as on the English page */
+.ur-root .td-lang, .ur-root .hr-lang { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.06em !important; line-height: 1.5; }
+
+/* ───────── /tldr ───────── */
+
+.ur-root .td-nav, .ur-root .hr-nav { font-size: clamp(0.85rem, 1.1vw, 1rem); font-weight: 600; }
+.ur-root .td-nav a:last-child, .ur-root .hr-nav a:last-child { text-align: left; }
+
+.ur-root .td-kicker { font-size: clamp(0.85rem, 1.05vw, 1rem); line-height: 1.9; }
+.ur-root .td-h1 { font-size: clamp(2.6rem, 7.6vw, 6.8rem); line-height: 1.6; font-weight: 700; }
+.ur-root .td-h1 span { overflow: visible; padding-block: 0.04em; }
+.ur-root .td-lead { max-width: 40rem; margin-top: clamp(26px, 4.5vh, 48px); font-size: clamp(1.1rem, 1.6vw, 1.35rem); line-height: 2.1; }
+
+.ur-root .td-fact { border-right: 0; border-left: 1px solid var(--ink); }
+.ur-root .td-fact:last-child { border-left: 0; }
+.ur-root .td-flabel { font-size: clamp(0.85rem, 1vw, 0.98rem); line-height: 1.9; max-width: 18rem; }
+
+.ur-root .td-h2 { font-size: clamp(0.9rem, 1.1vw, 1.05rem); line-height: 1.9; font-weight: 700; }
+.ur-root .td-verb { font-size: clamp(1.8rem, 3.2vw, 2.8rem); line-height: 1.7; font-weight: 700; }
+.ur-root .td-do p { font-size: clamp(1.02rem, 1.3vw, 1.18rem); line-height: 2.1; }
+
+.ur-root .td-ptitle { font-size: clamp(1.5rem, 3vw, 2.6rem); line-height: 1.3; }
+.ur-root .td-ptitle:hover { transform: translateX(-6px); }
+.ur-root .td-pkind { font-size: clamp(0.85rem, 1vw, 0.98rem); line-height: 1.9; }
+.ur-root .td-ppitch { font-size: clamp(1.05rem, 1.3vw, 1.2rem); line-height: 2.1; max-width: 38rem; }
+.ur-root .td-chips span { font-size: 0.72rem; }
+.ur-root .td-plinks a { font-size: 0.95rem; line-height: 1.9; padding-bottom: 0; }
+.ur-root .td-hours { font-size: clamp(1.15rem, 1.8vw, 1.5rem); line-height: 2; font-weight: 600; }
+.ur-root .td-btn, .ur-root .hr-btn { font-size: 0.98rem; font-weight: 700; line-height: 1.9; min-height: 48px; }
+.ur-root .td-more { font-size: clamp(0.9rem, 1.05vw, 1rem); line-height: 2; }
+
+@media (max-width: 860px) {
+  .ur-root .td-fact:nth-child(2) { border-left: 0; }
+}
+
+/* ───────── /hire ───────── */
+
+.ur-root .hr-meta { font-size: clamp(0.85rem, 1vw, 0.98rem); line-height: 1.9; }
+.ur-root .hr-h1 { font-size: clamp(2.4rem, 7.2vw, 6.4rem); line-height: 1.6; font-weight: 700; }
+.ur-root .hr-h1 span { overflow: visible; padding-block: 0.04em; }
+.ur-root .hr-hero-lead { font-size: clamp(1.1rem, 1.5vw, 1.3rem); line-height: 2.1; max-width: 40rem; margin-top: clamp(26px, 4.5vh, 48px); }
+
+.ur-root .hr-tab { text-align: right; border-right: 0; border-left: 1px solid rgba(var(--ink-rgb), 0.25); }
+.ur-root .hr-tab:last-child { border-left: 0; }
+.ur-root .hr-tab-n { font-size: 0.8rem; }
+.ur-root .hr-tab-l { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.8; }
+.ur-root .hr-tab-b { font-size: 0.88rem; line-height: 1.8; }
+
+.ur-root .hr-label { font-size: 0.9rem; line-height: 1.9; }
+.ur-root .hr-micro { font-size: 0.85rem; line-height: 1.9; font-weight: 700; }
+.ur-root .hr-note { font-size: 0.95rem; line-height: 2; }
+.ur-root .hr-h2 { max-width: 24ch; font-size: clamp(1.7rem, 3.8vw, 3rem); line-height: 1.7; font-weight: 700; }
+.ur-root .hr-h3 { line-height: 1.8; font-weight: 700; }
+.ur-root .hr-lead { font-size: clamp(1.05rem, 1.35vw, 1.2rem); line-height: 2.1; }
+.ur-root .hr-chip { font-size: 0.98rem; font-weight: 700; line-height: 1.9; min-height: 46px; }
+.ur-root .hr-foot { font-size: 1rem; line-height: 2.1; }
+
+/* job-fit */
+.ur-root .ft-big { font-size: clamp(2.2rem, 5.4vw, 4.4rem); line-height: 1.6; font-weight: 700; }
+.ur-root .ft-tally { font-size: 0.9rem; line-height: 1.9; }
+.ur-root .ft-tally span::before { margin-right: 0; margin-left: 8px; }
+.ur-root .ft-notes { padding: 0 18px 0 0; border-left: 0; border-right: 3px solid var(--ink); }
+.ur-root .ft-notes li { font-size: 1.05rem; line-height: 2; }
+.ur-root .ft-col-h { font-size: 0.9rem; line-height: 1.9; }
+.ur-root .ft-name { font-size: 1.08rem; line-height: 2; font-weight: 700; }
+.ur-root .ft-skill { gap: 0; padding: 8px 0; }
+.ur-root .ft-proof { font-size: 0.95rem; line-height: 2; }
+.ur-root .ft-card { padding: 16px 16px 16px 40px; }
+.ur-root .ft-card-a { right: auto; left: 16px; }
+.ur-root .ft-card:hover .ft-card-a { transform: translate(-4px, -50%); }
+.ur-root .ft-card-t { font-size: 1.1rem; line-height: 1.6; }
+.ur-root .ft-card-s { font-size: 0.9rem; line-height: 1.9; }
+.ur-root .ft-text-box summary { font-size: 0.95rem; line-height: 1.9; }
+.ur-root .ft-pct { font-size: 2.5rem; }
+
+/* call helper: the week bars and their axis run left to right in every language, like a clock */
+.ur-root .mt-pill { font-size: 0.85rem; line-height: 1.9; font-weight: 700; }
+.ur-root .mt-key { font-size: 0.88rem; line-height: 1.9; }
+.ur-root .mt-day { grid-template-columns: 116px 1fr; }
+.ur-root .mt-axis { margin-left: 0; margin-right: 124px; }
+.ur-root .mt-day-l { font-size: 0.82rem; line-height: 1.6; }
+.ur-root .mt-readout { font-size: 1rem; line-height: 2; }
+.ur-root .mt-card { text-align: right; }
+.ur-root .mt-card-d { font-size: 0.88rem; line-height: 1.9; }
+.ur-root .mt-card-z { font-size: 0.92rem; line-height: 1.9; }
+.ur-root .mt-card-chip { font-size: 0.8rem; line-height: 1.9; }
+.ur-root .mt-field select { font-family: var(--ur-font); font-size: 0.95rem; line-height: 1.9; }
+.ur-root .mt-stub-t { line-height: 1.8; font-weight: 700; }
+.ur-root .mt-stub-actions { padding-left: 0; padding-right: 28px; border-left: 0; border-right: 2px dashed rgba(var(--ink-rgb), 0.5); }
+.ur-root .mt-stamp { right: auto; left: 18px; font-size: 0.85rem; line-height: 1.8; transform: rotate(-5deg); }
+@media (max-width: 700px) {
+  .ur-root .mt-day { grid-template-columns: 92px 1fr; }
+  .ur-root .mt-axis { margin-right: 100px; }
+  .ur-root .mt-stub-actions { padding-right: 0; border-right: 0; border-top: 2px dashed rgba(var(--ink-rgb), 0.5); }
+}
+
+/* estimator */
+.ur-root .es-step legend b { margin-right: 0; margin-left: 8px; }
+.ur-root .es-kind { text-align: right; font-family: var(--ur-font); font-size: 1rem; font-weight: 700; line-height: 1.8; }
+.ur-root .es-ticks { font-size: 0.8rem; line-height: 1.8; }
+.ur-root .es-to, .ur-root .es-unit { font-size: clamp(1.15rem, 2.2vw, 1.6rem); line-height: 1.8; }
+.ur-root .es-gauge-fill { transform-origin: right; }
+.ur-root .es-gauge-l { left: auto; right: 0; font-size: 0.82rem; line-height: 1.8; }
+.ur-root .es-block { font-size: 0.82rem; line-height: 1.8; }
+.ur-root .es-window { font-size: 0.82rem; line-height: 1.9; }
+.ur-root .es-row-l { font-size: 0.85rem; line-height: 1.7; }
+.ur-root .es-scale { font-size: 0.8rem; line-height: 1.8; }
+.ur-root .es-parts li { font-size: 0.95rem; line-height: 1.9; }
+.ur-root .es-parts i { transform-origin: right; }
+
+/* the legend swatches sit a little apart from the Urdu words: the first letter of a Nastaliq word reaches past its box */
+.ur-root .mt-key span { gap: 14px; }
+
+/* "What people say" in Urdu: the same small captions, large enough for Nastaliq */
+.ur-root .pf-h { font-size: clamp(0.9rem, 1.1vw, 1.05rem); line-height: 1.9; font-weight: 700; }
+.ur-root .pf-name { font-size: 1rem; line-height: 1.8; }
+.ur-root .pf-role { font-size: 0.9rem; line-height: 1.8; }
+.ur-root .pf-src { font-size: 0.8rem; line-height: 1.9; }

@@ -1,0 +1,66 @@
+/* "What people say" (components/Testimonials.tsx): paper and ink like the rest of the site. */
+
+.pf-h {
+  margin: 0 0 clamp(16px, 3vh, 30px);
+  font-size: clamp(0.5rem, 0.78vw, 0.66rem);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+
+.pf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(14px, 2vw, 24px);
+}
+
+.pf-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 22px 22px 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+@media (hover: hover) {
+  .pf-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+}
+/* the opening mark */
+.pf-card::before {
+  content: "\201C";
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3.6rem;
+  font-weight: 900;
+  line-height: 0.55;
+  height: 1.4rem;
+  color: var(--ink);
+}
+
+.pf-quote {
+  margin: 0;
+  font-size: clamp(1rem, 1.25vw, 1.12rem);
+  line-height: 1.55;
+}
+
+.pf-by {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.2);
+}
+.pf-name { font-size: 0.9rem; font-weight: 800; letter-spacing: 0.03em; }
+.pf-role { font-size: 0.78rem; color: var(--ink-70); }
+.pf-src { margin-top: 4px; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-50); }
+.pf-src a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.pf-src a:hover { text-decoration-thickness: 2px; }
+
+/* on /hire the section sits between the tools and the footer */
+.hr-proof { padding: clamp(28px, 5vh, 56px) var(--pad); border-top: 1px solid var(--ink); }

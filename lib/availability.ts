@@ -68,8 +68,8 @@ export function clock12(d: Date, tz: string): string {
 export function clockLocal(d: Date, tz: string): string {
   return new Intl.DateTimeFormat(undefined, { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(d);
 }
-export function dayLabel(d: Date, tz: string): string {
-  return new Intl.DateTimeFormat("en-GB", { timeZone: tz, weekday: "short", day: "numeric", month: "short" }).format(d);
+export function dayLabel(d: Date, tz: string, locale = "en-GB"): string {
+  return new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: "short", day: "numeric", month: "short" }).format(d);
 }
 
 export interface Cell { t: Date; zaka: boolean; you: boolean; past: boolean }
@@ -83,7 +83,7 @@ export function zakaWorking(t: Date): boolean {
 }
 
 /** The next seven days, in the visitor's zone, as half-hour cells marked for each of them */
-export function buildWeek(now: Date, tz: string, hours: { from: number; to: number }, days = 7): Day[] {
+export function buildWeek(now: Date, tz: string, hours: { from: number; to: number }, days = 7, locale = "en-GB"): Day[] {
   const start0 = midnight(now, tz);
   const out: Day[] = [];
   for (let d = 0; d < days; d++) {
@@ -95,7 +95,7 @@ export function buildWeek(now: Date, tz: string, hours: { from: number; to: numb
       const { min } = parts(t, tz);
       cells.push({ t, zaka: zakaWorking(t), you: min >= hours.from && min + AVAIL.slot <= hours.to, past: t.getTime() < now.getTime() });
     }
-    out.push({ label: dayLabel(ref, tz), today: d === 0, cells });
+    out.push({ label: dayLabel(ref, tz, locale), today: d === 0, cells });
   }
   return out;
 }

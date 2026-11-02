@@ -11,6 +11,7 @@
 import { PROJECTS } from "@/lib/projects";
 import { resume } from "@/lib/resume";
 import { SITE_URL } from "@/lib/site";
+import { makeT, type T } from "@/lib/i18n";
 
 export type Have = "yes" | "related" | "no";
 
@@ -194,7 +195,8 @@ function leaning(low: string, detected: Detected[]): string | null {
   return [...tally.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }
 
-export function analyse(raw: string, now: Date = new Date()): Fit {
+/* `t` writes the notes in the reader's language (English by default); everything else here stays as data. */
+export function analyse(raw: string, now: Date = new Date(), t: T = makeT(null)): Fit {
   const text = raw.slice(0, 20000);
   let masked = lowerAscii(text);
   const found = new Map<string, { skill: SkillDef; mentions: number }>();
@@ -255,28 +257,29 @@ export function analyse(raw: string, now: Date = new Date()): Fit {
   const mine = Math.max(1, now.getFullYear() - since);
   const notes: string[] = [];
   if (yearsAsked !== null) {
-    if (yearsAsked >= 4) notes.push(`This asks for ${yearsAsked}+ years. I have been building since ${since} (about ${mine} years) with two internships, so it may be a stretch.`);
-    else if (yearsAsked === 3) notes.push(`This asks for ${yearsAsked} years. I have been building since ${since} (about ${mine} years), so it is borderline.`);
-    else notes.push(`This asks for ${yearsAsked} year${yearsAsked === 1 ? "" : "s"}. I have been building since ${since}, so that is in range.`);
+    if (yearsAsked >= 4) notes.push(t("This asks for {years}+ years. I have been building since {since} (about {mine} years) with two internships, so it may be a stretch.", { years: yearsAsked, since, mine }));
+    else if (yearsAsked === 3) notes.push(t("This asks for {years} years. I have been building since {since} (about {mine} years), so it is borderline.", { years: yearsAsked, since, mine }));
+    else notes.push(t("This asks for {years} year{s}. I have been building since {since}, so that is in range.", { years: yearsAsked, s: yearsAsked === 1 ? "" : "s", since }));
   }
-  if (level === "senior") notes.push("This reads as a senior role. I am early in my career, so I would be a step up.");
-  if (level === "junior") notes.push("This reads as an entry-level role, which is where I am.");
+  if (level === "senior") notes.push(t("This reads as a senior role. I am early in my career, so I would be a step up."));
+  if (level === "junior") notes.push(t("This reads as an entry-level role, which is where I am."));
 
   return { detected, spans, score, verdict, counts, role, yearsAsked, level, topProjects, notes };
 }
 
-/** A plain-text summary a recruiter can paste into a message or an email */
-export function summarise(f: Fit): string {
-  const pick = (h: Have) => f.detected.filter((d) => d.skill.have === h).map((d) => d.skill.name);
+/** A plain-text summary a recruiter can paste into a message or an email (`page` is the path the link points at) */
+export function summarise(f: Fit, t: T = makeT(null), page = "/hire"): string {
+  const sep = t(", ");
+  const pick = (h: Have) => f.detected.filter((d) => d.skill.have === h).map((d) => t(d.skill.name));
   const lines = [
-    `Fit check for Zaka Ullah Waheed: ${f.verdict} (${Math.round(f.score * 100)}%)`,
-    f.role ? `Role leans: ${f.role}` : "",
-    pick("yes").length ? `Have: ${pick("yes").join(", ")}` : "",
-    pick("related").length ? `Close: ${f.detected.filter((d) => d.skill.have === "related").map((d) => `${d.skill.name} (closest: ${d.skill.closest})`).join(", ")}` : "",
-    pick("no").length ? `Not yet: ${pick("no").join(", ")}` : "",
+    t("Fit check for Zaka Ullah Waheed: {verdict} ({pct}%)", { verdict: t(f.verdict), pct: Math.round(f.score * 100) }),
+    f.role ? t("Role leans: {role}", { role: t(f.role) }) : "",
+    pick("yes").length ? t("Have: {list}", { list: pick("yes").join(sep) }) : "",
+    pick("related").length ? t("Close: {list}", { list: f.detected.filter((d) => d.skill.have === "related").map((d) => t("{name} (closest: {closest})", { name: t(d.skill.name), closest: t(d.skill.closest ?? "") })).join(sep) }) : "",
+    pick("no").length ? t("Not yet: {list}", { list: pick("no").join(sep) }) : "",
     ...f.notes,
-    f.topProjects.length ? `Most relevant work: ${f.topProjects.map((p) => p.title).join(", ")}` : "",
-    `Checked with the job-fit tool: ${SITE_URL}/hire`,
+    f.topProjects.length ? t("Most relevant work: {list}", { list: f.topProjects.map((p) => p.title).join(sep) }) : "",
+    t("Checked with the job-fit tool: {url}", { url: `${SITE_URL}${page}` }),
   ];
   return lines.filter(Boolean).join("\n");
 }

@@ -271,7 +271,7 @@ export default function ContactMe() {
           <div>
             <label className="cm-label" htmlFor="cm-msg">TELL ME ABOUT IT</label>
             <textarea
-              id="cm-msg" ref={msgRef} className="cm-field" rows={4}
+              id="cm-msg" ref={msgRef} className="cm-field" rows={4} dir="auto"
               placeholder="What are you building, and what do you need from me?"
               value={message} maxLength={MAX_MESSAGE}
               aria-invalid={bad === "message"}
