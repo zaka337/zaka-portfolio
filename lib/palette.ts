@@ -40,6 +40,7 @@ export const ITEMS: Item[] = [
   page("estimate", "Project estimate", "A rough timeline for your project", "/hire#estimate", "price cost quote timeline how long budget"),
   page("tldr-ur", "TL;DR in Urdu", "The short version, in Urdu (اردو)", "/ur/tldr", "urdu اردو tldr short summary language translation pakistan"),
   page("hire-ur", "Hire me in Urdu", "The three hiring tools, in Urdu (اردو)", "/ur/hire", "urdu اردو hire hiring job fit call estimate language translation pakistan"),
+  page("sitecheck", "Website health check", "Paste an address, get a score and fixes", "/tools/site-check", "tool site website check audit scan seo security headers speed accessibility broken links lighthouse health free"),
   page("race", "MINI MAYHEM (racing game)", "Tiny cars. Massive egos. A 3D race you can play", "/mini-mayhem", "game play race racing cars drive driving arcade fun 3d bridge island"),
   page("qa", "QA challenge", "Break this checkout", "/qa-challenge", "game bug test checkout break tester quality"),
   page("brief", "Send a project brief", "Tell him what you need", "/contact-me", "contact message email form inquiry hire write"),

@@ -7,7 +7,7 @@ export const PERSON_ID = `${SITE_URL}/#person`;
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 
 /** The sitemap's lastmod. Bump it when the content of the site really changes, not on every deploy. */
-export const LAST_UPDATED = "2026-10-24";
+export const LAST_UPDATED = "2026-11-03";
 
 /** JSON for a <script type="application/ld+json">. "<" is escaped so the data can never close the tag. */
 export function jsonLdString(data: unknown): string {

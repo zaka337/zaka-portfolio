@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       { ...page(`/${slug}`, "monthly", 0.8), alternates: { languages: { en: `${SITE_URL}/${slug}`, ur: `${SITE_URL}/ur/${slug}` } } },
       { ...page(`/ur/${slug}`, "monthly", 0.7), alternates: { languages: { en: `${SITE_URL}/${slug}`, ur: `${SITE_URL}/ur/${slug}` } } },
     ]),
+    page("/tools/site-check", "monthly", 0.7),
     page("/contact-me", "yearly", 0.8),
     page("/mini-mayhem", "monthly", 0.7),
     page("/contact", "yearly", 0.6),
