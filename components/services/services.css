@@ -1,0 +1,99 @@
+/* /services (app/services/page.tsx). Paper and ink like the rest of the site: heavy type, thin ruled lines. The global
+   reduced-motion rule in app/globals.css (and calm mode) shortens every animation here to nothing. */
+
+.sv-root {
+  width: 100%;
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  overflow-x: clip;
+  --pad: clamp(20px, 5vw, 64px);
+}
+
+.sv-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  height: 52px; padding: 0 var(--pad);
+  border-bottom: 1px solid var(--ink); background: var(--paper);
+  font-size: clamp(0.52rem, 0.78vw, 0.68rem); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-50);
+}
+.sv-nav a { color: var(--ink-50); text-decoration: none; transition: color 0.15s; }
+.sv-nav a:hover { color: var(--ink); }
+.sv-nav a:last-child { text-align: right; }
+
+.sv-micro { margin: 0; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-50); }
+.sv-h1 {
+  display: flex; flex-direction: column; margin: clamp(14px, 2.6vh, 26px) 0 0;
+  font-size: clamp(3rem, 11vw, 10.5rem); font-weight: 900; line-height: 0.88; letter-spacing: -0.04em; text-transform: uppercase;
+}
+.sv-h1 span { display: block; overflow: hidden; animation: svRise 0.9s var(--ease-out) both; }
+.sv-h1 span:nth-child(2) { animation-delay: 0.12s; }
+@keyframes svRise { from { transform: translateY(70%); opacity: 0; } to { transform: none; opacity: 1; } }
+.sv-h2 { margin: 8px 0 0; font-size: clamp(1.8rem, 4.2vw, 3.4rem); font-weight: 900; line-height: 1; letter-spacing: -0.03em; }
+.sv-h3 { margin: 22px 0 8px; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-50); }
+.sv-lead { max-width: 42rem; margin: 18px 0 0; font-size: clamp(0.95rem, 1.25vw, 1.08rem); line-height: 1.55; color: var(--ink-70); }
+
+.sv-hero { padding: clamp(36px, 7vh, 84px) var(--pad) clamp(28px, 5vh, 56px); border-bottom: 1px solid var(--ink); }
+.sv-jump { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 26px 0 0; }
+.sv-jump a { font-size: 0.78rem; font-weight: 700; color: var(--ink); text-underline-offset: 4px; }
+.sv-jump a:hover { text-decoration-thickness: 2px; }
+
+/* ── The four offers ────────────────────────────────────────────── */
+
+.sv-list { max-width: 1240px; margin: 0 auto; padding: 0 var(--pad); }
+.sv-item { padding: clamp(36px, 7vh, 80px) 0; border-bottom: 1px solid var(--ink); scroll-margin-top: 52px; }
+.sv-item-in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(28px, 5vw, 72px); }
+.sv-left .sv-h2 { max-width: 14ch; }
+.sv-for { margin: 18px 0 0; font-size: 0.92rem; line-height: 1.55; color: var(--ink-70); }
+.sv-for b { color: var(--ink); }
+.sv-sum { margin: 12px 0 0; font-size: 1rem; line-height: 1.6; }
+.sv-time { display: flex; flex-direction: column; gap: 4px; margin: 22px 0; padding: 12px 0; border-top: 1px solid rgba(var(--ink-rgb), 0.25); border-bottom: 1px solid rgba(var(--ink-rgb), 0.25); }
+.sv-time b { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.02em; }
+
+.sv-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 22px;
+  border: 1.5px solid var(--ink); border-radius: 2px; background: transparent; color: var(--ink);
+  font: 800 0.66rem/1 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.25s var(--ease-out);
+}
+.sv-btn:hover, .sv-btn:focus-visible { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
+.sv-btn.is-main { background: var(--ink); color: var(--paper); }
+.sv-btn.is-main:hover, .sv-btn.is-main:focus-visible { background: transparent; color: var(--ink); }
+
+.sv-right .sv-h3:first-child { margin-top: 0; }
+.sv-ul { margin: 0; padding-left: 1.1em; font-size: 0.95rem; line-height: 1.6; }
+.sv-ul li { margin: 0 0 6px; padding-left: 4px; }
+.sv-ul.is-muted { color: var(--ink-70); }
+.sv-proof { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin: 26px 0 0; }
+.sv-proof .sv-micro { flex-basis: 100%; }
+.sv-proof a { font-size: 0.85rem; font-weight: 700; color: var(--ink); text-underline-offset: 4px; }
+
+/* ── How it works, questions, the end ───────────────────────────── */
+
+.sv-how, .sv-faq, .sv-end { max-width: 1240px; margin: 0 auto; padding: clamp(36px, 7vh, 80px) var(--pad); }
+.sv-steps { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); border: 1px solid var(--ink); }
+.sv-steps li { padding: 20px; border-right: 1px solid rgba(var(--ink-rgb), 0.25); }
+.sv-steps li:last-child { border-right: 0; }
+.sv-steps .sv-h3 { margin: 8px 0 8px; color: var(--ink); font-size: 0.78rem; letter-spacing: 0.08em; }
+.sv-steps p { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--ink-70); }
+.sv-step-n { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.22em; color: var(--ink-50); }
+
+.sv-faq { border-top: 1px solid var(--ink); }
+.sv-qs { margin-top: 22px; border-top: 1px solid var(--ink); max-width: 52rem; }
+.sv-qs details { border-bottom: 1px solid rgba(var(--ink-rgb), 0.25); }
+.sv-qs summary { padding: 16px 0; font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; cursor: pointer; }
+.sv-qs summary:focus-visible { outline: 3px solid rgba(var(--ink-rgb), 0.25); outline-offset: 2px; }
+.sv-qs p { margin: 0 0 18px; max-width: 46rem; font-size: 0.95rem; line-height: 1.6; color: var(--ink-70); }
+
+.sv-end { border-top: 1px solid var(--ink); padding-bottom: clamp(48px, 9vh, 110px); }
+.sv-end-acts { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
+
+@media (max-width: 820px) {
+  .sv-item-in { grid-template-columns: 1fr; }
+  .sv-steps li { border-right: 0; border-bottom: 1px solid rgba(var(--ink-rgb), 0.25); }
+  .sv-steps li:last-child { border-bottom: 0; }
+  .sv-btn { width: 100%; }
+  .sv-end-acts .sv-btn { flex: 1 1 100%; }
+}
