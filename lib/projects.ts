@@ -135,7 +135,7 @@ export const PROJECTS: Project[] = [
       },
       {
         title: "API and dashboard",
-        text: "A Flask API with endpoints to run a scan, approve a new baseline and list reports, protected by an API key, plus a small web dashboard and a health endpoint. Results get a severity rating and go out as an HTML email report.",
+        text: "A Flask API with endpoints to run a scan, approve a new baseline and list reports, which can be protected with an API key, plus a small web dashboard and a health endpoint. Results get a severity rating and go out as an HTML email report.",
       },
       {
         title: "Automation with n8n",
@@ -300,7 +300,7 @@ export const PROJECTS: Project[] = [
       },
       {
         title: "Data and state",
-        text: "Firebase Realtime Database keeps data in sync, and Riverpod providers manage authentication, cart, products and stores.",
+        text: "Products and stores are saved in Firebase Realtime Database, which the app reads and writes over its REST API, and Riverpod providers manage authentication, cart, products and stores.",
       },
     ],
     stack: [
@@ -312,9 +312,10 @@ export const PROJECTS: Project[] = [
       { value: "4", label: "state providers" },
     ],
     outcome: [
-      "A complete customer journey from landing page to order confirmation.",
+      "The shopping flow from landing page to an order confirmation screen.",
       "Seller tools in the same app: store registration and a dashboard.",
     ],
+    note: "Checkout is a demo: it ends on a confirmation screen, no payment is taken and the order is not saved.",
     repo: `${GH}/ECOMMERCE-PLATFORM`,
     repoName: "ECOMMERCE-PLATFORM",
     language: "Dart",
