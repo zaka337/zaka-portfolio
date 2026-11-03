@@ -10,15 +10,15 @@ import { SERVICES, STEPS, askMessage, timelineOf } from "@/lib/services";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "@/components/services/services.css";
 
-const DESC = "Four fixed-scope pieces of work from Zaka Ullah Waheed: a website health audit, automated tests for your web app, a fast Next.js marketing website, and one automated workflow. Written scope and timeline before any work starts.";
+const DESC = "Five fixed-scope pieces of work from Zaka Ullah Waheed: a website health audit, automated tests for your web app, a fast Next.js marketing website, one automated workflow, and quality checks for an AI feature. Written scope and timeline before any work starts.";
 
 export const metadata: Metadata = {
-  title: { absolute: `Services: Website Audit, Test Automation, Next.js Sites, Workflow Automation | ${SITE_NAME}` },
+  title: { absolute: `Services: Website Audit, Test Automation, Next.js Sites, Workflow and AI Quality | ${SITE_NAME}` },
   description: DESC,
   alternates: { canonical: `${SITE_URL}/services` },
   openGraph: {
     title: `Services | ${SITE_NAME}`,
-    description: "Four fixed-scope pieces of work, each with a written scope and timeline before it starts.",
+    description: "Five fixed-scope pieces of work, each with a written scope and timeline before it starts.",
     url: `${SITE_URL}/services`,
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `Services by ${SITE_NAME}` }],
   },
@@ -81,7 +81,7 @@ export default function ServicesPage() {
           <span>Fixed-scope</span>
           <span>work.</span>
         </h1>
-        <p className="sv-lead">Four defined pieces of work. Each one has a clear list of what you get, what I need from you, and what is not included, so you know where you stand before anything starts. No price on this page: you get it in writing, with the scope and the timeline, before you decide.</p>
+        <p className="sv-lead">Five defined pieces of work. Each one has a clear list of what you get, what I need from you, and what is not included, so you know where you stand before anything starts. No price on this page: you get it in writing, with the scope and the timeline, before you decide.</p>
         <p className="sv-jump">
           {SERVICES.map((s) => (
             <a key={s.id} href={`#${s.id}`}>{s.n} {s.title}</a>

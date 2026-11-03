@@ -1,6 +1,6 @@
 # Services page (/services)
 
-Four fixed-scope offers, each with what you get, what is needed from the client, what is not included, a typical time and a button that opens the contact form with a ready-made message.
+Five fixed-scope offers, each with what you get, what is needed from the client, what is not included, a typical time and a button that opens the contact form with a ready-made message.
 
 | Piece | File |
 |---|---|
@@ -23,7 +23,7 @@ Four fixed-scope offers, each with what you get, what is needed from the client,
 
 Not typed in. `timelineOf()` asks the same estimator as /hire (`lib/estimate.ts`) with a fixed size and features per offer, so the two pages cannot disagree and tuning the estimator tunes both. When the fastest case is under a week it shows working days (a week is counted as five).
 
-Current values: audit 3 to 8 working days, tests 2 to 4 weeks, website 1.5 to 3 weeks, automation 1.5 to 3.5 weeks.
+Current values: audit 3 to 8 working days, tests 2 to 4 weeks, website 1.5 to 3 weeks, automation 1.5 to 3.5 weeks, AI quality 1.5 to 3.5 weeks.
 
 ## Adding or removing an offer
 
@@ -31,7 +31,7 @@ Add an object to `SERVICES` in `lib/services.ts`: the page, the jump links, the 
 
 ## Linked from
 
-The sitemap, the Ctrl+K palette (`lib/palette.ts`) and the footer of /tools/site-check ("Want someone to fix what it finds?").
+The fifth offer (AI quality checks, anchor `#ai-quality`) is backed by llmcheck, the open-source tool described at `/tools/llmcheck` (see `docs/LLMCHECK.md`). The sitemap, the Ctrl+K palette (`lib/palette.ts`) and the footer of /tools/site-check ("Want someone to fix what it finds?").
 
 ## Tests
 

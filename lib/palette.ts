@@ -42,6 +42,7 @@ export const ITEMS: Item[] = [
   page("hire-ur", "Hire me in Urdu", "The three hiring tools, in Urdu (اردو)", "/ur/hire", "urdu اردو hire hiring job fit call estimate language translation pakistan"),
   page("services", "Services", "Four fixed-scope offers, no surprises", "/services", "services offers hire freelance work with me audit test automation playwright website nextjs automation n8n quote price scope"),
   page("sitecheck", "Website health check", "Paste an address, get a score and fixes", "/tools/site-check", "tool site website check audit scan seo security headers speed accessibility broken links lighthouse health free"),
+  page("llmcheck", "llmcheck: test an AI feature", "An open-source test runner for chatbots and assistants", "/tools/llmcheck", "llm ai test testing chatbot assistant evaluation eval quality prompt injection flaky ci qa python"),
   page("race", "MINI MAYHEM (racing game)", "Tiny cars. Massive egos. A 3D race you can play", "/mini-mayhem", "game play race racing cars drive driving arcade fun 3d bridge island"),
   page("qa", "QA challenge", "Break this checkout", "/qa-challenge", "game bug test checkout break tester quality"),
   page("brief", "Send a project brief", "Tell him what you need", "/contact-me", "contact message email form inquiry hire write"),

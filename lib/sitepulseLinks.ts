@@ -10,3 +10,11 @@ export const SITEPULSE = {
   cli: "npx sitepulse your-site.com",
   mcp: "claude mcp add sitepulse -- npx -y sitepulse mcp",
 } as const;
+
+/* The same switch for llmcheck (the open-source test runner for AI features, /tools/llmcheck). Set `published` to true
+   once the GitHub repository exists. It is installed from GitHub, not from PyPI, so there is no PyPI link. */
+export const LLMCHECK = {
+  published: false,
+  repo: "https://github.com/zaka337/llmcheck",
+  install: "pip install git+https://github.com/zaka337/llmcheck",
+} as const;

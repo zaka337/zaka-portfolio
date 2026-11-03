@@ -107,6 +107,27 @@ export const SERVICES: Service[] = [
     need: "AI & automation",
     proof: [{ label: "Zong Health Scanner (n8n alerts, case study)", href: "/projects/zong-health-scanner" }],
   },
+  {
+    id: "ai-quality",
+    n: "05",
+    title: "Quality checks for your AI feature",
+    forWho: "Teams shipping a chatbot, an assistant or any feature built on a language model, with no way to tell whether it got worse.",
+    summary: "A test suite for your AI feature, built with llmcheck, the open-source tool I wrote for this: the facts it must get right, the things it must never say, run repeatedly so a flaky answer shows up, and wired into CI.",
+    gets: [
+      "Test cases written from your real prompts, policies and past mistakes",
+      "Checks for facts, format, refusals, prompt leaks and injection attempts",
+      "Repeated runs with a pass rate, so one lucky answer does not hide a flaky one",
+      "A CI job and a readable report (JUnit and Markdown) on every pull request",
+    ],
+    needs: ["Access to the feature or its endpoint (a test key with a spending limit)", "Your system prompt and policies, and examples of answers that were wrong", "Someone who can say what a correct answer looks like"],
+    notIncluded: ["Improving the model or rewriting your prompts (quoted separately)", "A guarantee that the feature never fails: tests find what you thought to test", "Legal, safety or compliance sign-off"],
+    pick: pick("AI & automation", 0, ["tests"]),
+    need: "AI & automation",
+    proof: [
+      { label: "llmcheck, the tool behind it", href: "/tools/llmcheck" },
+      { label: "QA with Zaka (has an AI assistant, case study)", href: "/projects/qa-with-zaka" },
+    ],
+  },
 ];
 
 /** "3 to 8 working days" or "2 to 4 weeks", from the estimator ("0.5 weeks" reads badly, so a fastest case under a week is shown in days) */

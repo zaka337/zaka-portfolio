@@ -1,0 +1,23 @@
+/* /tools/llmcheck: the extras on top of the shared page styles in components/services/services.css (sv-*). */
+
+.lc-sec { border-top: 1px solid var(--ink); }
+.lc-sec:first-of-type { border-top: 0; }
+.lc-sec .sv-lead { max-width: 46rem; }
+
+/* Code and terminal output. The page never scrolls sideways: long lines scroll inside the block. */
+.lc-code {
+  margin: 22px 0 0; padding: 18px 20px;
+  border: 1.5px solid var(--ink); border-radius: 2px; background: rgba(var(--ink-rgb), 0.04);
+  font: 500 0.8rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink);
+  overflow-x: auto; white-space: pre; tab-size: 2;
+}
+.lc-code:focus-visible { outline: 3px solid rgba(var(--ink-rgb), 0.3); outline-offset: 2px; }
+.lc-install { max-width: 46rem; }
+
+.lc-ideas { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.lc-ideas li { border-bottom: 1px solid rgba(var(--ink-rgb), 0.25); }
+.lc-limits { margin-top: 18px; max-width: 46rem; }
+
+@media (max-width: 820px) {
+  .lc-code { font-size: 0.72rem; padding: 14px; }
+}
