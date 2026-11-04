@@ -148,7 +148,7 @@ export default function ServicesPage() {
         <p className="sv-end-acts">
           <Link href="/contact-me" className="sv-btn is-main">Send a project brief</Link>
           <Link href="/hire#estimate" className="sv-btn">Get a rough timeline</Link>
-          <Link href="/tools/site-check" className="sv-btn">Try the free site check</Link>
+          <Link href="/tools" className="sv-btn">Free tools</Link>
         </p>
       </section>
     </main>

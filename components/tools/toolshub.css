@@ -1,0 +1,41 @@
+/* /tools, the hub (app/tools/page.tsx): a grid of cards on top of the shared page styles in components/services/services.css (sv-*).
+   Paper and ink: ruled lines, a card that inverts on hover or focus. The global reduced-motion rule shortens the transitions. */
+
+.th-tip { margin-top: 18px; }
+.th-tip kbd {
+  display: inline-block; min-width: 1.6em; padding: 1px 6px; text-align: center;
+  border: 1px solid var(--ink-50); border-radius: 3px; background: rgba(var(--ink-rgb), 0.05);
+  font: 700 0.72rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink);
+}
+
+.th-groups { max-width: 1240px; margin: 0 auto; padding: 0 var(--pad); }
+.th-group { padding: clamp(32px, 6vh, 64px) 0; border-bottom: 1px solid var(--ink); scroll-margin-top: 52px; }
+.th-group .sv-lead { max-width: 40rem; }
+
+/* One ruled grid: each card owns its right and bottom edge, the grid owns the top and left */
+.th-grid {
+  list-style: none; margin: 26px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+  border-top: 1px solid var(--ink); border-left: 1px solid var(--ink);
+}
+.th-grid > li { display: flex; }
+.th-card {
+  position: relative; flex: 1;
+  display: flex; flex-direction: column; gap: 10px;
+  min-height: 200px; padding: 22px 20px 18px;
+  border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink);
+  color: var(--ink); text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.25s var(--ease-out);
+}
+.th-card:hover, .th-card:focus-visible { background: var(--ink); color: var(--paper); }
+.th-card:focus-visible { outline: 3px solid rgba(var(--ink-rgb), 0.35); outline-offset: -6px; }
+.th-title { margin: 0; padding-right: 4.2rem; font-size: clamp(1.15rem, 1.8vw, 1.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; }
+.th-card p { margin: 0; font-size: 0.88rem; line-height: 1.5; opacity: 0.78; }
+.th-go { position: absolute; top: 24px; right: 20px; font-size: 0.56rem; font-weight: 800; letter-spacing: 0.18em; opacity: 0.6; transition: opacity 0.2s, transform 0.25s var(--ease-out); }
+.th-card:hover .th-go, .th-card:focus-visible .th-go { opacity: 1; transform: translateX(3px); }
+.th-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+.th-tag { padding: 4px 7px; border: 1px solid currentColor; font-size: 0.54rem; font-weight: 800; letter-spacing: 0.14em; line-height: 1; opacity: 0.7; }
+
+@media (max-width: 560px) {
+  .th-card { min-height: 0; }
+}

@@ -1,0 +1,49 @@
+/* The home screen's entry to the tools hub (components/ToolsDoor.tsx). Reduce Motion and calm mode shorten the transitions through
+   the global rules in app/globals.css. */
+
+/* Desktop: centred above the "open for work" line. The offset leaves room for that line's second row at night
+   ("REPLIES IN THE MORNING"), so the two never touch. */
+.home-tools-wrap {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(5vh + 62px);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.home-tools {
+  display: inline-flex; align-items: center; gap: 0.7em;
+  padding: 9px 15px;
+  border: 1.5px solid var(--ink); border-radius: 999px;
+  color: var(--ink); text-decoration: none; white-space: nowrap;
+  font-size: clamp(0.56rem, 0.74vw, 0.68rem); font-weight: 800; letter-spacing: 0.18em;
+  pointer-events: auto;
+  transition: background 0.2s, color 0.2s, transform 0.25s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.home-tools-arrow { display: inline-block; transition: transform 0.25s var(--ease-out); }
+.home-tools:hover, .home-tools:focus-visible { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
+.home-tools:hover .home-tools-arrow, .home-tools:focus-visible .home-tools-arrow { transform: translateX(3px); }
+.home-tools:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+
+/* Short windows: sit nearer the status line so the pill never crowds the head */
+@media (max-height: 600px) { .home-tools-wrap { bottom: calc(4vh + 50px); } }
+
+/* Phone: a grid item in the empty row between the name and the cards (the face is drawn behind it), left under the name. */
+@media (max-width: 768px) {
+  .home-tools-wrap {
+    position: static;
+    grid-row: 2; grid-column: 1 / 7;
+    align-self: start; justify-self: start;
+    display: block;
+    z-index: 10;
+    margin-top: 0.2rem;
+  }
+  .home-tools {
+    padding: 8px 13px;
+    background: var(--paper);
+    font-size: 0.6rem;
+  }
+}
+@media print { .home-tools-wrap { display: none; } }

@@ -18,7 +18,13 @@ This is his portfolio site: a 3D interactive site with a live avatar, case studi
 - [This portfolio](https://zaka-portfolio-two.vercel.app/projects/portfolio): Next.js, React, Three.js, WebGL.
 - [All repositories](https://zaka-portfolio-two.vercel.app/projects/all): every public GitHub repository in a 3D carousel.
 
+## Free tools
+- [Tools and services](https://zaka-portfolio-two.vercel.app/tools): everything on the site that a visitor can use, in one place.
+- [Website health check](https://zaka-portfolio-two.vercel.app/tools/site-check): paste a web address and get a score and a fix for 35 checks of security headers, SEO, performance, accessibility and broken links. Free, nothing stored.
+- [llmcheck](https://zaka-portfolio-two.vercel.app/tools/llmcheck): an open-source test runner for AI features: YAML test cases, repeated runs that catch flaky answers, a pass rate, JUnit reports. Works with any OpenAI-compatible endpoint.
+
 ## Work with him
+- [Services](https://zaka-portfolio-two.vercel.app/services): five fixed-scope pieces of work (website health audit, automated tests, a Next.js marketing site, one automated workflow, quality checks for an AI feature), each with a written scope and timeline before work starts.
 - [Hire](https://zaka-portfolio-two.vercel.app/hire): paste a job description to check the fit, find a call time in your time zone, or get a rough project estimate.
 - [Contact](https://zaka-portfolio-two.vercel.app/contact-me): start a project brief or reach out directly.
 

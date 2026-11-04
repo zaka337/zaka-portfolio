@@ -86,6 +86,17 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Addresses a person is likely to type from memory, sent to the real page. The hub itself is /tools (app/tools/page.tsx),
+  // so /tools is deliberately not redirected. Add a line here when a new tool is added to lib/tools.ts.
+  async redirects() {
+    const to = (destination: string, sources: string[]) => sources.map((source) => ({ source, destination, permanent: true }));
+    return [
+      ...to("/tools/site-check", ["/sitecheck", "/site-check", "/site_check", "/health-check", "/tools/sitecheck", "/tools/site_check", "/tools/site-checker", "/tool/site-check", "/tool/sitecheck"]),
+      ...to("/tools/llmcheck", ["/llmcheck", "/llm-check", "/llm_check", "/tools/llm-check", "/tools/llm_check", "/tool/llmcheck", "/tool/llm-check"]),
+      ...to("/tools", ["/tool", "/toolbox", "/free-tools", "/tools/index"]),
+      ...to("/services", ["/service", "/offers"]),
+    ];
+  },
 };
 
 export default nextConfig;

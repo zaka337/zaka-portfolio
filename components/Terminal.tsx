@@ -23,7 +23,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install", "tools",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -43,6 +43,7 @@ const WHERE: Record<string, { label: string; to: string; external?: boolean }> =
   estimate: { label: "the project estimator", to: "/hire#estimate" },
   qa: { label: "the QA challenge", to: "/qa-challenge" },
   tldr: { label: "the one-screen summary", to: "/tldr" },
+  tools: { label: "the tools and services", to: "/tools" },
   race: { label: "MINI MAYHEM", to: "/mini-mayhem" },
   home: { label: "home", to: "/" },
 };
@@ -247,7 +248,7 @@ export default function Terminal() {
       out("ls                what is in here");
       out("ls projects       the projects (tap one to open it)");
       out("open <where>      github linkedin instagram whatsapp email");
-      out("                  resume about projects contact brief home");
+      out("                  resume about projects contact brief tools home");
       out("neofetch          this machine, this site");
       out("theme dark|light  switch the theme");
       out("sudo hire zaka    you know you want to");
@@ -339,6 +340,9 @@ export default function Terminal() {
     } else if (c === "tldr") {
       out("the short version, on one screen...");
       setTimeout(() => go("/tldr"), 250);
+    } else if (c === "tools") {
+      out("the free tools, the services and the rest, in one place...");
+      setTimeout(() => go("/tools"), 250);
     } else if (c === "sound") {
       // Turning sound on has to happen inside this key press: it is the only time a browser lets audio start
       const want = /^off$/i.test(rest) ? false : /^on$/i.test(rest) ? true : !soundOn();

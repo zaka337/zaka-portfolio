@@ -33,6 +33,7 @@ export const ITEMS: Item[] = [
   page("projects", "Projects", "Six featured projects with case studies", "/projects", "work portfolio case studies featured built"),
   page("all", "All projects", "Every repository in a 3D carousel", "/projects/all", "repos github repositories carousel code"),
   page("resume", "Resume", "One page, printable", "/resume", "cv curriculum vitae experience print"),
+  page("tools", "Tools and services", "Everything in one place: free tools, services, open source", "/tools", "tools toolbox hub free utilities services everything all list menu overview site check health llmcheck ai testing hiring"),
   page("tldr", "TL;DR", "The whole portfolio on one screen", "/tldr", "tldr short summary overview brief quick version thirty seconds"),
   page("hire", "Hire me", "Job-fit check, call times, estimate", "/hire", "hiring job recruit employ work with remote"),
   page("fit", "Job-fit check", "Paste a job description, see the match", "/hire#fit", "job description match skills check requirements"),
@@ -40,7 +41,7 @@ export const ITEMS: Item[] = [
   page("estimate", "Project estimate", "A rough timeline for your project", "/hire#estimate", "price cost quote timeline how long budget"),
   page("tldr-ur", "TL;DR in Urdu", "The short version, in Urdu (اردو)", "/ur/tldr", "urdu اردو tldr short summary language translation pakistan"),
   page("hire-ur", "Hire me in Urdu", "The three hiring tools, in Urdu (اردو)", "/ur/hire", "urdu اردو hire hiring job fit call estimate language translation pakistan"),
-  page("services", "Services", "Four fixed-scope offers, no surprises", "/services", "services offers hire freelance work with me audit test automation playwright website nextjs automation n8n quote price scope"),
+  page("services", "Services", "Five fixed-scope offers, no surprises", "/services", "services offers hire freelance work with me audit test automation playwright website nextjs automation n8n quote price scope"),
   page("sitecheck", "Website health check", "Paste an address, get a score and fixes", "/tools/site-check", "tool site website check audit scan seo security headers speed accessibility broken links lighthouse health free"),
   page("llmcheck", "llmcheck: test an AI feature", "An open-source test runner for chatbots and assistants", "/tools/llmcheck", "llm ai test testing chatbot assistant evaluation eval quality prompt injection flaky ci qa python"),
   page("race", "MINI MAYHEM (racing game)", "Tiny cars. Massive egos. A 3D race you can play", "/mini-mayhem", "game play race racing cars drive driving arcade fun 3d bridge island"),
@@ -72,7 +73,7 @@ export const ITEMS: Item[] = [
 ];
 
 /* What shows before anything is typed */
-export const SUGGESTED = ["about", "projects", "tldr", "hire", "resume", "brief", "tour", "theme"];
+export const SUGGESTED = ["about", "projects", "tools", "hire", "resume", "brief", "tour", "theme"];
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9+#.\s-]/g, " ").replace(/\s+/g, " ").trim();
 

@@ -8,6 +8,7 @@ import { useAsleep } from "@/lib/sleep";
 import RoleType from "@/components/RoleType";
 import KineticText from "@/components/KineticText";
 import PlayDoor from "@/components/PlayDoor";
+import ToolsDoor from "@/components/ToolsDoor";
 import SceneGuard from "@/components/face/SceneGuard";
 
 const AvatarScene = dynamic(() => import("@/components/AvatarScene"), {
@@ -156,6 +157,9 @@ export default function HomeScreen() {
 
       {/* The racing game: the way in from the home screen */}
       <PlayDoor />
+
+      {/* The way in to the free tools, the services and everything else (/tools), so none of it needs a typed address */}
+      <ToolsDoor />
 
       <OpenStatus />
     </main>

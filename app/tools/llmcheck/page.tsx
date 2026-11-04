@@ -87,7 +87,7 @@ export default function LlmcheckPage() {
       />
 
       <nav className="sv-nav">
-        <Link href="/">{'← '}BACK</Link>
+        <Link href="/tools">{'← '}ALL TOOLS</Link>
         <span>LLMCHECK</span>
         <Link href="/contact-me">BRIEF {'↗'}</Link>
       </nav>
@@ -162,6 +162,7 @@ export default function LlmcheckPage() {
             <p className="sv-end-acts">
               <a href={LLMCHECK.repo} target="_blank" rel="noopener noreferrer" className="sv-btn is-main">Source on GitHub</a>
               <Link href="/services#ai-quality" className="sv-btn">Have it set up for you</Link>
+              <Link href="/tools" className="sv-btn">More free tools</Link>
             </p>
           </>
         ) : (
@@ -170,6 +171,7 @@ export default function LlmcheckPage() {
             <p className="sv-end-acts">
               <Link href="/services#ai-quality" className="sv-btn is-main">See the AI quality offer</Link>
               <Link href="/contact-me" className="sv-btn">Send a project brief</Link>
+              <Link href="/tools" className="sv-btn">More free tools</Link>
             </p>
           </>
         )}

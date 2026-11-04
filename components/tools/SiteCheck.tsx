@@ -96,7 +96,7 @@ export default function SiteCheck() {
   return (
     <main className="sc-root">
       <nav className="sc-nav">
-        <Link href="/">{'← '}BACK</Link>
+        <Link href="/tools">{'← '}ALL TOOLS</Link>
         <span>SITE HEALTH CHECK</span>
         <Link href="/contact-me">BRIEF {'↗'}</Link>
       </nav>
@@ -175,7 +175,7 @@ export default function SiteCheck() {
       </section>
 
       <footer className="sc-foot">
-        <p>Want someone to fix what it finds? <Link href="/services#audit">See how I can help</Link>{', or '}<Link href="/contact-me">send a project brief</Link>{'.'}</p>
+        <p>Want someone to fix what it finds? <Link href="/services#audit">See how I can help</Link>{', or '}<Link href="/contact-me">send a project brief</Link>{'.'} More free tools: <Link href="/tools">all tools</Link>{'.'}</p>
       </footer>
     </main>
   );
