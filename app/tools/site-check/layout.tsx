@@ -3,8 +3,9 @@ import JsonLd from "@/components/JsonLd";
 import { breadcrumbNode, personRef } from "@/lib/seo";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
-const TITLE = "Free Website Health Check: Security, SEO, Speed and Accessibility";
-const DESC = "Paste a web address and get a score and a fix for every problem: security headers, SEO basics, performance hints, accessibility basics and broken links. 35 automatic checks, free, no account, nothing stored.";
+// Title near 60 characters, description under 160 (longer is cut off in search results).
+const TITLE = "Free Website Health Check: Security, SEO";
+const DESC = "Paste a web address and get a score and a fix for each problem: security headers, SEO, speed, accessibility and links. 35 checks, free, nothing stored.";
 
 export const metadata: Metadata = {
   title: { absolute: `${TITLE} | ${SITE_NAME}` },

@@ -9,10 +9,11 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "@/components/services/services.css";
 import "@/components/tools/llmcheck.css";
 
-const DESC = "llmcheck is an open-source tool for testing an AI feature like any other: YAML test cases, repeated runs that catch flaky answers, a pass rate you choose, and JUnit reports for CI. Works with any OpenAI-compatible endpoint.";
+// Title near 60 characters, description under 160 (longer is cut off in search results).
+const DESC = "llmcheck is an open-source tool that tests an AI feature like any other: YAML cases, repeated runs for flaky answers, a pass rate, JUnit for CI.";
 
 export const metadata: Metadata = {
-  title: { absolute: `llmcheck: Test an AI Feature in CI, Flaky Answers Included | ${SITE_NAME}` },
+  title: { absolute: `llmcheck: Test an AI Feature in CI | ${SITE_NAME}` },
   description: DESC,
   alternates: { canonical: `${SITE_URL}/tools/llmcheck` },
   openGraph: {

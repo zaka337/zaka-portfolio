@@ -20,6 +20,7 @@ One page that lists everything a visitor can use or open on the portfolio, so no
 2. If it lives under a new address people might mistype, add the likely mistypes to `redirects()` in `next.config.ts`. Do **not** redirect `/tools` (it is the hub).
 3. Add it to the Ctrl+K list in `lib/palette.ts` and to `public/llms.txt`; add the page to `app/sitemap.ts`.
 4. Run `D:\Projects\Zaka_Promo\_tmp\tools-hub-ui.cjs` (the group sizes at the top of that script are the counts in `HUB`, so update them too).
+5. Keep the page `<title>` to about 60 characters (including the ` | Zaka Ullah Waheed` the pages end with, which is 20) and the meta description under 160; search results cut off anything longer. The first versions of `/tools`, `/services` and both tool pages were 78 to 100 characters, and the site's own health check (`/tools/site-check`) flagged them. After deploying, scan the new page with it.
 
 ## Rules that matter
 

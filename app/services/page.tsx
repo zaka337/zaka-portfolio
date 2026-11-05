@@ -10,10 +10,11 @@ import { SERVICES, STEPS, askMessage, timelineOf } from "@/lib/services";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "@/components/services/services.css";
 
-const DESC = "Five fixed-scope pieces of work from Zaka Ullah Waheed: a website health audit, automated tests for your web app, a fast Next.js marketing website, one automated workflow, and quality checks for an AI feature. Written scope and timeline before any work starts.";
+// Title near 60 characters, description under 160 (longer is cut off in search results).
+const DESC = "Five fixed-scope jobs from Zaka Ullah Waheed: a website audit, automated tests, a Next.js site, one workflow and AI quality checks. Written scope first.";
 
 export const metadata: Metadata = {
-  title: { absolute: `Services: Website Audit, Test Automation, Next.js Sites, Workflow and AI Quality | ${SITE_NAME}` },
+  title: { absolute: `Services: Web Audit, Tests, Automation | ${SITE_NAME}` },
   description: DESC,
   alternates: { canonical: `${SITE_URL}/services` },
   openGraph: {

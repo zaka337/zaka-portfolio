@@ -9,10 +9,12 @@ import { HUB, HUB_COUNT } from "@/lib/tools";
 import "@/components/services/services.css";
 import "@/components/tools/toolshub.css";
 
-const DESC = `Everything on the portfolio of ${SITE_NAME} in one place: a free website health check, an open-source AI testing tool, hiring tools, fixed-scope services, projects and a game.`;
+// Keep the title near 60 characters and the description under 160: search results cut off anything longer
+// (the sitepulse scan of this very site flagged the first version, 84 and 180).
+const DESC = `A free website health check, an open-source AI testing tool, hiring tools, fixed-scope services, projects and a game from ${SITE_NAME}, all in one place.`;
 
 export const metadata: Metadata = {
-  title: { absolute: `Tools and Services: Free Website Check, AI Testing, Hiring Tools | ${SITE_NAME}` },
+  title: { absolute: `Tools and Services: Free Website Check | ${SITE_NAME}` },
   description: DESC,
   alternates: { canonical: `${SITE_URL}/tools` },
   openGraph: {
