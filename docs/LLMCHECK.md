@@ -16,7 +16,7 @@ An explainer for **llmcheck**, an open-source test runner for AI features (a YAM
 
 ## When the package is published
 
-`LLMCHECK.published` is false: the page links nowhere and says the tool is "being published". After the GitHub repository `zaka337/llmcheck` exists, set it to true. The page then shows the install command (`pip install git+https://github.com/zaka337/llmcheck`) and a GitHub link, and the structured data gains `codeRepository`. There is no PyPI link: publishing there is a separate step; add it only once it is true.
+`LLMCHECK.published` is **true** since 2026-11-06 (the repository `zaka337/llmcheck` is public; `pip install git+https://github.com/zaka337/llmcheck` was tried in a clean virtualenv before the switch). While it was false the page linked nowhere and said the tool is "being published". With it true the page shows the install command (`pip install git+https://github.com/zaka337/llmcheck`) and a GitHub link, and the structured data gains `codeRepository`. There is no PyPI link: publishing there is a separate step; add it only once it is true.
 
 ## Tests
 

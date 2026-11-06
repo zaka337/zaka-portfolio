@@ -41,7 +41,7 @@ How it was tested: `D:\Projects\Zaka_Promo\_tmp\sitecheck-api.mjs` (`BASE=http:/
 
 ## When the package is published
 
-`lib/sitepulseLinks.ts` has `published: false`. While it is false the page promises nothing and links nowhere. After the package is on npm and the GitHub repository exists, set it to `true`: the page then shows the two copyable commands and links to the repository and npm.
+`lib/sitepulseLinks.ts` has two switches. `onGitHub` is **true** (the repository `zaka337/sitepulse` has been public since 2026-11-06): the page links to it and says plainly that the npm package is coming and that for now you run it from a clone. `published` is **false** until `npm publish` has really been done; then set it to `true` and the page shows the two copyable commands (`npx sitepulse ...`, `claude mcp add ...`) and the npm link. Remove the "not on npm yet" note in the sitepulse README at the same time.
 
 Also worth doing then: add sitepulse to `lib/projects.ts` as a project (it is real, tested, and unusual on a portfolio), and link the repository from the resume.
 

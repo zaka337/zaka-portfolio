@@ -23,6 +23,8 @@ export interface HubGroup {
 }
 
 const soon = (published: boolean) => (published ? "OPEN SOURCE" : "OPEN SOURCE, BEING PUBLISHED");
+// The source is public once it is on GitHub, even before the npm package exists (sitepulse is in that state).
+const sitepulseOpen = SITEPULSE.onGitHub || SITEPULSE.published;
 
 export const HUB: HubGroup[] = [
   {
@@ -40,11 +42,11 @@ export const HUB: HubGroup[] = [
   {
     id: "open-source",
     title: "Open source, made by me",
-    lead: SITEPULSE.published && LLMCHECK.published
+    lead: sitepulseOpen && LLMCHECK.published
       ? "Tools I wrote and use, with the source on GitHub."
       : "Tools I wrote and use. The code is being published; the pages explain what each one does.",
     items: [
-      { id: "sitepulse", title: "sitepulse", blurb: "The scanner behind the health check: a command line, an MCP server so an AI assistant can use it, and a library.", href: SITEPULSE.published ? SITEPULSE.repo : "/tools/site-check", tags: [soon(SITEPULSE.published), "TYPESCRIPT"] },
+      { id: "sitepulse", title: "sitepulse", blurb: "The scanner behind the health check: a command line, an MCP server so an AI assistant can use it, and a library.", href: sitepulseOpen ? SITEPULSE.repo : "/tools/site-check", tags: [soon(sitepulseOpen), "TYPESCRIPT"] },
       { id: "llmcheck", title: "llmcheck", blurb: "Test an AI feature in CI: YAML test cases, repeated runs that catch flaky answers, a pass rate you choose, and JUnit reports.", href: "/tools/llmcheck", tags: [soon(LLMCHECK.published), "PYTHON"] },
     ],
   },

@@ -169,6 +169,8 @@ export default function SiteCheck() {
             <Cmd label="Claude Code (MCP server)" text={SITEPULSE.mcp} copied={copied === "mcp"} onCopy={() => copy("mcp", SITEPULSE.mcp)} />
             <p className="sc-note"><a href={SITEPULSE.repo} target="_blank" rel="noopener noreferrer">Source on GitHub</a>{' · '}<a href={SITEPULSE.npm} target="_blank" rel="noopener noreferrer">npm package</a></p>
           </div>
+        ) : SITEPULSE.onGitHub ? (
+          <p className="sc-note"><a href={SITEPULSE.repo} target="_blank" rel="noopener noreferrer">Source on GitHub</a>{'. '}It is not on npm yet, so for now you run it from a copy of the repository (the README shows how). The npm package, which makes the command-line tool and the MCP server (so an AI assistant can run these checks) a one-line install, is coming.</p>
         ) : (
           <p className="sc-note">The command-line tool and the MCP server (so an AI assistant can run these checks) are being published.</p>
         )}
