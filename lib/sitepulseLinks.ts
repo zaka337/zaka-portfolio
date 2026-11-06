@@ -7,7 +7,7 @@
 
 export const SITEPULSE = {
   onGitHub: true, // github.com/zaka337/sitepulse, public since 2026-11-06 (CI green on Ubuntu and Windows, Node 20 and 22)
-  published: false, // not on npm yet: `npx sitepulse` does not work until it is
+  published: true, // on npm since 2026-11-06 (sitepulse@0.1.0); `npx sitepulse` and the MCP handshake were tried from the registry
   repo: "https://github.com/zaka337/sitepulse",
   npm: "https://www.npmjs.com/package/sitepulse",
   cli: "npx sitepulse your-site.com",
