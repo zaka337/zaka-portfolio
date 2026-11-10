@@ -1,16 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import HomeScreen from "@/components/HomeScreen";
+import HomeBuildLoader from "@/components/homebuild/HomeBuildLoader";
 import { SITE_URL } from "@/lib/site";
+import "@/components/homebuild/build.css";
 
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
 
+/* The multi-cursor build (components/homebuild): the home is assembled by five labelled cursors, the avatar's head is drawn in ink
+   while the 3D model builds, then the real head comes in through the sketch. This script decides, before anything is painted, whether
+   it plays, so the home never flashes in its final state first:
+     - on the first visit of a session (the layout's head script has not added zk-skip), or when the address has ?build (a replay link);
+     - never for reduced motion, the site's calm mode, Save-Data, or crawlers and speed testers (they get the finished page at once).
+   If the build has not started within 5 seconds for any reason, the page is simply shown as it is. */
+const BOOT =
+  "try{var d=document.documentElement,w=window,ua=navigator.userAgent||'',forced=/[?&]build(=|&|$)/.test(location.search),first=!d.classList.contains('zk-skip'),mm=w.matchMedia,rm=mm&&mm('(prefers-reduced-motion: reduce)').matches,save=navigator.connection&&navigator.connection.saveData,bot=/bot|crawl|spider|slurp|lighthouse|pagespeed|gtmetrix|pingdom|prerender/i.test(ua);" +
+  "if(!rm&&!d.hasAttribute('data-calm')&&(forced||(first&&!save&&!bot))){w.__zbArmed=true;d.classList.add('zb');if(forced)d.classList.add('zk-skip');" +
+  "setTimeout(function(){if(!d.classList.contains('zb-live')&&!d.classList.contains('zb-done')){d.classList.remove('zb')}},5000)}}catch(e){}";
+
 export default function Home() {
   return (
     <>
+      <script dangerouslySetInnerHTML={{ __html: BOOT }} />
       <HomeScreen />
+      <HomeBuildLoader />
       {/* The same facts as the site, as plain text. Always in the page for crawlers, readers and screen
           readers (it is not aria-hidden), but out of sight because the home screen is made of big type.
           Keep it true and short: whatever is written here must also be said somewhere visible. */}

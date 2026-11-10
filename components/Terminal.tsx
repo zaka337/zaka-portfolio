@@ -9,6 +9,7 @@ import { SECRETS, found, foundList } from "@/lib/secrets";
 import { BUGS, squashedList } from "@/lib/bugs";
 import { play, setSound, soundOn } from "@/lib/sound";
 import { faceAct } from "@/lib/faceAct";
+import { rebuildAct } from "@/lib/homeBuild";
 import { askInstall, getPwa } from "@/lib/pwa";
 import "./terminal.css";
 
@@ -23,7 +24,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install", "tools",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install", "tools", "rebuild",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -313,6 +314,11 @@ export default function Terminal() {
     } else if (c === "race" || c === "play" || c === "game" || c === "drive") {
       out("starting your engines. MINI MAYHEM is a 3D racing game.");
       setTimeout(() => go("/mini-mayhem"), 300);
+    } else if (c === "rebuild" || c === "construct") {
+      // The cursors that assembled this page on your first visit: once more. (Not listed in help, like the other secrets.)
+      out("the cursors are coming back. watch the page.");
+      rebuildAct({ goHome: () => go("/") });
+      if (window.location.pathname === "/") close();
     } else if (c === "dissolve" || c === "boom" || c === "shatter") {
       out("tap the cap, or: here goes. (hold on the face to spell words, tap to put it back.)");
       faceAct("dissolve", { goHome: () => go("/") });
