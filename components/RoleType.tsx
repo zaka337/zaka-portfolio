@@ -151,7 +151,8 @@ export default function RoleType() {
       }
       soundT.splice(0).forEach((t) => window.clearTimeout(t));
       if (soundOn()) {
-        const at2 = (ms: number, name: Parameters<typeof play>[0]) => soundT.push(window.setTimeout(() => play(name), ms));
+        // quiet while the home screen's intro plays (html.zb-live): the block is still hidden behind it, and the intro has its own score
+        const at2 = (ms: number, name: Parameters<typeof play>[0]) => soundT.push(window.setTimeout(() => { if (!document.documentElement.classList.contains("zb-live")) play(name); }, ms));
         if (burst) at2(0, "whoosh");
         else if (fx === "flip") for (let i = 0; i < 9; i++) at2(300 + i * 70, "key");
         else if (fx === "decode") for (let i = 0; i < 6; i++) at2(300 + i * 150, "tick");
