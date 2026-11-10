@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { audioRunning, setSound, unlockSound } from "@/lib/sound";
 import { startBuild, type BuildHandle } from "./director";
 
 /* The multi-cursor build of the home screen (see director.ts for how it works and what it promises).
@@ -27,6 +28,24 @@ type W = { __zbArmed?: boolean; __zkRebuild?: number; __zb?: BuildHandle };
 
 export default function HomeBuild() {
   const ref = useRef<HTMLDivElement>(null);
+  // The build has sound (lib/sound.ts), but a browser only lets audio start after a tap or key press, and the build starts by itself.
+  // So while it runs, a small "Tap for sound" button is offered unless the audio is already awake. The tap turns sound on for good
+  // (the same switch as `sound` in the terminal) and the rest of the build is heard.
+  const [snd, setSnd] = useState<"hidden" | "ask" | "thanks">("hidden");
+  const thanksTimer = useRef(0);
+  const onSound = () => {
+    const ok = setSound(true); // inside the tap: this is what lets the browser start the audio
+    unlockSound();
+    setSnd(ok ? "thanks" : "hidden");
+    window.clearTimeout(thanksTimer.current);
+    if (ok) thanksTimer.current = window.setTimeout(() => setSnd("hidden"), 1600);
+  };
+  useEffect(() => {
+    // offered the moment the choreography really starts (after the loader), not while the loader still covers the page
+    const onPlay = () => setSnd(audioRunning() ? "hidden" : "ask");
+    window.addEventListener("zk-build-play", onPlay);
+    return () => { window.removeEventListener("zk-build-play", onPlay); window.clearTimeout(thanksTimer.current); };
+  }, []);
 
   useEffect(() => {
     const layer = ref.current;
@@ -85,6 +104,11 @@ export default function HomeBuild() {
   }, []);
 
   return (
+    <>
+    <button type="button" className="zb-sound" data-state={snd} onClick={onSound} aria-label="Turn on sound for this intro">
+      <svg viewBox="0 0 20 16" width="16" height="13" aria-hidden="true"><path d="M1 5.5h3.6L9 2v12L4.6 10.5H1z" /><path d="M12.2 5.2c1.4 1.5 1.4 4.1 0 5.6M14.6 3c2.6 2.7 2.6 7.3 0 10" /></svg>
+      <span>{snd === "thanks" ? "Sound on" : "Tap for sound"}</span>
+    </button>
     <div ref={ref} className="zb-layer" aria-hidden="true">
       <div className="zb-grid" data-zb-el="grid" />
       <svg className="zb-marks" data-zb-el="marks"><path d="" /></svg>
@@ -106,5 +130,6 @@ export default function HomeBuild() {
         </div>
       ))}
     </div>
+    </>
   );
 }

@@ -17,6 +17,7 @@
    - Anything can skip it (click, key, scroll, touch). A watchdog and a try/catch always end in the plain home. */
 
 import { isNight } from "@/lib/sleep";
+import { cue, type CueName } from "@/lib/sound";
 import { FACE_BRIM, FACE_H, FACE_STROKES, FACE_W, type FaceStroke } from "./faceLines";
 
 type V2 = [number, number];
@@ -216,6 +217,16 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
   };
   let selNo = 0;
 
+  /* ---------- sound cues: a list laid out once, fired as the timeline passes them ----------
+     Nothing is heard unless the visitor has sound on and the audio is awake (lib/sound.ts decides); frozen frames (?t=), the skip
+     and a seek never make a sound. Each cursor owns one note of a C major chord, so their clicks play a little arpeggio and the
+     shared click at the end is the whole chord. */
+  const NOTE: Record<CId, number> = { c1: 523.25, c2: 659.25, c3: 783.99, c4: 1046.5, c5: 1318.5 };
+  interface Cue { t: number; name: CueName; note?: number; dur?: number; gain?: number }
+  const cues: Cue[] = [];
+  const cu = (t: number, name: CueName, o: { c?: CId; dur?: number; gain?: number } = {}) =>
+    cues.push({ t, name, note: o.c ? NOTE[o.c] : undefined, dur: o.dur === undefined ? undefined : o.dur / speed, gain: o.gain });
+
   /* ---------- sketch canvas (the head, drawn in ink) ---------- */
   const cv = ref.sketch;
   let dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -266,7 +277,9 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
       }));
       setBeat(task.c, { t0: a, t1: b, at: (t) => [r.l - pad + (r.w + pad * 2) * p(t), r.t - pad + (r.h + pad * 2) * p(t)] });
       ripples.push({ t: b, at: () => [r.r + pad, r.b + pad], color: colorOf(task.c) });
+      cu(a, "slide", { dur: b - a, gain: 0.8 }); cu(b, "click", { c: task.c });
     } else if (task.k === "guide") {
+      cu(a, "zip", { dur: b - a });
       const g = ref.guide;
       const snapEnd = DESKTOP.tasks.find((x) => x.k === "drop" && x.el === "sayhi");
       const fadeAt = (snapEnd && snapEnd.k === "drop" && snapEnd.snap ? snapEnd.t[1] : b) + 0.5;
@@ -296,6 +309,8 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
       }));
       setBeat(task.c, { t0: a, t1: b, at: (t) => { const [tx, ty] = st(t); return [r.l + 18 + tx, r.t + 12 + ty]; } });
       ripples.push({ t: b, at: () => (task.snap ? [guideX, r.cy] : [r.l + 18, r.t + 12]), color: colorOf(task.c) });
+      cu(a, "slide", { dur: 0.35 }); cu(b, "click", { c: task.c });
+      if (task.snap) cu(m1, "click", { c: task.c, gain: 0.7 }); // it snaps to the guide line first
     } else if (task.k === "type2" || task.k === "type1") {
       const r = R[task.el], e = els[task.el];
       if (!r || !e) continue;
@@ -312,6 +327,10 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
         if (u < 0.52) return { line: 0, w: 1 };
         return { line: 1, w: q((u - 0.52) / 0.48, L[1].n) };
       };
+      { // one quiet key for every letter that appears (read off the same function that draws them)
+        let prev = "0:0";
+        for (let tt = a; tt <= b; tt += 0.004) { const e2 = edge(tt), k = `${e2.line}:${e2.w.toFixed(4)}`; if (k !== prev) { prev = k; cu(tt, "type", { gain: 0.8 + ((cues.length * 7) % 5) * 0.06 }); } }
+      }
       inits.push(() => { e.setAttribute("data-zb", ""); e.style.opacity = "0.01"; e.style.clipPath = "inset(0 100% 0 0)"; });
       tracks.push(phased(a, b + 0.25, (t) => {
         sw(e, "opacity", t < a ? "0.01" : "1");
@@ -337,6 +356,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
       tracks.push(phased(a, b + 0.05, (t) => { const u = seg(t, a, b); place(e, 0, 0, 0, t < a ? 0.01 : 0.01 + 0.99 * clamp01(u * 2.6), t < a ? 0.3 : lerp(0.3, 1, E.back(u, 2.3))); }));
       setBeat(task.c, { t0: a, t1: b, at: (t) => [r.cx + 16 + Math.sin(seg(t, a, b) * 7) * 3, r.cy + 16] });
       ripples.push({ t: a + 0.08, at: () => [r.cx, r.cy], color: colorOf(task.c) });
+      cu(a + 0.04, "pop", { c: task.c });
     } else if (task.k === "wipe") {
       const r = R[task.el], e = els[task.el];
       if (!r || !e) continue;
@@ -348,6 +368,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
         sw(e, "clip-path", u >= 1 ? "none" : `inset(0 ${((1 - u) * 100).toFixed(2)}% 0 0)`);
       }));
       setBeat(task.c, { t0: a, t1: b, at: (t) => { const u = E.io2(seg(t, a, b)); return [r.l + r.w * u, r.t + 8 + Math.sin(u * 11) * 7]; } });
+      cu(a, "slide", { dur: b - a, gain: 0.9 });
     } else if (task.k === "strokes") {
       const list = FACE_STROKES.filter((s) => task.groups.includes(s.g));
       if (!list.length) continue;
@@ -363,6 +384,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
         const prev: V2 = i ? endOf(list[i - 1]) : [s.p[0], s.p[1]];
         const start = P(s.p[0], s.p[1]), from = P(prev[0], prev[1]);
         slots.push({ s, a: sa, b: sb, d0, drawn: 0 });
+        cu(d0, "scratch", { dur: sb - d0, gain: Math.min(1.3, 0.5 + s.len / 500) }); // pencil on paper, as long as the line
         setBeat(task.c, {
           t0: sa, t1: sb,
           at: (t) => {
@@ -376,6 +398,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
       brim.a = a; brim.b = b; brim.on = true;
       const at = (t: number): V2 => { const u = E.io2(seg(t, a, b)); return P(lerp(brim.minX + 14, brim.maxX - 14, u), (brim.minY + brim.maxY) / 2 + Math.sin(u * 8) * 9); };
       setBeat(task.c, { t0: a, t1: b, at });
+      cu(a + 0.1 * (b - a), "marker", { dur: 0.9 * (b - a) }); // the cap's solid brim, filled in with a marker
     }
   }
   // anything no task builds (e.g. the ghost word on a phone) comes in with the head
@@ -404,6 +427,16 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
   const t0H = plan.hold - 0.45, TD = plan.release;
   const revealEnd = TD + 0.85;
   const blinkAt = revealEnd + 0.05;
+  // the story in sound: each cursor arrives with a blip in its note, the five take hold of the head's frame, the shared click (one
+  // soft chord), the real head comes in, its hello, and the cursors turn back into full stops
+  actorList.forEach((a) => cu(a.spawnT, "appear", { c: a.id, gain: 0.8 }));
+  (Object.keys(plan.handle) as CId[]).forEach((c, i) => cu(plan.hold + i * 0.05, "grab", { c }));
+  cu(t0H, "click", { c: "c4", gain: 0.5 }); // the head's frame appears
+  cu(TD, "chord");
+  cu(TD + 0.02, "bloom");
+  if (!asleep) cu(blinkAt, "hello"); // nobody says hello to a sleeper
+  actorList.forEach((a, i) => cu(plan.exit[0] + 0.12 + i * 0.035, "pip", { c: a.id }));
+  cues.sort((x, y) => x.t - y.t);
 
   /* ---------- crosses ("blueprint" registration marks) ---------- */
   const marksPath = ref.marks.querySelector("path")!;
@@ -413,6 +446,11 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
 
   /* ---------- clock, skip, wait for the 3D head ---------- */
   let tl = 0, waited = 0, skipping = false, last = 0, raf = 0, finished = false, headOn = false, lastT = -1, pre = false, preStart = 0, readyAt = 0, framed = false, prerollMs = 0;
+  let cuesLive = false, cueI = 0; // sound cues fire only while the choreography really runs (not while frozen, seeking, or in the pre-roll)
+  const fireCues = (t: number) => {
+    if (!cuesLive) return;
+    while (cueI < cues.length && cues[cueI].t <= t) { const c = cues[cueI++]; if (!skipping) cue(c.name, { note: c.note, dur: c.dur, gain: c.gain }); }
+  };
   const pointer: V2 = [vw * 0.5, vh * 0.7];
   const onMove = (e: PointerEvent) => { pointer[0] = e.clientX; pointer[1] = e.clientY; };
   const ready = () => S.hasAttribute("data-ready");
@@ -443,7 +481,9 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
     layer.style.display = "none";
     handleObj.done = true;
   }
-  function skip() {
+  function skip(e?: Event) {
+    // a tap on the little "sound" button is not a wish to skip
+    if (e && (e.target as Element | null)?.closest?.(".zb-sound")) return;
     if (skipping || finished) return;
     skipping = true;
     waited = MAX_WAIT + 1;
@@ -453,6 +493,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
   /* ---------- one frame ---------- */
   function render(t: number, fidget: number, dt: number) {
     for (const f of tracks) f(t); // finished tracks return at once
+    fireCues(t);
     // sketch: draw only what is new since last frame (redraw from scratch when time jumps back)
     if (t < lastT) resetSketch();
     lastT = t;
@@ -570,6 +611,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
           pre = false; prerollMs = now - preStart; dismissLoader();
         } else { raf = requestAnimationFrame(frame); return; }
       }
+      if (!cuesLive) { cuesLive = true; window.dispatchEvent(new Event("zk-build-play")); } // the choreography starts now (the loader is gone)
       const holding = tl >= plan.hold && !ready() && waited < MAX_WAIT;
       if (holding) { waited += dt; tl = plan.hold; }
       else if (skipping) tl += dt * 9;
@@ -587,7 +629,7 @@ export function startBuild(layer: HTMLElement, opts: { lite: boolean; seek?: num
   };
   const handleObj: BuildHandle = {
     duration: plan.end, done: false,
-    seek: (t: number) => { skipping = false; render(Math.max(0, Math.min(plan.end, t)), 0, 1 / 60); },
+    seek: (t: number) => { skipping = false; cuesLive = false; render(Math.max(0, Math.min(plan.end, t)), 0, 1 / 60); },
     skip,
     destroy: () => { finish(); },
     stats: () => { const s = [...costs].sort((x, y) => x - y); const n = s.length; return { frames: n, mean: n ? s.reduce((x, y) => x + y, 0) / n : 0, p95: n ? s[Math.floor(n * 0.95)] : 0, max: n ? s[n - 1] : 0, preroll: prerollMs }; },

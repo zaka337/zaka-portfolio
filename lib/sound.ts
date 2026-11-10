@@ -2,14 +2,20 @@
    is downloaded: every sound is synthesised in the browser with the Web Audio API, so there are no
    audio files at all.
 
-   It is OFF until the visitor turns it on (`sound` in the secret terminal) and the choice is kept
-   on their own device. Turning it on has to happen inside a tap or key press, because that is the
+   It is OFF until the visitor turns it on (`sound` in the secret terminal, or the "Tap for sound"
+   button the home screen's intro offers) and the choice is kept on their own device. Turning it on has to happen inside a tap or key press, because that is the
    only time a browser allows audio to start; every later sound just uses that context. If the
    page is reloaded with sound on, the first tap or key press wakes the audio up again
    (components/Sound.tsx). */
 
 export type SoundName =
   | "key" | "enter" | "page" | "chime" | "squash" | "tick" | "tear" | "whoosh" | "switch" | "ring" | "honk";
+
+/* Sounds for the home screen's multi-cursor build (components/homebuild/director.ts). Same engine, same rules: nothing plays unless the
+   visitor has sound on and the audio is awake. They are "cues" rather than `play()` sounds because the build fires many in quick
+   succession (a pencil stroke every few hundredths of a second) and knows each one's length and which cursor it belongs to. */
+export type CueName = "appear" | "click" | "type" | "scratch" | "marker" | "slide" | "zip" | "pop" | "grab" | "chord" | "bloom" | "hello" | "pip";
+export interface CueOpts { note?: number; dur?: number; gain?: number }
 
 const KEY = "zk-sound";
 
@@ -71,6 +77,13 @@ export function unlockSound() {
   if (!soundOn()) return;
   const c = ensure();
   if (c && c.state !== "running") void c.resume?.();
+}
+
+/** Sound is on AND the audio is awake right now (a browser keeps it asleep until the visitor's first tap or key press) */
+export function audioRunning(): boolean {
+  if (!soundOn()) return false;
+  const c = ensure();
+  return !!c && c.state === "running";
 }
 
 /* A short burst of noise through a filter, with a quick attack and an exponential fade */
@@ -158,6 +171,100 @@ export function play(name: SoundName) {
       break;
     case "ring": // a little retro phone chirp: three short beeps
       for (let i = 0; i < 3; i++) tone(t + i * 0.11, 0.07, { type: "square", from: i === 1 ? 1320 : 1040, gain: 0.07 });
+      break;
+  }
+}
+
+/* The pencil. About ninety short strokes are drawn in four seconds, so a fresh set of audio nodes for each would be the most expensive
+   thing in the whole build. Instead two long-lived "pen voices" (looping noise -> band-pass -> gain) are only re-automated per stroke:
+   no nodes are created while the animation runs. They are torn down a moment after the last stroke. */
+type PenVoice = { src: AudioBufferSourceNode; f: BiquadFilterNode; g: GainNode };
+let pens: PenVoice[] = [];
+let penTurn = 0;
+let penTimer = 0;
+function penStroke(t: number, dur: number, gain: number) {
+  if (!ctx || !master || !noise) return;
+  if (!pens.length) {
+    for (let i = 0; i < 2; i++) {
+      const src = ctx.createBufferSource(); src.buffer = noise; src.loop = true;
+      const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.Q.value = 0.8; f.frequency.value = 3000;
+      const g = ctx.createGain(); g.gain.value = 0.0001;
+      src.connect(f); f.connect(g); g.connect(master);
+      src.start(0, Math.random() * 0.5);
+      pens.push({ src, f, g });
+    }
+  }
+  const p = pens[penTurn++ % 2], d = Math.max(0.03, Math.min(dur, 0.5));
+  p.g.gain.cancelScheduledValues(t);
+  p.g.gain.setValueAtTime(0.0001, t);
+  p.g.gain.linearRampToValueAtTime(gain, t + Math.min(0.006, d / 3));
+  p.g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  p.f.frequency.cancelScheduledValues(t);
+  p.f.frequency.setValueAtTime(jitter(2300, 0.3), t);
+  p.f.frequency.exponentialRampToValueAtTime(jitter(3700, 0.3), t + d);
+  window.clearTimeout(penTimer);
+  penTimer = window.setTimeout(() => {
+    pens.forEach((v) => { try { v.src.stop(); v.src.disconnect(); v.f.disconnect(); v.g.disconnect(); } catch { /* already gone */ } });
+    pens = [];
+  }, 1800);
+}
+
+/** One cue of the home build. `note` is the cursor's own note (each of the five owns one tone of a C major chord, so any of them
+    sounding together is consonant), `dur` the length of the thing it accompanies, `gain` a multiplier. Never throttled: the build
+    decides how many there are. Quiet by design: the sounds sit under the page, they do not shout over it. */
+export function cue(name: CueName, o: CueOpts = {}) {
+  if (!soundOn()) return;
+  const c = ensure();
+  if (!c || c.state !== "running") return;
+  const t = c.currentTime + 0.002, g = o.gain ?? 1, n = o.note ?? 784, d = o.dur ?? 0.1;
+  switch (name) {
+    case "appear": // a cursor arrives: a small upward blip in its own note
+      tone(t, 0.14, { from: n * 0.5, to: n, gain: 0.045 * g });
+      break;
+    case "click": // a soft mouse click, ringing a little in the cursor's note
+      burst(t, 0.016, { type: "highpass", from: jitter(3000), q: 0.8, gain: 0.15 * g });
+      tone(t, 0.12, { from: n, gain: 0.05 * g });
+      break;
+    case "type": // a quiet key
+      burst(t, 0.022, { type: "bandpass", from: jitter(2800), q: 1.1, gain: 0.2 * g });
+      tone(t, 0.026, { from: jitter(190), to: 100, gain: 0.09 * g });
+      break;
+    case "scratch": // pencil on paper, as long as the stroke
+      penStroke(t, d, 0.075 * g);
+      break;
+    case "marker": // the thick brim being filled in
+      burst(t, Math.max(0.1, Math.min(d, 1.2)), { type: "lowpass", from: 700, to: 2200, q: 0.6, gain: 0.11 * g });
+      break;
+    case "slide": // a block of paper slides in
+      burst(t, Math.max(0.12, Math.min(d, 0.6)), { type: "bandpass", from: 600, to: 2200, q: 0.7, gain: 0.1 * g });
+      break;
+    case "zip": // a guide line is dragged down the page
+      burst(t, Math.max(0.1, Math.min(d, 0.5)), { type: "bandpass", from: 1000, to: 5200, q: 0.9, gain: 0.08 * g });
+      break;
+    case "pop": // a badge pops into place
+      tone(t, 0.1, { from: n * 0.8, to: n * 1.25, gain: 0.06 * g });
+      burst(t, 0.012, { type: "highpass", from: 2800, q: 0.9, gain: 0.12 * g });
+      break;
+    case "grab": // the cursors take hold of the head's frame
+      burst(t, 0.03, { type: "highpass", from: 1800, q: 0.9, gain: 0.1 * g });
+      tone(t, 0.06, { from: n * 0.5, gain: 0.05 * g });
+      break;
+    case "chord": // the shared click: one soft chord, a low thump and a click
+      [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => tone(t + i * 0.012, 0.9, { type: "triangle", from: f, gain: 0.035 * g }));
+      tone(t, 0.7, { type: "triangle", from: 130.81, gain: 0.07 * g });
+      tone(t, 0.22, { from: 110, to: 52, gain: 0.2 * g });
+      burst(t, 0.03, { type: "highpass", from: 2200, q: 0.9, gain: 0.2 * g });
+      break;
+    case "bloom": // the real head comes in: a rising sweep, then four bright notes
+      burst(t, 0.85, { type: "bandpass", from: 300, to: 2600, q: 0.7, gain: 0.14 * g });
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(t + 0.12 + i * 0.075, 0.7, { from: f, gain: 0.07 * g }));
+      break;
+    case "hello": // the head's own hello
+      tone(t, 0.1, { from: 988, gain: 0.07 * g });
+      tone(t + 0.11, 0.16, { from: 1318.5, gain: 0.07 * g });
+      break;
+    case "pip": // a cursor turns back into the site's full stop
+      tone(t, 0.08, { from: n, to: n * 0.6, gain: 0.05 * g });
       break;
   }
 }

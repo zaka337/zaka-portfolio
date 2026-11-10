@@ -97,6 +97,37 @@ html.zb-live [data-zb] { transition: none !important; }
 }
 .zb-chip em { font-style: normal; font-weight: 500; opacity: 0.7; }
 
+/* ---- "Tap for sound": a browser only starts audio after a tap, and the build starts by itself, so while it runs this is offered
+   (components/homebuild/HomeBuild.tsx). Hidden unless the build is running and the audio is not already awake. ---- */
+.zb-sound {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 9992; /* above the layer (9990), below the site's own cursor (9999) */
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px 9px 13px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 11px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(-50%);
+  animation: zb-sound-in 0.5s 0.4s ease both;
+}
+html.zb-live .zb-sound:not([data-state="hidden"]) { display: inline-flex; }
+.zb-sound[data-state="thanks"] { background: var(--ink); color: var(--paper); }
+.zb-sound svg path:first-child { fill: currentColor; stroke: none; }
+.zb-sound svg path:last-child { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.zb-sound:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@keyframes zb-sound-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translateX(-50%); } }
+
 @media (max-width: 768px) {
   .zb-chip { font-size: 11px; padding: 2px 7px 2px 6px; }
   .zb-grid { background-size: 22px 22px; }
