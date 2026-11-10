@@ -92,6 +92,7 @@ export default function Palette() {
       else if (a.id === "tour") window.dispatchEvent(new Event("zk-tour"));
       else if (a.id === "access") document.querySelector<HTMLButtonElement>(".ax-btn")?.click();
       else if (a.id === "doodle") window.dispatchEvent(new Event("zk-doodle-hint"));
+      else if (a.id === "portrait") window.dispatchEvent(new Event("zk-portrait"));
       else if (a.id === "dissolve" || a.id === "look") faceAct(a.id, { goHome: () => navigate(router, "/") });
       else if (a.id === "install") askInstall();
       else if (a.id === "resume") window.open(RESUME_PDF, "_blank", "noopener");

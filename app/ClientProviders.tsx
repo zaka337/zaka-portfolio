@@ -44,6 +44,10 @@ const Doodle = dynamic(() => import("@/components/Doodle"), { ssr: false });
 // A paper curtain with the next page's name on it covers each page change (not with Reduce Motion)
 const Transition = dynamic(() => import("@/components/Transition"), { ssr: false });
 
+// "Get drawn": the five cursors draw the visitor's portrait in ink. Only a tiny listener is loaded up front; the sheet and the
+// face tracker come the first time someone asks (terminal `portrait`, Ctrl+K, or /?portrait).
+const PortraitLoader = dynamic(() => import("@/components/portrait/PortraitLoader"), { ssr: false });
+
 // Every extra sits in its own Guard: if one cannot load or throws on some phone, only that one is left out and the
 // page itself carries on (see components/Guard.tsx).
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
@@ -65,6 +69,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <Guard name="Access"><Access /></Guard>
       <Guard name="Palette"><Palette /></Guard>
       <Guard name="Doodle"><Doodle /></Guard>
+      <Guard name="Portrait"><PortraitLoader /></Guard>
       <Guard name="Transition"><Transition /></Guard>
       <Guard name="Pwa"><PwaProvider /></Guard>
       {children}

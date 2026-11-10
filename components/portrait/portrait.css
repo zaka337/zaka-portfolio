@@ -1,0 +1,155 @@
+/* "Get drawn": a full-screen sheet where five cursors draw the visitor's portrait in ink (components/portrait). Every rule starts with
+   .zp, so nothing here can touch the rest of the site. Loaded only when someone starts it. */
+
+.zp {
+  position: fixed;
+  inset: 0;
+  z-index: 9995; /* above the page and the home build (9990), below the site's own cursor (9999) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  overflow: auto;
+  background: var(--paper);
+  background-image: radial-gradient(rgba(var(--ink-rgb), 0.16) 1px, transparent 1.5px);
+  background-size: 28px 28px;
+  color: var(--ink);
+  animation: zp-in 0.32s ease both;
+}
+@keyframes zp-in { from { opacity: 0; } to { opacity: 1; } }
+html[data-calm] .zp, .zp[data-calm] { animation: none; }
+@media (prefers-reduced-motion: reduce) { .zp { animation: none; } }
+
+.zp:focus { outline: none; }
+.zp-x {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+.zp-x:hover { background: var(--ink); color: var(--paper); }
+.zp-x svg { width: 16px; height: 16px; }
+
+.zp-body { width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; margin: auto; }
+.zp-eyebrow { margin: 0; font: 700 12px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-50); }
+.zp-title { margin: 0; font-size: clamp(44px, 9vw, 84px); line-height: 0.95; font-weight: 800; letter-spacing: -0.035em; }
+.zp-lede { margin: 0; max-width: 46ch; font-size: 17px; line-height: 1.5; color: var(--ink-70); }
+.zp-fine { margin: 4px 0 0; max-width: 50ch; font-size: 13px; line-height: 1.5; color: var(--ink-50); }
+.zp-fine b { color: var(--ink); font-weight: 700; }
+
+.zp-name { display: flex; flex-direction: column; gap: 6px; width: min(340px, 100%); text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-50); }
+.zp-name input {
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.2;
+  padding: 12px 14px;
+  border: 1px solid rgba(var(--ink-rgb), 0.35);
+  border-radius: 10px;
+  background: rgba(var(--paper-rgb), 0.9);
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.zp-name input::placeholder { color: var(--ink-50); }
+.zp-name input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.zp-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 4px; }
+.zp-btn {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 15px 24px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s, transform 0.16s;
+}
+.zp-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+.zp-btn[data-primary] { background: var(--ink); color: var(--paper); }
+.zp-btn[data-primary]:hover:not(:disabled) { transform: translateY(-1px); }
+.zp-btn:disabled { opacity: 0.4; cursor: default; }
+.zp-btn:focus-visible, .zp-x:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* ---- the camera ---- */
+.zp-cam { position: relative; width: min(86vw, calc((100dvh - 230px) * 0.8), 460px); aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #1a1a19; box-shadow: 0 18px 50px rgba(var(--ink-rgb), 0.25); }
+.zp-cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.zp-cam svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.zp-cam-shade { fill: rgba(0, 0, 0, 0.38); }
+.zp-ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.6); stroke-width: 1.4; stroke-dasharray: 3 4; }
+.zp-ring { fill: none; stroke: #ffd36b; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.zp-hint { margin: 0; min-height: 1.5em; font-family: inherit; font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--ink); }
+
+.zp-wait { display: grid; gap: 14px; justify-items: center; }
+.zp-dots { display: flex; gap: 8px; }
+.zp-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); animation: zp-bob 0.9s ease-in-out infinite; }
+.zp-dots i:nth-child(2) { animation-delay: 0.12s; }
+.zp-dots i:nth-child(3) { animation-delay: 0.24s; }
+@keyframes zp-bob { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-7px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .zp-dots i { animation: none; } }
+
+/* ---- the stage: the card, drawn live ---- */
+.zp-stage-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.zp-stage {
+  position: relative;
+  width: min(86vw, calc((100dvh - 150px) * 0.8), 540px);
+  aspect-ratio: 1080 / 1350;
+  box-shadow: 0 22px 60px rgba(var(--ink-rgb), 0.28), 0 2px 0 rgba(var(--ink-rgb), 0.12);
+  background: #f4f1ea;
+  touch-action: manipulation;
+}
+.zp-stage canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+.zp-guides { pointer-events: none; }
+.zp-stage[data-drawing] { cursor: pointer; }
+
+/* the five cursors (the same look as the home build's) */
+.zp-cur { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; will-change: transform; pointer-events: none; z-index: 2; }
+.zp-glyph { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.zp-arrow, .zp-beam { position: absolute; left: -1px; top: -1px; overflow: visible; }
+.zp-arrow path { fill: var(--c); stroke: #0d0d0d; stroke-width: 1.4; stroke-linejoin: round; }
+.zp-beam { display: none; left: -8px; top: -11px; }
+.zp-beam path { fill: none; stroke: #0d0d0d; stroke-width: 1.8; stroke-linecap: round; }
+.zp-dot { position: absolute; left: -4.5px; top: -4.5px; width: 9px; height: 9px; border-radius: 50%; background: #161616; transform: scale(0); transition: transform 0.2s; }
+.zp-cur[data-pose="beam"] .zp-arrow { display: none; }
+.zp-cur[data-pose="beam"] .zp-beam { display: block; }
+.zp-cur[data-pose="dot"] .zp-arrow, .zp-cur[data-pose="dot"] .zp-beam { display: none; }
+.zp-cur[data-pose="dot"] .zp-dot { transform: scale(1); }
+.zp-chip {
+  position: absolute;
+  left: 13px;
+  top: 18px;
+  padding: 3px 9px 3px 8px;
+  border: 1px solid #0d0d0d;
+  border-radius: 999px 999px 999px 3px;
+  background: var(--c);
+  color: #0d0d0d;
+  font: 700 11px/1.3 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.zp-chip em { font-style: normal; font-weight: 500; opacity: 0.7; }
+.zp-cur[data-pose="dot"] .zp-chip { opacity: 0; transition: opacity 0.15s; }
+
+.zp-note { margin: 0; min-height: 1.4em; font-size: 14px; color: var(--ink-70); }
+.zp-err { margin: 0; max-width: 44ch; font-size: 16px; line-height: 1.5; color: var(--ink); }
+
+.zp [hidden] { display: none !important; }
+.zp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 520px) {
+  .zp-lede { font-size: 16px; }
+  .zp-btn { padding: 14px 20px; }
+  .zp-chip { font-size: 10px; padding: 2px 7px 2px 6px; }
+}

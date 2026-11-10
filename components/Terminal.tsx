@@ -24,7 +24,7 @@ type Line = { kind: "in" | "out" | "dim" | "err"; text: string; href?: string };
 
 const COMMANDS = [
   "help", "whoami", "ls", "cat", "cd", "open", "neofetch", "theme", "sudo", "rm", "clear",
-  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install", "tools", "rebuild",
+  "exit", "ping", "date", "echo", "pwd", "history", "snake", "git", "hello", "xray", "talk", "say", "camera", "secrets", "lamp", "tour", "sound", "print", "bugs", "fit", "meet", "estimate", "qa", "tldr", "search", "doodle", "race", "dissolve", "boom", "look", "boop", "squish", "install", "tools", "rebuild", "portrait",
 ];
 
 const WHERE: Record<string, { label: string; to: string; external?: boolean }> = {
@@ -306,6 +306,11 @@ export default function Terminal() {
     } else if (c === "search" || c === "find" || c === "k") {
       out("opening the search. (Ctrl K does the same, anywhere.)");
       window.dispatchEvent(new Event("zk-palette"));
+      close();
+    } else if (c === "portrait" || c === "drawme" || ((c === "draw" || c === "get") && /^(me|drawn)$/i.test(rest))) {
+      // Five cursors draw your face in ink (components/portrait). Not listed in help; Ctrl+K has it too.
+      out("the cursors want to draw you. pick a camera or a photo.");
+      window.dispatchEvent(new Event("zk-portrait"));
       close();
     } else if (c === "doodle" || c === "draw") {
       out("hold D and move the mouse. the ink fades. Esc wipes it.");
